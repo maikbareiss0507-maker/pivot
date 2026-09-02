@@ -180,7 +180,7 @@ label.f>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;f
   border-radius:11px;padding:3px;margin-bottom:12px}
 .seg button{flex:1;padding:8px 0;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted)}
 .seg button.on{background:var(--area);color:#0b1220}
-.rest{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;margin-bottom:12px}
+.rest{display:flex;gap:7px;overflow-x:auto;padding:0 58px 2px 0;margin-bottom:12px}
 .rest::-webkit-scrollbar{display:none}
 .rest a{flex:0 0 auto;background:var(--surface);border:1px solid var(--line);border-radius:11px;
   padding:9px 12px;font-size:12.5px;font-weight:600;color:var(--text);
@@ -232,6 +232,34 @@ label.f>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;f
 .track .nowline{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--text);
   box-shadow:0 0 0 2px rgba(0,0,0,.45)}
 
+/* ---------- Kachelverzeichnis (Mehr) ---------- */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.tile{position:relative;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:14px 8px 12px;display:flex;flex-direction:column;
+  align-items:center;gap:6px;min-height:84px;justify-content:center}
+.tile:active{transform:scale(.97);border-color:var(--tc)}
+.tile .ti{font-size:22px;line-height:1}
+.tile .tn{font-size:11.5px;font-weight:600;color:var(--text);text-align:center;line-height:1.25}
+.tile .tb{position:absolute;top:7px;right:8px;min-width:17px;height:17px;padding:0 4px;
+  border-radius:9px;background:var(--tc);color:#0b1220;font-size:10.5px;font-weight:750;
+  display:flex;align-items:center;justify-content:center}
+.tiles.mini{grid-template-columns:repeat(4,1fr);gap:7px}
+.tiles.mini .tile{min-height:66px;padding:10px 4px 9px}
+.tiles.mini .ti{font-size:18px}
+.tiles.mini .tn{font-size:10px}
+
+/* ---------- Evidenzstufe ---------- */
+.ev{display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;
+  letter-spacing:.03em;padding:3px 8px;border-radius:7px;border:1px solid;
+  background:transparent;margin-right:5px}
+
+/* ---------- Schnellzugriff ---------- */
+.fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:45;
+  width:50px;height:50px;border-radius:50%;background:var(--area);color:#0b1220;
+  font-size:25px;font-weight:400;line-height:1;display:flex;align-items:center;
+  justify-content:center;box-shadow:0 5px 18px rgba(0,0,0,.4)}
+.fab:active{transform:scale(.93)}
+
 /* ---------- Warum-Knopf ---------- */
 .qm{width:17px;height:17px;border-radius:50%;border:1px solid var(--line);
   background:var(--surface2);color:var(--muted);font-size:10.5px;font-weight:750;
@@ -262,13 +290,17 @@ label.f>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;f
     <h1 id="hTitle">Heute</h1>
     <div class="sub" id="hSub"></div>
   </div>
-  <button class="btn sm ghost" id="dateBtn">📅</button>
+  <div class="row" style="gap:6px">
+    <button class="btn sm ghost" id="backBtn" style="display:none">←</button>
+    <button class="btn sm ghost" id="dateBtn">📅</button>
+  </div>
 </header>
 
 <main id="app"></main>
 
 <nav class="tabs" id="nav"></nav>
 
+<button class="fab" id="fab" onclick="quick()">＋</button>
 <div class="sheet-bg" id="sheetBg"></div>
 <div class="sheet" id="sheet"><div class="handle"></div><div id="sheetBody"></div></div>
 <div class="toast" id="toast"></div>
@@ -281,7 +313,7 @@ label.f>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;f
    ========================================================================= */
 
 const KEY='pivot.v1';
-const APP_VERSION='4.0';
+const APP_VERSION='5.0';
 const DEF={
   profile:{sex:'m',age:25,height:183,weight:84,pal:1.5,protPerKg:1.8,carbPerKg:5,
            goal:'maintain',kcalOverride:null},
@@ -303,6 +335,25 @@ const DEF={
     emergency:{},      // 'YYYY-MM-DD' -> true, wenn Notfallversion gewählt
     focus:{}           // 'YYYY-MM-DD' -> {used:true}
   },
+  /* ---- ab V5: Lebensbereiche. Alles additiv, deepMerge fängt Fehlendes ab. ---- */
+  haus:{
+    reset:{active:false, day:1, fertig:null},
+    done:{},           // 'YYYY-MM-DD' | 'reset' -> {stepId:true|'skip'}
+    orte:{pfand:'', waesche:'', clean:'', box:''},
+    rhythm:{}, last:{},// rhythmKey -> ISO
+    style:0,           // rotierender Textstil, Aufgabenname bleibt gleich
+    rescue:{},         // day -> true
+    zone:'zimmer', size:'std'
+  },
+  fokus:{park:[], log:[], bd:'still'},
+  inbox:[],            // {id,t,ts}
+  med:{items:null, taken:{}, week:[], biweek:[], seenSafety:false},
+  fin:{limit:40, nightFrom:21, konten:[], wish:[], bills:[], log:[]},
+  journal:{},          // day -> {gut,schwer,morgen,frei}
+  smoke:{},            // day -> [{ts,tr}]
+  drills:{},           // day -> [{k,n,r,ts}]
+  beschw:[],           // {id,ort,seit,mech,offen,verlauf:[]}
+  week:{},             // Wochenblick-Antworten und Beziehungsanker
   seen:{}
 };
 
@@ -703,6 +754,22 @@ const WHY={
     b:'Ein fertiger Satz aus Auslöser und Handlung. Der Punkt ist die Delegation: die Situation stößt die Handlung an, statt dass du im Moment entscheiden musst. Genau diese Entscheidung im Moment ist der teure Schritt.',
     q:'Gollwitzer 1999; Gollwitzer & Sheeran 2006 (Meta-Analyse); Gawrilow & Gollwitzer 2008 speziell bei ADHS.',
     g:'Die ADHS-Belege stammen überwiegend aus Studien mit Kindern.'},
+  bodydoubling:{t:'Body Doubling',
+    b:'Jemand arbeitet parallel, und das senkt die Startschwelle. Hier ohne echte Person: stiller Timer, keine Videosuche, kein Feed. Die Suche nach dem passenden Begleitvideo ist selbst die Ablenkung.',
+    q:'Eagle et al. 2024: Befragungs- und Designstudie mit 220 neurodivergenten Teilnehmenden; beschreibt reale, virtuelle und aufgezeichnete Formen.',
+    g:'Evidenzstufe C. Kein Wirksamkeits-RCT — was berichtet wird, sind wahrgenommene Vorteile. Teste zwei Wochen mit und zwei ohne, und vergleiche deine Startquote.'},
+  efuture:{t:'Ergebnis vorstellen statt Weg planen',
+    b:'Sich fünf Sekunden konkret vorzustellen, wie es aussieht, wenn die Sache erledigt ist, half beim Erinnern an Absichten mehr als sich den Ablauf vorzustellen. Danach der erste sichtbare Schritt.',
+    q:'Randomisierte Studie mit 196 Erwachsenen, davon 98 mit ADHS; episodisches Zukunftsdenken und prospektives Gedächtnis.',
+    g:'Erste Studie, Replikation steht aus. Die prozessorientierte Variante half der ADHS-Gruppe nur moderat.'},
+  impuls:{t:'Reibung vor dem Kauf',
+    b:'Budgets, Sparautomatik und zusätzliche Hürden vor dem Zugriff sind als Klasse von Selbstkontrollstrategien belegt. Die Reibung wirkt, nicht die Zahl.',
+    q:'Meta-Analyse über 29 Experimente zu finanziellen Selbstkontrollstrategien; Beobachtungsstudien zu ADHS, Impulskauf und Belohnungsaufschub.',
+    g:'Deine 40 € und deine 21 Uhr sind Setzungen, keine Normwerte. Eine geprüfte ADHS-Finanz-App gibt es nicht. Hohe Heterogenität zwischen den Experimenten.'},
+  verletzung:{t:'Worauf Prävention zielt',
+    b:'Die häufigsten Handballverletzungen liegen in der unteren Extremität — Oberschenkel, Knie, Sprunggelenk — und in der Schulter. Die meisten entstehen im Wettkampf, nicht im Training.',
+    q:'Systematische Übersicht über 27 Studien zu Verletzungshäufigkeit im Handball; über PubMed geprüft.',
+    g:'Häufigkeit in einer Population ist keine Vorhersage für dich. Und ausgerechnet für die Schulter fand eine Meta-Analyse über drei Studien keinen gesicherten Präventionseffekt.'},
   streak:{t:'Warum kein Streak',
     b:'Ein Streak setzt die ganze Belohnung auf einen fernen Zeitpunkt und entwertet mit einem einzigen Aussetzer alles Bisherige. Bei ADHS fällt der Wert einer Belohnung mit der Verzögerung steiler ab als sonst — also wirkt genau der falsche Hebel. Gezählt wird deshalb, wie viele der letzten 14 Tage erfasst sind.',
     q:'Lally et al. 2010: Gewohnheitsaufbau dauert im Median 66 Tage, und einzelne ausgelassene Gelegenheiten beeinträchtigten ihn nicht messbar.',
@@ -746,11 +813,24 @@ const ICON={
   tag:'<rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M7.5 14h3M7.5 17.5h6"/>',
   food:'<path d="M4 3v8a3 3 0 006 0V3"/><path d="M7 11v10"/><path d="M17 3c-1.5 2-2 4-2 7 0 2 1 3 2 3s2-1 2-3c0-3-.5-5-2-7z"/><path d="M17 13v8"/>',
   train:'<path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/>',
-  me:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/>'
+  more:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/><circle cx="5" cy="6" r="1.6"/><circle cx="12" cy="6" r="1.6"/><circle cx="19" cy="6" r="1.6"/><circle cx="5" cy="18" r="1.6"/><circle cx="12" cy="18" r="1.6"/><circle cx="19" cy="18" r="1.6"/>'
 };
-const TABS=[['now','Jetzt'],['tag','Tag'],['food','Essen'],['train','Training'],['me','Profil']];
-const AREA={now:'var(--phc,#4ade80)', tag:'#4ade80', food:'#f5b13d', train:'#63a9f5', me:'#ab8cf7'};
-const TITLE={now:'Jetzt', tag:'Dein Tag', food:'Essen', train:'Training', me:'Profil'};
+/* Fünf Plätze, und Training behält seinen. Masterplan V8 schlägt
+   Heute·Ernährung·Planung·Haushalt·Mehr vor — das würde Training eine Ebene tiefer
+   schieben, obwohl bessere Handballleistung das oberste Ziel ist. Haushalt sitzt
+   deshalb als erste Kachel in Mehr, eine Berührung entfernt. */
+const TABS=[['now','Jetzt'],['tag','Tag'],['food','Essen'],['train','Training'],['more','Mehr']];
+const AREA={now:'var(--phc,#4ade80)', tag:'#4ade80', food:'#f5b13d', train:'#63a9f5',
+  more:'#ab8cf7', haus:'#f5b13d', fokus:'#ab8cf7', inbox:'#4ade80', tools:'#ab8cf7',
+  load:'#63a9f5', beschw:'#f87171', med:'#f87171', journal:'#4ade80', fin:'#f5b13d',
+  week:'#63a9f5', evidenz:'#63a9f5', me:'#ab8cf7'};
+const TITLE={now:'Jetzt', tag:'Dein Tag', food:'Essen', train:'Training', more:'Alle Bereiche',
+  haus:'Haushalt', fokus:'Fokus', inbox:'Eingang', tools:'Werkzeugkasten',
+  load:'Last & Erholung', beschw:'Beschwerden', med:'Medikamente', journal:'Reflexion',
+  fin:'Finanzen', week:'Wochenblick', evidenz:'Evidenz', me:'Profil'};
+/* Welcher Tab unten leuchtet, wenn eine Unterseite offen ist */
+const PARENT={haus:'more', fokus:'more', inbox:'more', tools:'more', load:'more',
+  beschw:'more', med:'more', journal:'more', fin:'more', week:'more', evidenz:'more', me:'more'};
 let VIEW='now', trainSeg='ses';
 
 function phase(){
@@ -772,8 +852,9 @@ const PHASE={
 };
 
 function renderNav(){
+  const act=PARENT[VIEW]||VIEW;
   document.getElementById('nav').innerHTML=TABS.map(([k,l])=>
-    `<button data-t="${k}" class="${VIEW===k?'on':''}">
+    `<button data-t="${k}" class="${act===k?'on':''}">
       <svg viewBox="0 0 24 24">${ICON[k]}</svg><span>${l}</span></button>`).join('');
 }
 document.getElementById('nav').addEventListener('click',e=>{
@@ -781,6 +862,7 @@ document.getElementById('nav').addEventListener('click',e=>{
   stopScan(); VIEW=b.dataset.t; render(); window.scrollTo(0,0);
 });
 document.getElementById('dateBtn').addEventListener('click',()=>openSheet(dateSheet()));
+document.getElementById('backBtn').addEventListener('click',()=>go('more'));
 window.go=(v,seg)=>{ VIEW=v; if(seg) trainSeg=seg; closeSheet(); render(); window.scrollTo(0,0); };
 window.setSeg=v=>{ trainSeg=v; render(); };
 
@@ -809,13 +891,17 @@ function render(){
   document.body.dataset.ph=phase();
   document.documentElement.style.setProperty('--area', AREA[VIEW]);
   renderNav();
-  document.getElementById('hTitle').textContent=TITLE[VIEW];
+  document.getElementById('hTitle').textContent=TITLE[VIEW]||'Pivot';
+  document.getElementById('backBtn').style.display=PARENT[VIEW]?'inline-flex':'none';
   const dd=parseISO(DAY);
   document.getElementById('hSub').textContent=
     (DAY===todayISO()?'':human(DAY)+' · ')+DOW[dd.getDay()]+', '+dd.getDate()+'. '+MON[dd.getMonth()];
-  document.getElementById('app').innerHTML=
-    ({now:vNow, tag:vTag, food:vFood, train:vTrain, me:vMe})[VIEW]();
-  if(VIEW==='train' && trainSeg==='load') drawCharts();
+  const V={now:vNow, tag:vTag, food:vFood, train:vTrain, me:vMe, more:vMore,
+    haus:vHaus, fokus:vFokus, inbox:vInbox, tools:vTools, load:vLoad, beschw:vBeschw,
+    med:vMed, journal:vJournal, fin:vFin, week:vWeek, evidenz:vEvidenz};
+  document.getElementById('app').innerHTML=(V[VIEW]||vNow)();
+  document.getElementById('fab').style.display=(VIEW==='now'||VIEW==='tag')?'flex':'none';
+  if((VIEW==='train'&&trainSeg==='load')||VIEW==='load') drawCharts();
 }
 
 /* Ring-SVG */
@@ -996,10 +1082,58 @@ function vNow(){
   h+=`<div class="rest">
     <a onclick="go('tag')"><i></i>Tagesplan</a>
     <a onclick="go('food')"><i style="background:var(--amber)"></i>${offen} Fenster offen</a>
-    <a onclick="go('train')"><i style="background:var(--blue)"></i>${ses.length} Einheiten</a>
+    <a onclick="go('train')"><i style="background:var(--blue)"></i>${ses.length} ${ses.length===1?'Einheit':'Einheiten'}</a>
     <a onclick="go('train','load')"><i style="background:var(--violet)"></i>Wochenlast</a>
   </div>`;
+
+  /* Jetzt relevante Bereiche — höchstens drei, und nur eine Navigationshilfe.
+     Keine Behauptung, was du tun müsstest. */
+  const rel=relevant();
+  if(rel.length) h+=`<div class="card">
+    <h2>Jetzt relevant</h2>${tiles(rel)}</div>`;
+
+  /* Alle Bereiche — nur Name, Symbol und offene Anzahl. Nie Inhalte.
+     So bleibt jeder Bereich auffindbar, ohne dass Jetzt zur Liste wird. */
+  h+=`<div class="card">
+    <div class="row between" style="margin-bottom:9px">
+      <h2 style="margin:0">Alle Bereiche</h2>
+      <button class="btn sm ghost" onclick="go('more')">Öffnen</button></div>
+    ${tiles(AREAS.slice(0,8)).replace('class="tiles"','class="tiles mini"')}</div>`;
   return h;
+}
+
+/* Zigaretten und Drills gehören in den Tag, nicht in eine eigene Kachel —
+   sie werden mehrfach täglich mit einem Tap bedient. */
+function smokeCard(){
+  const a=S.smoke[DAY]||[], w=smokeWeek(), mx=Math.max(...w,1);
+  return `<div class="card">
+    <div class="row between" style="margin-bottom:10px">
+      <h2 style="margin:0">Zigaretten</h2>
+      <span class="big mono" style="font-size:22px">${a.length}</span></div>
+    <div class="row" style="gap:3px;align-items:flex-end;height:34px;margin-bottom:10px">
+      ${w.map((v,i)=>`<div style="flex:1;height:${Math.max(3,v/mx*34)}px;border-radius:3px;
+        background:${i===6?'var(--amber)':'var(--surface2)'}"></div>`).join('')}</div>
+    <div class="btnrow">
+      <button class="btn acc" onclick="smokeSheet()">+1 mit Auslöser</button>
+      ${a.length?`<button class="btn sm ghost" onclick="smokeUndo()">Zurück</button>`:''}</div>
+    <div class="note">Nur zählen und den Auslöser festhalten. Keine Bewertung, kein Ziel,
+      keine Serie — der häufigste Auslöser wird im Wochenblick zum Regelvorschlag.</div>
+  </div>`;
+}
+function drillCard(){
+  const a=S.drills[DAY]||[];
+  return `<div class="card">
+    <div class="row between" style="margin-bottom:10px">
+      <h2 style="margin:0">Nullschritt-Drills</h2>
+      <span class="big mono" style="font-size:22px">${a.length}</span></div>
+    <div class="small muted" style="margin-bottom:10px">Drei bis sieben kleine Sätze über den Tag.
+      Auch weniger zählt. Das ist der Zweck an Tagen ganz ohne Einheit.</div>
+    <div class="chips">${DRILLS.map(d=>{const n=a.filter(x=>x.k===d.k).length;
+      return `<button class="pill ${n?'on':''}" onclick="drillAdd('${d.k}')">
+        ${esc(d.n)} · ${d.r}${n?` <span class="mono">×${n}</span>`:''}</button>`;}).join('')}</div>
+    ${a.length?`<div class="spacer"></div>
+      <button class="btn sm ghost" onclick="drillUndo()">Letzten zurücknehmen</button>`:''}
+  </div>`;
 }
 
 /* =========================================================================
@@ -1065,6 +1199,14 @@ function vTag(){
       : `<div class="empty">Noch keine Regeln.</div>
          <button class="btn acc" onclick="openSheet(ruleSheet())">Regeln anlegen</button>`}
   </div>`;
+
+  h+=drillCard();
+  h+=smokeCard();
+
+  h+=`<div class="card tight">
+    <div class="row between">
+      <span class="small muted">Abends drei Fragen, dann Schluss</span>
+      <button class="btn sm" onclick="go('journal')">Reflexion</button></div></div>`;
 
   if(rep.length && cov.hit>=2){
     h+=`<div class="card"><h2>Nachtragen</h2>
@@ -1859,6 +2001,1352 @@ function line(id,vals,lo,hi){
 }
 
 /* =========================================================================
+   EVIDENZ — Stufe an der Aussage, nicht in der Fußnote.
+   A stark · B mittel · C begrenzt · D Erfahrungswert
+   Ein Algorithmus darf nie eine höhere Stufe vortäuschen als seine Grundlage.
+   ========================================================================= */
+const EVTXT={A:'Gut gestützt', B:'Wahrscheinlich hilfreich',
+             C:'Plausibel, noch unsicher', D:'Erfahrungswert, nicht bewiesen'};
+const EVCOL={A:'#4ade80', B:'#63a9f5', C:'#f5b13d', D:'#9aa5b6'};
+function evTag(g){ return `<span class="ev" style="border-color:${EVCOL[g]};color:${EVCOL[g]}">
+  ${g} · ${EVTXT[g]}</span>`; }
+
+const EVIDENZ=[
+  {g:'A', t:'Kraft- und plyometrisches Training für Handballleistung',
+   b:'Krafttraining verbessert Maximalkraft, Power und Wurfgeschwindigkeit; plyometrisches Training verbessert Sprung, Sprint, Richtungswechsel und Power. Beides mehrfach metaanalytisch bestätigt.',
+   z:'Handballspieler, teils Elite-Männer',
+   u:'Hohe Heterogenität und Hinweise auf Publikationsbias in der Kraft-Meta-Analyse. Balance wurde durch Plyometrie nicht verbessert.',
+   k:'Sprunghöhe und Wurfgeschwindigkeit alle sechs Wochen messen.'},
+  {g:'A', t:'Protein 1,4–2,0 g/kg, auf mehrere Portionen verteilt',
+   b:'ISSN Position Stand und DGE-Positionspapier stützen diese Spanne für Kraft- und Mannschaftssport. Pflanzliche Quellen können das tragen, wenn Menge und Energie stimmen.',
+   z:'trainierende Erwachsene',
+   u:'Die Obergrenze ist keine Wirkgrenze, sondern der Punkt ohne belegten Zusatznutzen. Ein optimaler pflanzlicher Prozentsatz ist nicht belegt.',
+   k:'Proteinsumme über zwei Wochen prüfen, nicht einen einzelnen Tag.'},
+  {g:'A', t:'Schlafverlängerung und Nickerchen als Regeneration',
+   b:'Von allen untersuchten Regenerationsmaßnahmen sind Schlafverlängerung und Nickerchen die konsistentesten.',
+   z:'Athletinnen und Athleten',
+   u:'Begrenzte Zahl hochwertiger Studien.',
+   k:'Bettzeit-Regelmäßigkeit über vier Wochen ansehen, nicht die einzelne Nacht.'},
+  {g:'A', t:'Strukturiertes Monitoring von Medikamentenwirkung',
+   b:'NICE NG87 und NG222 stützen Verlaufskontrolle von Wirkung, Nebenwirkungen, Schlaf, Gewicht und Adhärenz.',
+   z:'Erwachsene mit ADHS beziehungsweise Depression',
+   u:'Leitlinien stützen das Dokumentieren, nicht das Ableiten einer Entscheidung durch eine App.',
+   k:'Ob du im nächsten Termin die Fragen tatsächlich dabei hast.'},
+  {g:'B', t:'Wenn-dann-Regeln und konkrete Absichtscodierung',
+   b:'Implementation Intentions sind metaanalytisch gut belegt. Erinnerungen zusätzlich zum Plan verbessern die Umsetzung.',
+   z:'Allgemeinbevölkerung; ADHS-Belege überwiegend aus Studien mit Kindern',
+   u:'Die automatische Gewohnheitsbildung wurde durch Erinnerungen nicht zwingend verbessert.',
+   k:'Nach vier Wochen: wie viele deiner Regeln hast du tatsächlich ausgeführt?'},
+  {g:'B', t:'Befinden gegen den eigenen Schnitt, nicht gegen eine Skala',
+   b:'Subjektive Selbstauskunft reagiert sensibler auf Belastung als objektive Marker — aber nur relativ zum eigenen Referenzbereich.',
+   z:'Athletinnen und Athleten',
+   u:'Zusammenhang ist keine Vorhersage. Gruppenmittelwerte sagen über dich wenig.',
+   k:'Braucht mindestens vier erfasste Tage, besser vierzehn.'},
+  {g:'B', t:'Beschwerden vor der Ausfallzeit erfassen (OSTRC)',
+   b:'Standardverfahren erfassen nur einen kleinen Teil der Überlastungsprobleme, weil sie Trainingsausfall voraussetzen. Der OSTRC-Fragebogen erfasst die Vorstufe.',
+   z:'313 Athletinnen und Athleten aus fünf Sportarten, Handball dabei',
+   u:'Die deutsche Fassung wurde an 24 Paralympics-Athletinnen und -Athleten geprüft — schmale Basis.',
+   k:'Ob eine Beschwerde erfasst war, bevor sie dich Training gekostet hat.'},
+  {g:'B', t:'Finanzielle Selbstbindung und Zugriffshürden',
+   b:'Budgets, Sparautomatik und Reibung vor dem Kauf sind als Strategieklasse in einer Meta-Analyse über 29 Experimente gestützt.',
+   z:'Allgemeinbevölkerung',
+   u:'Hohe Heterogenität. Eine geprüfte ADHS-Finanz-App existiert nicht. Deine 40 € und deine 21 Uhr sind Setzungen.',
+   k:'Wie viele geprüfte Käufe nach der Wartezeit doch verworfen wurden.'},
+  {g:'C', t:'Body Doubling',
+   b:'Eine Befragungs- und Designstudie mit 220 neurodivergenten Teilnehmenden beschreibt reale, virtuelle und aufgezeichnete Formen und Einsatzfelder wie Lernen, Putzen und Bewegung.',
+   z:'neurodivergente Erwachsene',
+   u:'Kein Wirksamkeits-RCT. Berichtete Vorteile sind wahrgenommene Vorteile.',
+   k:'Zwei Wochen mit, zwei Wochen ohne — Startquote vergleichen.'},
+  {g:'C', t:'Haushaltsroutinen und Mini-Resets bei ADHS',
+   b:'Ergotherapeutischer Fachkonsens stützt Umgebungsanpassung, Routine und Aufgabenanpassung. Ein Scoping Review zu Routinen bei ADHS fand nur sechs Interventionen.',
+   z:'Erwachsene mit ADHS, dünne Datenlage',
+   u:'Keine kontrollierte Studie zum Sauberhalten von Küche, Zimmer und Auto. Das hier ist ein persönliches Experiment.',
+   k:'Wie oft der „gut genug“-Zustand nach zwei Wochen morgens noch steht.'},
+  {g:'C', t:'Gamification, wechselnde Texte, Belohnungen',
+   b:'Potenzial für Engagement ist gezeigt, eine Garantie für bessere Ergebnisse nicht. Übernutzung und extrinsischer Druck sind reale Designrisiken.',
+   z:'digitale psychische Gesundheit allgemein',
+   u:'Nicht ADHS-spezifisch. Deshalb: keine Rangliste, kein Levelverlust, keine Zufallsbelohnung.',
+   k:'Ob die Abwechslung dich zum Start bringt oder selbst zur Ablenkung wird.'},
+  {g:'D', t:'Bestimmte Wartezeit gegen Impulskäufe',
+   b:'Die 24-Stunden-Regel kursiert breit in Erfahrungsberichten. Die Idee der Reibung ist belegt, diese konkrete Dauer nicht.',
+   z:'Erfahrungsberichte',
+   u:'Selbstselektion und Berichtsbias. 24 Stunden sind eine runde Zahl, kein Messergebnis.',
+   k:'Anteil verworfener Wünsche nach Ablauf.'}
+];
+
+const WIDER=[
+  {t:'Schulterprävention',
+   b:'Ein breiteres Handball-Präventionsreview berichtet Risikoreduktionen in mehreren Verletzungsgruppen. Die neuere reine Schulter-Meta-Analyse fand über drei Studien mit 747 Spielerinnen und Spielern keinen gesicherten Effekt (OR 0,73; 95 %-KI 0,45–1,17). Konsequenz: multimodale Prävention ja, Schultergarantie nein.'},
+  {t:'Kälte nach dem Training',
+   b:'Kälte kann Muskelkater und wahrgenommene Erholung verbessern und gleichzeitig bei regelmäßiger Anwendung direkt nach Krafttraining die Anpassung abschwächen. Wettkampfbereitschaft und Muskelaufbau sind zwei verschiedene Ziele — der Kontext entscheidet.'},
+  {t:'Erinnerungen',
+   b:'Externe Gedächtnishilfen sind plausibel und oft wirksam. In einer ADHS-Intervention verbesserten einfache Standard-SMS aber weder Modulerfüllung noch Logins. Relevanz, Handlungsschritt und Kontext schlagen Häufigkeit.'},
+  {t:'Wearables',
+   b:'Uhrdaten zeigen Trends. Schlafstadien, HRV und Readiness unterscheiden sich nach Gerät, Algorithmus und Messbedingung. Aus einem einzelnen Score folgt weder eine Krankheit noch eine Trainingsanpassung.'},
+  {t:'Acute:Chronic Workload Ratio',
+   b:'Als Verletzungsprognose methodisch zerlegt (mathematical coupling). Deshalb steht sie hier ohne Ampel und erst ab drei Wochen Historie — als Bild deiner Belastungsverteilung, nicht als Warnung.'},
+  {t:'Pflanzliches Protein',
+   b:'Kraft und Leistung müssen durch pflanzenbetonte Ernährung nicht sinken. Unterschiede bei Proteinqualität und Muskelmasse hängen von Quelle, Menge, Energie und Training ab. Ein idealer Prozentsatz ist nicht belegt — deshalb der stufenweise Selbstversuch: erst zwei Wochen erfassen, dann ein Viertel ersetzen, bei guter Verträglichkeit auf etwa die Hälfte.'}
+];
+
+function vEvidenz(){
+  return `<div class="card tight">
+    <div class="small muted">Starke Evidenz darf den Standard prägen. Schwache Evidenz darf ein
+      freiwilliges, messbares Experiment sein. Nichts dazwischen wird als bewiesen verkauft.</div>
+    <div class="chips" style="margin-top:10px">
+      ${['A','B','C','D'].map(g=>evTag(g)).join('')}</div></div>
+  ${EVIDENZ.map(e=>`<div class="card">
+    <div style="margin-bottom:7px">${evTag(e.g)}</div>
+    <b style="font-size:15px;display:block;margin-bottom:7px">${esc(e.t)}</b>
+    <div class="small" style="line-height:1.65;margin-bottom:10px">${esc(e.b)}</div>
+    <div class="small muted" style="line-height:1.7">
+      <b style="color:var(--muted)">Passt zu:</b> ${esc(e.z)}<br>
+      <b style="color:var(--muted)">Unsicherheit:</b> ${esc(e.u)}<br>
+      <b style="color:var(--muted)">Woran du merkst, ob es dir hilft:</b> ${esc(e.k)}</div>
+  </div>`).join('')}
+  <div class="card">
+    <h2>Bekannte Widersprüche</h2>
+    <div class="small muted" style="margin-bottom:11px">Wo die Studienlage sich selbst widerspricht,
+      steht das hier — statt dass sich die App eine Seite aussucht.</div>
+    ${WIDER.map(w=>`<div style="margin-bottom:13px">
+      <b style="font-size:14px;display:block;margin-bottom:4px">${esc(w.t)}</b>
+      <div class="small muted" style="line-height:1.65">${esc(w.b)}</div></div>`).join('')}
+  </div>
+  <div class="card">
+    <h2>Was hier nie allein zählt</h2>
+    <div class="small muted" style="line-height:1.75">
+      Influencer-Videos mit Produktwerbung · App-Webseiten mit eigenen Wirksamkeitsbehauptungen ·
+      einzelne Erfolgsgeschichten aus Foren · nicht begutachtete Preprints ·
+      Herstellerscores ohne unabhängige Validierung · pauschale Dopamin-Hacks ·
+      Supplementempfehlungen ohne Dosis-, Risiko- und Dopingprüfung ·
+      Medikamentenempfehlungen außerhalb von Leitlinie, Fachinformation und behandelnder Fachperson.
+      <br><br>Solche Quellen liefern Ideen. Sie lösen keine medizinische, finanzielle oder
+      trainingskritische Entscheidung aus.</div>
+  </div>
+  <div style="height:20px"></div>`;
+}
+
+/* =========================================================================
+   MEHR — stabiles vollständiges Verzeichnis. Jede Kachel eine eigene Seite.
+   ========================================================================= */
+const AREAS=[
+  {k:'haus',   n:'Haushalt',       ico:'🧹', c:'#f5b13d'},
+  {k:'fokus',  n:'Fokus',          ico:'⏱️', c:'#ab8cf7'},
+  {k:'inbox',  n:'Eingang',        ico:'📥', c:'#4ade80'},
+  {k:'tools',  n:'Werkzeugkasten', ico:'🧰', c:'#ab8cf7'},
+  {k:'load',   n:'Last & Erholung',ico:'📈', c:'#63a9f5'},
+  {k:'beschw', n:'Beschwerden',    ico:'🩹', c:'#f87171'},
+  {k:'med',    n:'Medikamente',    ico:'💊', c:'#f87171'},
+  {k:'journal',n:'Reflexion',      ico:'📓', c:'#4ade80'},
+  {k:'fin',    n:'Finanzen',       ico:'💶', c:'#f5b13d'},
+  {k:'week',   n:'Wochenblick',    ico:'🗓️', c:'#63a9f5'},
+  {k:'evidenz',n:'Evidenz',        ico:'🔬', c:'#63a9f5'},
+  {k:'me',     n:'Profil & Daten', ico:'⚙️', c:'#9aa5b6'}
+];
+function areaBadge(k){
+  switch(k){
+    case 'inbox': return S.inbox.length||0;
+    case 'haus': { const Z=ZONE[S.haus.zone||'zimmer'];
+      return Z.steps.filter(s=>!hausDone(DAY,s.id)).length; }
+    case 'fin': return S.fin.wish.filter(w=>w.status==='warten'&&Date.now()>=w.bis).length
+                     + S.fin.bills.filter(b=>!b.bezahlt&&b.faellig<=todayISO()).length;
+    case 'med': { const M=meds();
+      return M.filter(m=>!medTaken(DAY,m.id)||medRange(m).warn).length; }
+    case 'beschw': return S.beschw.filter(b=>b.offen).length;
+    case 'fokus': return S.fokus.park.length;
+    default: return 0;
+  }
+}
+function tiles(list){
+  return `<div class="tiles">${list.map(a=>{const b=areaBadge(a.k);
+    return `<button class="tile" onclick="go('${a.k}')" style="--tc:${a.c}">
+      <span class="ti">${a.ico}</span><span class="tn">${a.n}</span>
+      ${b?`<span class="tb">${b}</span>`:''}</button>`;}).join('')}</div>`;
+}
+function vMore(){
+  return `<div class="card tight">
+    <button class="btn acc" onclick="quick()">＋ Schnell etwas festhalten</button></div>
+    ${tiles(AREAS)}
+    <div class="card tight" style="margin-top:12px">
+      <div class="small muted">Jede Kachel öffnet eine eigene Seite mit nur diesem Thema.
+        Kein Bereich versteckt sich hinter einem anderen, und keine Seite wird zur Sammelliste.</div></div>
+    <div style="height:20px"></div>`;
+}
+
+/* Kontextbezogene Bereiche für die Jetzt-Seite: höchstens drei.
+   Das ist eine Navigationshilfe, keine Behauptung, was du tun müsstest. */
+function relevant(){
+  const ph=phase(), out=[];
+  const M=meds();
+  if(M.some(m=>!medTaken(DAY,m.id)) && (ph==='morning'||ph==='midday')) out.push('med');
+  const n=hausNext(); if(n && (ph==='midday'||ph==='evening')) out.push('haus');
+  if(S.fin.wish.some(w=>w.status==='warten'&&Date.now()>=w.bis)) out.push('fin');
+  if(S.inbox.length>=3) out.push('inbox');
+  if(ph==='winddown'||ph==='night') out.push('journal');
+  if(ph==='dip') out.push('fokus');
+  const d=new Date().getDay(); if(d===0&&(ph==='evening'||ph==='winddown')) out.push('week');
+  if(S.beschw.some(b=>b.offen)) out.push('beschw');
+  return [...new Set(out)].slice(0,3).map(k=>AREAS.find(a=>a.k===k));
+}
+
+/* =========================================================================
+   HAUSHALT — ein sichtbarer nächster Schritt, nie eine Rückstandswand
+   Evidenzstufe C: Ergotherapie-Fachkonsens und Routinenforschung stützen
+   Umgebungsanpassung und Anker; kontrollierte Studien zum Sauberhalten von
+   Küche, Zimmer und Auto bei Erwachsenen mit ADHS gibt es nicht.
+   ========================================================================= */
+
+/* Textstile: der Aufgabenname bleibt immer gleich, nur der Zusatz rotiert.
+   Reihenfolge, Bedeutung und Bedienpositionen ändern sich nie. */
+const STYLE=['direkt','sachlich','locker'];
+function styleLine(v){ if(!v) return ''; return v[S.haus.style%3]||v[0]; }
+function rotateStyle(){ S.haus.style=(S.haus.style+1)%3; }
+
+/* --- Zonenabläufe. id muss stabil bleiben, sonst gehen Haken verloren. --- */
+const ZONE={
+  zimmer:{n:'Zimmer', ico:'🛏️', steps:[
+    {id:'z1', t:'Müll einsammeln und hinausbringen', min:4, tip:'muell',
+     v:['Nur den Müll. Jetzt.','Sammle zuerst allen offensichtlichen Müll ein.','Müll-Sammelrunde — Beutel auf, einmal durchs Zimmer.']},
+    {id:'z2', t:'Flaschen und Pfand an den festen Platz', min:3, tip:'pfand',
+     v:['Nur die Flaschen.','Alle Flaschen an den vorgesehenen Rückgabeplatz stellen.','Pfandflaschen-Treffen: bitte alle zur Sammelstelle.']},
+    {id:'z3', t:'Geschirr in die Küche bringen', min:3},
+    {id:'z4', t:'Schmutzige Kleidung in den Korb, saubere auf einen Platz', min:5, tip:'waesche'},
+    {id:'z5', t:'Bett freimachen und herrichten', min:4},
+    {id:'z6', t:'Herumliegendes: fester Platz oder eine Box', min:8, tip:'orte'},
+    {id:'z7', t:'Regale, Tische, Ablagen freiräumen und von oben nach unten abstauben', min:10, tip:'flaechen'},
+    {id:'z8', t:'Fernseher trocken abwischen', min:3, tip:'tv'},
+    {id:'z9', t:'Boden freimachen und saugen', min:8, tip:'boden'},
+    {id:'z10',t:'Schleifen schließen: Müll raus, Wäsche weiter, Box abstellen', min:6, tip:'schleife'}
+  ]},
+  kueche:{n:'Küche', ico:'🍳', steps:[
+    {id:'k1', t:'Müll, Leergut und Pfand entfernen', min:4},
+    {id:'k2', t:'Lebensmittel zurückstellen', min:4},
+    {id:'k3', t:'Geschirr sammeln, Spülmaschine ein- oder ausräumen', min:8},
+    {id:'k4', t:'Esstisch und Arbeitsflächen vollständig freimachen', min:5},
+    {id:'k5', t:'Tisch, Spüle, Herd, Arbeitsflächen und Griffe reinigen', min:10, tip:'kuecheflaechen'},
+    {id:'k6', t:'Nach rohen tierischen Lebensmitteln getrennt reinigen', min:4, tip:'hygiene', safety:true},
+    {id:'k7', t:'Schrankfronten — nur bei sichtbarem Bedarf', min:8, opt:true},
+    {id:'k8', t:'Boden saugen oder fegen', min:6},
+    {id:'k9', t:'Tücher trocknen, Abfall hinaus, nächste Runde vorbereiten', min:4}
+  ]},
+  auto:{n:'Auto', ico:'🚗', steps:[
+    {id:'a1', t:'Müll und Flaschen entfernen', min:4},
+    {id:'a2', t:'Kleidung, Taschen und persönliche Dinge herausnehmen', min:5},
+    {id:'a3', t:'Fußmatten herausnehmen und ausklopfen', min:4},
+    {id:'a4', t:'Sitze, Zwischenräume, Kofferraum und Boden saugen', min:12},
+    {id:'a5', t:'Lenkrad, Armaturen und Griffe wischen', min:6, tip:'autoflaechen', safety:true},
+    {id:'a6', t:'Scheiben innen schlierenfrei reinigen', min:6},
+    {id:'a7', t:'Außenwäsche — eigener Termin, keine Bedingung', min:20, opt:true},
+    {id:'a8', t:'Mitgenommenes wirklich an den Zielort bringen', min:4, tip:'schleife'}
+  ]},
+  waesche:{n:'Wäsche', ico:'🧺', steps:[
+    {id:'w1', t:'Pflegeetiketten prüfen, Taschen leeren', min:4, tip:'waesche'},
+    {id:'w2', t:'Nach Farbe, Material und Temperatur trennen', min:5},
+    {id:'w3', t:'Waschmittel nach Packungsangabe dosieren', min:2},
+    {id:'w4', t:'Maschine passend beladen und starten', min:4},
+    {id:'w5', t:'Sofort einen Folgehinweis fürs Herausnehmen setzen', min:1},
+    {id:'w6', t:'Nach Programmende herausnehmen und trocknen', min:8},
+    {id:'w7', t:'Trockene Wäsche falten oder aufhängen und wegräumen', min:12, tip:'falten'}
+  ]}
+};
+
+/* Drei-Tage-Grundreset — einmalig, danach nur Erhaltung */
+const RESET=[
+  {d:1, n:'Funktionsrettung', steps:[
+    {id:'r11',t:'Startplatz herrichten: Müllbeutel, Pfandkiste, Wäschekorb, Transportkorb, Lappen',min:6},
+    {id:'r12',t:'Müll einsammeln',min:8},
+    {id:'r13',t:'Flaschen und Pfand sammeln',min:5},
+    {id:'r14',t:'Geschirr in die Küche',min:6},
+    {id:'r15',t:'Schmutzige Wäsche sammeln und erste Ladung starten',min:10},
+    {id:'r16',t:'Herumliegende Gegenstände grob bündeln',min:12},
+    {id:'r17',t:'Wege frei machen',min:6}
+  ]},
+  {d:2, n:'Zimmer und Küche', steps:[
+    {id:'r21',t:'Tische, Regale und Ablagen freiräumen',min:12},
+    {id:'r22',t:'Von oben nach unten abstauben',min:10},
+    {id:'r23',t:'Fernseher trocken abwischen',min:3},
+    {id:'r24',t:'Küchen-Arbeitsflächen und Spüle reinigen',min:12},
+    {id:'r25',t:'Beide Räume saugen',min:12},
+    {id:'r26',t:'Zweite Waschladung starten',min:5}
+  ]},
+  {d:3, n:'Auto und Abschluss', steps:[
+    {id:'r31',t:'Auto ausräumen und saugen',min:18},
+    {id:'r32',t:'Auto-Flächen und Scheiben innen',min:10},
+    {id:'r33',t:'„Platz finden“-Box leeren',min:15},
+    {id:'r34',t:'Restliche Wäsche wegräumen',min:12},
+    {id:'r35',t:'Pfand zurückgeben',min:15},
+    {id:'r36',t:'Abschlusskontrolle, optional ein Referenzfoto pro Zone',min:6}
+  ]}
+];
+
+/* Rettungsmodus — nur die fünf Schleifen, Detailputzen verschwindet */
+const RESCUE=[
+  {id:'x1',t:'Müll',min:5},{id:'x2',t:'Flaschen',min:4},{id:'x3',t:'Geschirr',min:6},
+  {id:'x4',t:'Wäsche in den Korb',min:4},{id:'x5',t:'Einen freien Weg schaffen',min:5}
+];
+
+/* Rhythmen — persönliche Startwerte, keine Hygienegrenzwerte */
+const RHY=[
+  {k:'saugen', n:'Stark genutzte Flächen saugen', d:3, why:'tiere'},
+  {k:'saugenAll', n:'Vollständiger Saugdurchgang', d:7, why:'tiere'},
+  {k:'staub', n:'Regale und Ablagen feucht abwischen', d:7, why:'tiere'},
+  {k:'bett', n:'Bettwäsche wechseln', d:14},
+  {k:'kueche', n:'Küchen-Innenbereiche', d:30},
+  {k:'auto', n:'Auto gründlich', d:30},
+  {k:'tier', n:'Decken, Näpfe und Tierspielzeug reinigen', d:7, why:'tiere'}
+];
+
+/* --- Zustand & Auswahl --- */
+function hausDone(day,id){ return !!(S.haus.done[day]||{})[id]; }
+window.hausTick=(id)=>{ const m=S.haus.done[DAY]=S.haus.done[DAY]||{};
+  m[id]=true; rotateStyle(); save(); render(); toast('Erledigt'); };
+window.hausSkip=(id)=>{ const m=S.haus.done[DAY]=S.haus.done[DAY]||{};
+  m[id]='skip'; rotateStyle(); save(); render(); };
+window.hausReopen=(id)=>{ const m=S.haus.done[DAY]||{}; delete m[id]; save(); render(); };
+
+/* Wählt den nächsten Schritt: genau einen. Maik soll nicht entscheiden müssen,
+   womit er anfängt — das ist der teuerste Schritt. */
+function hausNext(){
+  if(S.haus.rescue[DAY]){
+    const s=RESCUE.find(x=>!hausDone(DAY,x.id+'@'+DAY));
+    return s?{s, quelle:'Rettungsmodus', key:s.id+'@'+DAY}:null;
+  }
+  if(S.haus.reset.active){
+    const blk=RESET.find(b=>b.d===S.haus.reset.day);
+    if(blk){ const s=blk.steps.find(x=>!hausDone('reset',x.id));
+      if(s) return {s, quelle:'Grundreset Tag '+blk.d+' — '+blk.n, key:s.id, reset:true};
+    }
+  }
+  const z=S.haus.zone||'zimmer', Z=ZONE[z];
+  const budget=S.haus.size==='min'?3:S.haus.size==='catch'?30:10;
+  const s=Z.steps.find(x=>!hausDone(DAY,x.id) && !(x.opt && S.haus.size==='min') && x.min<=budget+6);
+  if(!s){ const any=Z.steps.find(x=>!hausDone(DAY,x.id)); if(any) return {s:any, quelle:Z.n, key:any.id}; return null; }
+  return {s, quelle:Z.n, key:s.id};
+}
+
+window.setHaus=(k,v)=>{ S.haus[k]=v; save(); render(); };
+window.hausRescue=()=>{ S.haus.rescue[DAY]=!S.haus.rescue[DAY]; save(); render(); };
+window.resetStart=()=>{ S.haus.reset.active=true; S.haus.reset.day=1; save(); render();
+  toast('Grundreset gestartet — Tag 1'); };
+window.resetNextDay=()=>{ if(S.haus.reset.day<3){ S.haus.reset.day++; }
+  else { S.haus.reset.active=false; S.haus.reset.fertig=todayISO(); toast('Grundreset abgeschlossen'); }
+  save(); render(); };
+window.resetStop=()=>{ S.haus.reset.active=false; save(); render(); };
+
+function rhyDue(k){ const last=S.haus.last[k]; const r=RHY.find(x=>x.k===k);
+  const d=(S.haus.rhythm[k]||r.d);
+  if(!last) return {due:true, tage:null, d};
+  const diff=Math.round((parseISO(todayISO())-parseISO(last))/864e5);
+  return {due:diff>=d, tage:diff, d}; }
+window.rhyDo=k=>{ S.haus.last[k]=todayISO(); save(); render(); toast('Notiert'); };
+
+/* --- Tipps: kurze Anleitung, alles Weitere freiwillig dahinter --- */
+const TIPP={
+  muell:{t:'Müll wirklich hinausbringen', brauch:'Ein Müllbeutel, feste Schuhe',
+    s:['Beutel aufziehen und in der Hand behalten','Einmal im Kreis durch den Raum, nur Müll',
+       'Beutel zubinden, sobald er halbvoll ist','Sofort zur Tonne — nicht in den Flur stellen'],
+    ende:'Kein Beutel steht mehr in der Wohnung.'},
+  pfand:{t:'Pfand ohne Zwischenschritte', brauch:'Eine feste Kiste am festen Platz',
+    s:['Alle Flaschen in die Kiste','Kiste sofort zur Tür oder ins Auto',
+       'Beim nächsten Einkauf mitnehmen — kein eigener Weg'],
+    ende:'Keine losen Flaschen mehr im Zimmer.'},
+  orte:{t:'Feste Plätze schaffen', brauch:'Vier Behälter, mehr nicht',
+    s:['Pfandkiste','Schmutzwäschekorb','Begrenzter Platz für saubere, noch nicht eingeräumte Kleidung',
+       'Genau eine „Platz finden“-Box','Alles ohne festen Platz kommt in die Box, nicht in eine neue Kiste'],
+    ende:'Für jede wiederkehrende Sache gibt es genau einen Ort.'},
+  flaechen:{t:'Flächen von oben nach unten', brauch:'Mikrofasertuch trocken, eins leicht feucht',
+    s:['Höchste Ablage zuerst','Erst trocken Staub abnehmen','Dann materialgerecht feucht nachwischen',
+       'Boden zuletzt — sonst liegt der Staub wieder darauf'],
+    ende:'Ablagen sind frei und staubfrei.'},
+  tv:{t:'Fernseher reinigen', brauch:'Weiches trockenes Mikrofasertuch',
+    s:['Gerät ausschalten, nach Möglichkeit vom Strom trennen','Trocken in geraden Bahnen wischen',
+       'Bei Bedarf Tuch minimal anfeuchten — nie das Gerät'],
+    ende:'Bild ist sauber, nichts ist nass geworden.',
+    safe:'Niemals Flüssigkeit direkt auf den Bildschirm sprühen. Die Anleitung deines Modells hat Vorrang.'},
+  boden:{t:'Boden', brauch:'Staubsauger',
+    s:['Boden komplett freimachen','Von der Zimmerecke zur Tür saugen',
+       'Nass wischen nur, wenn du das Bodenmaterial sicher kennst'],
+    ende:'Boden ist frei und gesaugt.',
+    safe:'Solange unklar ist, ob Echtholz, Parkett oder Laminat: nicht nass wischen. Wasser zieht in die Fugen.'},
+  schleife:{t:'Schleife schließen', brauch:'Nichts',
+    s:['Wo endet das, was du gesammelt hast? Tonne, Pfandplatz, Schrank, Korb',
+       'Den letzten Transportweg jetzt gehen','Wenn das nicht geht: einen kurzen eigenen Block dafür setzen'],
+    ende:'Nichts steht mehr „auf dem Weg nach draußen“ herum.'},
+  kuecheflaechen:{t:'Küche zurücksetzen', brauch:'Lappen, Spülmittel, geeigneter Reiniger',
+    s:['Alles von der Arbeitsfläche herunter','Krümel trocken abnehmen','Feucht nachwischen',
+       'Spüle zuletzt','Griffe und Schalter nicht vergessen'],
+    ende:'Arbeitsfläche und Spüle sind sofort wieder benutzbar.'},
+  hygiene:{t:'Nach rohen tierischen Lebensmitteln', brauch:'Heißes Wasser, Spülmittel, eigenes Tuch',
+    s:['Hände waschen','Brett, Messer und Geräte getrennt reinigen','Betroffene Fläche reinigen',
+       'Benutztes Tuch zum Trocknen aufhängen oder wechseln'],
+    ende:'Keine Kreuzkontamination auf andere Lebensmittel.',
+    safe:'Das ist der einzige Hygieneschritt in der Küche, der wirklich sicherheitsrelevant ist. Der Rest ist Ordnung, kein Risiko.'},
+  autoflaechen:{t:'Auto-Innenflächen', brauch:'Mikrofasertuch, mildes Reinigungsmittel',
+    s:['Armaturen und Griffe feucht abwischen','Lenkrad nur mit Wasser oder mildem Reiniger',
+       'Trocken nachwischen'],
+    ende:'Flächen sind sauber und griffig.',
+    safe:'Keine Pflege- oder Glanzmittel an Lenkrad, Schalthebel oder Pedale — die werden rutschig.'},
+  waesche:{t:'Wäsche sortieren', brauch:'Wäschekorb, Waschmittel',
+    s:['Pflegeetikett prüfen, Taschen leeren','Nach Farbe, Material und Temperatur trennen',
+       'Bei Unsicherheit gilt das empfindlichste Etikett','Dosieren nach Packungsangabe und Verschmutzung',
+       'Normale Buntwäsche gut auslasten, Feinwäsche weniger voll'],
+    ende:'Maschine läuft, Folgehinweis steht.',
+    safe:'Mehr Waschmittel macht Wäsche nicht sauberer. Für normal verschmutzte Wäsche reichen oft niedrige Temperaturen — Etikett und Hygienebedarf entscheiden.'},
+  falten:{t:'Falten oder verstauen', brauch:'Eine freie Fläche',
+    s:['Wäsche auf die Fläche, nach Kleidungsart in kleine Gruppen','Knitteranfälliges zuerst aufhängen',
+       'T-Shirts flach, Ärmel nach innen, kompakt falten','Hosen längs, zwei- oder dreifach',
+       'Socken paarweise, Unterwäsche in einen Behälter — nicht einzeln perfekt',
+       'Jede fertige Gruppe sofort einräumen'],
+    ende:'Nichts bleibt auf der Fläche liegen.'},
+  tiere:{t:'Tierhaare und Staub', brauch:'Staubsauger, feuchtes Tuch',
+    s:['Stark genutzte Flächen zweimal pro Woche kurz saugen','Einmal wöchentlich vollständig',
+       'Regale und Ablagen feucht abwischen — trocken wirbelt Haare auf',
+       'Decken, Näpfe und Spielzeug nach Herstellerhinweis reinigen',
+       'Tierfutter und verschmutzte Utensilien nicht auf Flächen für dein Essen'],
+    ende:'Keine sichtbaren Haarnester auf Boden und Ablagen.',
+    safe:'Das sind persönliche Startwerte bei zwei Hunden und einer Katze, keine medizinischen Grenzwerte. Bei Allergie oder Asthma gelten andere Frequenzen — das gehört zu deiner Ärztin, nicht in diese App.'},
+  einstieg:{t:'Wenn alles gleichzeitig unordentlich wirkt', brauch:'Nichts',
+    s:['Fünf Kategorien, mehr nicht: Müll, Geschirr, Wäsche, Dinge mit Platz, Dinge ohne Platz',
+       'Eine Kategorie komplett, dann die nächste','Erst eine sichtbare Startfläche freimachen — Bett, Tisch oder ein Stück Boden',
+       'Ein Behälter pro Schleife, keine wachsende Zahl Kisten'],
+    ende:'Du hast eine Arbeitsfläche und eine Reihenfolge.'},
+  wiedereinstieg:{t:'Nach mehreren ausgelassenen Tagen', brauch:'Nichts',
+    s:['Nichts nachholen','Nur heute: Müll, Flaschen, Geschirr','Der Rest ist gestrichen, nicht verschoben'],
+    ende:'Kein Rückstand — es gibt nur heute.'}
+};
+window.tipp=k=>{ const t=TIPP[k]; if(!t) return;
+  openSheet(`<h2>${t.t}</h2>
+    <div class="card tight" style="margin-bottom:10px"><div class="xs muted" style="margin-bottom:4px">Was du brauchst</div>
+      <div class="small">${t.brauch}</div></div>
+    <ol style="padding-left:20px;margin:0 0 14px;font-size:13.5px;line-height:1.75">
+      ${t.s.map(x=>`<li>${x}</li>`).join('')}</ol>
+    <div class="card tight" style="margin-bottom:10px"><div class="xs muted" style="margin-bottom:4px">Fertig ist, wenn</div>
+      <div class="small">${t.ende}</div></div>
+    ${t.safe?`<div class="warn">${t.safe}</div><div class="spacer"></div>`:''}
+    <button class="btn" onclick="closeSheet()">Zurück</button>`); };
+
+/* --- Ansicht --- */
+function vHaus(){
+  const nx=hausNext(), z=S.haus.zone||'zimmer', Z=ZONE[z];
+  const size=S.haus.size||'std';
+  const dueRhy=RHY.filter(r=>rhyDue(r.k).due);
+  let h='';
+
+  if(S.haus.rescue[DAY]){
+    h+=`<div class="card" style="border-color:var(--amber)">
+      <div class="small"><b>Rettungsmodus läuft.</b> Nur Müll, Flaschen, Geschirr, Wäsche und ein
+      freier Weg. Detailputzen ist bis morgen ausgeblendet.</div>
+      <div class="spacer"></div>
+      <button class="btn ghost sm" onclick="hausRescue()">Beenden</button></div>`;
+  }
+
+  if(nx){
+    const line=styleLine(nx.s.v);
+    h+=`<div class="now" style="--ph1:#2a2418;--ph2:#1a1d24;--phc:#f5b13d">
+      <div class="now-k">${esc(nx.quelle)} · ca. ${nx.s.min} min</div>
+      <div class="now-t">${esc(nx.s.t)}</div>
+      ${line?`<div class="now-s">${esc(line)}</div>`:''}
+      ${nx.s.safety?'<div class="now-s" style="color:var(--amber)">Sicherheitsschritt — Anleitung lesen</div>':''}
+    </div>
+    <div class="btnrow" style="margin-bottom:8px">
+      <button class="btn acc" onclick="${nx.reset?`resetTick('${nx.s.id}')`:`hausTick('${nx.key||nx.s.id}')`}">Erledigt</button>
+      <button class="btn" onclick="hausSkip('${nx.key||nx.s.id}')">Überspringen</button>
+    </div>
+    <div class="btnrow" style="margin-bottom:14px">
+      ${nx.s.tip?`<button class="btn ghost sm" onclick="tipp('${nx.s.tip}')">Wie mache ich das?</button>`:''}
+      <button class="btn ghost sm" onclick="setHaus('size','min')">Noch kleiner</button>
+      <button class="btn ghost sm" onclick="go('fokus')">Timer</button>
+    </div>`;
+  } else {
+    h+=`<div class="card tight" style="border-color:var(--acc)">
+      <div class="small"><b>${esc(Z.n)} ist für heute durch.</b> Nichts mehr offen — kein Nachholen.</div>
+      <div class="spacer"></div>
+      <button class="btn ghost sm" onclick="hausResetDay()">Von vorn beginnen</button></div>`;
+  }
+
+  h+=`<div class="card">
+    <h2>Zone</h2>
+    <div class="chips" style="margin-bottom:12px">
+      ${Object.entries(ZONE).map(([k,v])=>{
+        const off=v.steps.filter(s=>!hausDone(DAY,s.id)).length;
+        return `<button class="pill ${z===k?'on':''}" onclick="setHaus('zone','${k}')">
+          ${v.ico} ${v.n}${off?` <span class="mono" style="opacity:.7">${off}</span>`:' ✓'}</button>`;}).join('')}
+    </div>
+    <h2>Wie viel Zeit hast du wirklich?</h2>
+    <div class="chips">
+      <button class="pill ${size==='min'?'on':''}" onclick="setHaus('size','min')">2 Min — Minimum</button>
+      <button class="pill ${size==='std'?'on':''}" onclick="setHaus('size','std')">10 Min — Standard</button>
+      <button class="pill ${size==='catch'?'on':''}" onclick="setHaus('size','catch')">20–30 Min — Aufholen</button>
+    </div>
+    <div class="note">Eine leere Stelle im Kalender ist ein Vorschlag, kein Beweis für Energie.
+      Die App füllt keine freie Minute automatisch.</div>
+  </div>`;
+
+  if(!S.haus.rescue[DAY]) h+=`<div class="card tight">
+    <div class="row between"><span class="small muted">Überfordert?</span>
+      <button class="btn sm" onclick="hausRescue()">Rettungsmodus</button></div></div>`;
+
+  /* Grundreset */
+  if(S.haus.reset.active){
+    const blk=RESET.find(b=>b.d===S.haus.reset.day);
+    const done=blk.steps.filter(s=>hausDone('reset',s.id)).length;
+    h+=`<div class="card" style="border-color:var(--acc)">
+      <div class="row between" style="margin-bottom:8px">
+        <h2 style="margin:0">Grundreset · Tag ${blk.d}</h2>
+        <span class="xs muted mono">${done}/${blk.steps.length}</span></div>
+      <div class="xs muted" style="margin-bottom:10px">${esc(blk.n)}</div>
+      ${blk.steps.map(s=>`<div class="item" style="padding:7px 0">
+        <button class="tick ${hausDone('reset',s.id)?'on':''}" onclick="resetTick('${s.id}')">${hausDone('reset',s.id)?'&#10003;':''}</button>
+        <div class="g"><b style="font-weight:520;white-space:normal;font-size:14px">${esc(s.t)}</b>
+          <span>${s.min} min</span></div></div>`).join('')}
+      <div class="hr"></div>
+      <div class="btnrow">
+        <button class="btn sm ${done===blk.steps.length?'acc':''}" onclick="resetNextDay()">
+          ${blk.d<3?'Tag '+blk.d+' abschließen':'Grundreset abschließen'}</button>
+        <button class="btn sm ghost" onclick="resetStop()">Pausieren</button></div>
+      <div class="note">Nach jedem Abschnitt gibt es einen brauchbaren Stopp-Punkt. Wird ein Tag nicht
+        fertig, geht es am nächsten offenen Schritt weiter — nie wieder bei null.</div>
+    </div>`;
+  } else if(!S.haus.reset.fertig){
+    h+=`<div class="card">
+      <h2>Einmaliger Grundreset</h2>
+      <div class="small muted" style="margin-bottom:11px">Drei Tage, danach nur noch Erhaltung.
+        Funktionsrettung, dann Zimmer und Küche, dann Auto und Abschluss. Startet danach nie
+        automatisch neu.</div>
+      <button class="btn" onclick="resetStart()">Grundreset starten</button></div>`;
+  }
+
+  /* Rhythmen */
+  h+=`<div class="card">
+    <h2>Rhythmen${dueRhy.length?` · ${dueRhy.length} fällig`:''}</h2>
+    ${RHY.map(r=>{const st=rhyDue(r.k);
+      return `<div class="item"><div class="g"><b style="font-weight:520;white-space:normal;font-size:14px">${esc(r.n)}</b>
+        <span>alle ${st.d} Tage${st.tage!=null?` · zuletzt vor ${st.tage} Tagen`:' · noch nie erfasst'}</span></div>
+        ${r.why?`<button class="qm" onclick="tipp('${r.why}')">?</button>`:''}
+        <button class="btn sm ${st.due?'acc':'ghost'}" onclick="rhyDo('${r.k}')">${st.due?'Fällig':'Erledigt'}</button>
+      </div>`;}).join('')}
+    <div class="note">Persönliche Startwerte bei zwei Hunden und einer Katze. Frei änderbar,
+      und sichtbarer Bedarf schlägt jeden Rhythmus.</div>
+  </div>`;
+
+  /* Feste Orte */
+  h+=`<div class="card">
+    <h2>Feste Orte</h2>
+    <div class="small muted" style="margin-bottom:11px">Vier Behälter, mehr nicht. Alles ohne festen
+      Platz kommt in genau eine Box — nicht in eine neue Kiste.</div>
+    ${[['pfand','Pfand und Flaschen'],['waesche','Schmutzwäschekorb'],
+       ['clean','Saubere, noch nicht eingeräumte Kleidung'],['box','„Platz finden“-Box']]
+      .map(([k,l])=>`<label class="f"><span>${l}</span>
+        <input type="text" value="${esc(S.haus.orte[k]||'')}" placeholder="Wo steht das?"
+          onchange="S.haus.orte['${k}']=this.value;save()"></label>`).join('')}
+  </div>`;
+
+  /* Gut genug */
+  h+=`<div class="card">
+    <h2>„Gut genug“</h2>
+    <div class="small muted" style="line-height:1.7">
+      <b>Zimmer:</b> Wege frei, Müll und Flaschen am Platz, schmutzige Wäsche im Korb.<br>
+      <b>Küche:</b> Geschirr im Spülprozess, Arbeitsfläche und Spüle benutzbar, keine sichtbaren Reste.<br>
+      <b>Auto:</b> Müll raus, Fahrerbereich und Sicht frei, persönliche Dinge mitgenommen.</div>
+    <div class="note">Das ist der Erhaltungsstandard, nicht der Grundreset. Alles darüber ist freiwillig.</div>
+  </div>`;
+
+  h+=`<div class="card">
+    <h2>Tipps &amp; Anleitungen</h2>
+    <div class="chips">${Object.entries(TIPP).map(([k,t])=>
+      `<button class="pill" onclick="tipp('${k}')">${esc(t.t)}</button>`).join('')}</div>
+  </div>`;
+
+  h+=`<div class="card tight">${evTag('C')}
+    <div class="small muted" style="margin-top:8px">Fachkonsens der Ergotherapie und Routinenforschung
+      stützen Umgebungsanpassung, Anker und kleine Schritte. Kontrollierte Studien zum Sauberhalten
+      von Küche, Zimmer und Auto bei Erwachsenen mit ADHS gibt es nicht. Das hier ist ein persönliches
+      Experiment mit Ergebnismaß, keine belegte Methode.</div></div>
+  <div style="height:20px"></div>`;
+  return h;
+}
+window.resetTick=id=>{ const m=S.haus.done['reset']=S.haus.done['reset']||{};
+  m[id]=!m[id]; save(); render(); };
+window.hausResetDay=()=>{ const z=S.haus.zone||'zimmer';
+  const m=S.haus.done[DAY]||{}; ZONE[z].steps.forEach(s=>delete m[s.id]); save(); render(); };
+
+/* =========================================================================
+   EINGANG — universelle Erfassung, von jeder Seite in unter zehn Sekunden
+   ========================================================================= */
+window.quick=()=>{ openSheet(`<h2>Schnell rein</h2>
+  <div class="small muted" style="margin-bottom:11px">Nur festhalten. Sortiert wird später —
+    sonst geht der Gedanke beim Sortieren verloren.</div>
+  <label class="f"><input type="text" id="qIn" placeholder="Was ist dir eingefallen?" autofocus></label>
+  <button class="btn acc" onclick="addInbox()">Merken</button>
+  <div class="spacer"></div>
+  <button class="btn ghost sm" onclick="go('inbox')">Eingang öffnen (${S.inbox.length})</button>`);
+  setTimeout(()=>{const e=document.getElementById('qIn'); if(e) e.focus();},250); };
+window.addInbox=()=>{ const v=document.getElementById('qIn').value.trim();
+  if(!v) return closeSheet();
+  S.inbox.unshift({id:uid(), t:v, ts:Date.now()}); save(); closeSheet(); render(); toast('Gemerkt'); };
+window.inboxDel=id=>{ S.inbox=S.inbox.filter(x=>x.id!==id); save(); render(); };
+window.inboxToTask=id=>{ const it=S.inbox.find(x=>x.id===id); if(!it) return;
+  const t=S.adhs.tasks[DAY]=S.adhs.tasks[DAY]||[];
+  if(t.length>=3) return toast('Schon drei Aufgaben — erst eine abschließen');
+  t.push({t:it.t, first:'', slot:'vor', done:false});
+  S.inbox=S.inbox.filter(x=>x.id!==id); save(); render(); toast('Als Aufgabe übernommen'); };
+
+function vInbox(){
+  return `<div class="card">
+    <h2>Eingang</h2>
+    <div class="small muted" style="margin-bottom:12px">Alles, was du unterwegs festgehalten hast.
+      Nichts hier drin ist terminiert — das ist der Punkt.</div>
+    <button class="btn acc" onclick="quick()">Etwas festhalten</button></div>
+  ${S.inbox.length?`<div class="card">
+    ${S.inbox.map(it=>`<div class="item">
+      <div class="g"><b style="font-weight:520;white-space:normal">${esc(it.t)}</b>
+        <span>${human(iso(new Date(it.ts)))}</span></div>
+      <button class="btn sm" onclick="inboxToTask('${it.id}')">→ Aufgabe</button>
+      <button class="x" onclick="inboxDel('${it.id}')">✕</button></div>`).join('')}
+  </div>`:`<div class="empty">Nichts im Eingang.</div>`}
+  <div style="height:20px"></div>`;
+}
+
+/* =========================================================================
+   FOKUS — Timer, Ablenkungsparkplatz, stilles Body Doubling
+   Body Doubling ist Evidenzstufe C/D: eine Befragungs- und Designstudie mit
+   220 neurodivergenten Teilnehmenden, kein Wirksamkeits-RCT.
+   ========================================================================= */
+let TIMER=null, TEND=0, TLAB='';
+window.startFocus=(min,lab)=>{
+  TEND=Date.now()+min*60000; TLAB=lab||'Fokus';
+  clearInterval(TIMER); TIMER=setInterval(tickFocus,1000); tickFocus();
+  openSheet(focusSheet());
+};
+function tickFocus(){
+  const el=document.getElementById('fClock'); if(!el){ return; }
+  const left=Math.max(0,TEND-Date.now());
+  el.textContent=pad(Math.floor(left/60000))+':'+pad(Math.floor(left/1000)%60);
+  if(left<=0){ clearInterval(TIMER); TIMER=null;
+    el.textContent='00:00';
+    const b=document.getElementById('fEnd'); if(b) b.style.display='block'; }
+}
+function focusSheet(){
+  const bd=S.fokus.bd||'still';
+  return `<h2>${esc(TLAB)}</h2>
+  <div class="clock" id="fClock">--:--</div>
+  <div class="xs muted" style="text-align:center;margin-bottom:14px">
+    ${bd==='still'?'Stille Begleitung — kein Ton, keine Unterbrechung.'
+      :bd==='check'?'Kurze Check-ins am Anfang und am Ende.':'Nur der Timer.'}</div>
+  <label class="f"><span>Ablenkungsparkplatz — Gedanke rein, ohne aufzuhören</span>
+    <input type="text" id="fPark" placeholder="Waschmittel kaufen…"
+      onkeydown="if(event.key==='Enter')park()"></label>
+  <button class="btn" onclick="park()">Parken</button>
+  ${S.fokus.park.length?`<div class="card tight" style="margin-top:12px">
+    <div class="xs muted" style="margin-bottom:6px">Geparkt (${S.fokus.park.length})</div>
+    ${S.fokus.park.map(p=>`<div class="small" style="padding:3px 0">· ${esc(p.t)}</div>`).join('')}
+  </div>`:''}
+  <div class="spacer"></div>
+  <div id="fEnd" style="display:none">
+    <div class="btnrow">
+      <button class="btn acc" onclick="endFocus('done')">Fertig</button>
+      <button class="btn" onclick="endFocus('part')">Teilweise</button>
+      <button class="btn ghost" onclick="endFocus('other')">Anders gelaufen</button></div>
+    <div class="note">„Teilweise“ zählt als Fortschritt. Es gibt hier keine Serie, die kaputtgehen kann.</div>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn ghost sm" onclick="stopFocus()">Abbrechen</button>`;
+}
+window.park=()=>{ const e=document.getElementById('fPark'); const v=e.value.trim();
+  if(!v) return; S.fokus.park.push({t:v, ts:Date.now()}); save(); e.value='';
+  document.getElementById('sheetBody').innerHTML=focusSheet(); tickFocus(); toast('Geparkt'); };
+window.stopFocus=()=>{ clearInterval(TIMER); TIMER=null; closeSheet(); render(); };
+window.endFocus=st=>{ clearInterval(TIMER); TIMER=null;
+  S.fokus.log.push({d:DAY, lab:TLAB, st, ts:Date.now()}); save(); closeSheet(); render();
+  toast(st==='done'?'Notiert':'Zählt trotzdem'); };
+window.parkClear=()=>{ S.fokus.park=[]; save(); render(); };
+window.parkToInbox=()=>{ S.fokus.park.forEach(p=>S.inbox.unshift({id:uid(),t:p.t,ts:p.ts}));
+  S.fokus.park=[]; save(); render(); toast('In den Eingang verschoben'); };
+
+function vFokus(){
+  const heute=S.fokus.log.filter(x=>x.d===DAY);
+  return `<div class="card">
+    <h2>Starten</h2>
+    <div class="small muted" style="margin-bottom:12px">Zwei Minuten reichen zum Anfangen.
+      Es gibt keine richtige Blocklänge — nur eine, die du wirklich startest.</div>
+    <div class="grid3" style="margin-bottom:9px">
+      <button class="btn sm" onclick="startFocus(2,'Zwei Minuten')">2 min</button>
+      <button class="btn sm" onclick="startFocus(10,'Zehn Minuten')">10 min</button>
+      <button class="btn sm" onclick="startFocus(25,'Fokusblock')">25 min</button>
+    </div>
+    <div class="grid3">
+      <button class="btn sm ghost" onclick="startFocus(5,'Fünf Minuten')">5 min</button>
+      <button class="btn sm ghost" onclick="startFocus(15,'Fünfzehn Minuten')">15 min</button>
+      <button class="btn sm ghost" onclick="startFocus(45,'Langer Block')">45 min</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Begleitung ${Q('bodydoubling')}</h2>
+    <div class="chips">
+      ${[['still','Still'],['check','Kurze Check-ins'],['solo','Nur Timer']].map(([k,l])=>
+        `<button class="pill ${(S.fokus.bd||'still')===k?'on':''}" onclick="S.fokus.bd='${k}';save();render()">${l}</button>`).join('')}
+    </div>
+    <div class="note">Kein Video, keine Suche, kein Feed. Die Suche nach dem richtigen Begleitvideo
+      ist selbst die Ablenkung — deshalb startet das hier sofort und ohne Auswahl.
+      Eine echte Person ist bewusst nicht vorgesehen.</div>
+  </div>
+
+  ${S.fokus.park.length?`<div class="card">
+    <h2>Ablenkungsparkplatz (${S.fokus.park.length})</h2>
+    ${S.fokus.park.map(p=>`<div class="item"><div class="g">
+      <b style="font-weight:520;white-space:normal">${esc(p.t)}</b></div></div>`).join('')}
+    <div class="hr"></div>
+    <div class="btnrow">
+      <button class="btn sm" onclick="parkToInbox()">In den Eingang</button>
+      <button class="btn sm ghost" onclick="parkClear()">Leeren</button></div>
+  </div>`:''}
+
+  ${heute.length?`<div class="card"><h2>Heute</h2>
+    ${heute.map(x=>`<div class="item"><div class="g"><b style="font-weight:520">${esc(x.lab)}</b>
+      <span>${x.st==='done'?'fertig':x.st==='part'?'teilweise':'anders gelaufen'}</span></div></div>`).join('')}
+  </div>`:''}
+  <div style="height:20px"></div>`;
+}
+
+/* =========================================================================
+   WERKZEUGKASTEN — Situationskarten. Keine Skalen, keine Diagnostik.
+   ========================================================================= */
+const TOOLS=[
+  {id:'gang', t:'Ich komme nicht in Gang', ico:'🧊', s:[
+    'Aufgabe laut benennen. Nur den Namen, nicht den Plan.',
+    'Zwei Minuten stellen und den kleinsten sichtbaren Handgriff machen — Beutel aufziehen, Datei öffnen, Schuhe anziehen.',
+    'Fünf Sekunden vorstellen, wie es aussieht, wenn es fertig ist. Nicht der Weg dahin, das Ergebnis.'],
+  why:'efuture'},
+  {id:'ueber', t:'Ich bin überdreht', ico:'⚡', s:[
+    'Raus aus dem Raum, in dem es passiert ist. Auch nur bis zur Tür.',
+    'Etwas Körperliches mit Gegendruck: Treppe, Liegestütze an der Wand, kaltes Wasser über die Hände.',
+    'Danach eine einzige Sache aufschreiben, die du als Nächstes tust. Nicht drei.']},
+  {id:'drei', t:'Drei Sachen offen, ich mache keine', ico:'🌀', s:[
+    'Alle drei aufschreiben. Sichtbar, nicht im Kopf.',
+    'Zwei davon streichen. Wirklich streichen — nicht „später“.',
+    'Von der übrigen nur den ersten Handgriff machen.',
+    'Die gestrichenen kommen in den Eingang, nicht in die Tagesliste.']},
+  {id:'spiel', t:'Ich verliere im Spiel den Faden', ico:'🤾', s:[
+    'Eine Aufgabe pro Angriff, nicht das ganze Spielbild: Wer ist dein Gegenspieler, wo ist der Kreis.',
+    'Nach jedem Wechsel ein fester Satz an dich selbst — immer derselbe.',
+    'Am Seitenrand nichts analysieren. Nur trinken, atmen, den nächsten Auftrag holen.'],
+  note:'Das ist eine Aufmerksamkeitshilfe für dich, kein Taktikersatz.'},
+  {id:'abend', t:'Es ist spät und ich komme nicht ins Bett', ico:'🌙', s:[
+    'Bildschirm aus der Hand legen, nicht aus dem Zimmer tragen — der Weg ist die Ausrede.',
+    'Nur den ersten Schritt der Abendroutine, den Rest streichen.',
+    'Wenn du wach bleibst: nichts Neues anfangen, was länger als zehn Minuten dauert.']},
+  {id:'zurueck', t:'Ich war Tage raus', ico:'↩️', s:[
+    'Nichts nachholen. Der Rückstand ist gestrichen, nicht verschoben.',
+    'Nur heute: Tages-Check, ein Essensfenster, ein Handgriff im Haushalt.',
+    'Morgen entscheidest du neu.'],
+  why:'streak'}
+];
+function vTools(){
+  return `<div class="card tight">
+    <div class="small muted">Vier bis sechs Handgriffe pro Situation. Keine Symptomskalen, keine
+      Diagnostik, keine Medikationshinweise — das gehört zu deiner Psychiaterin.</div></div>
+  ${TOOLS.map(t=>`<div class="card">
+    <div class="row between" style="margin-bottom:8px">
+      <h2 style="margin:0">${t.ico} ${esc(t.t)}</h2>${t.why?Q(t.why):''}</div>
+    <ol style="padding-left:19px;margin:0;font-size:13.5px;line-height:1.7">
+      ${t.s.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
+    ${t.note?`<div class="note">${esc(t.note)}</div>`:''}
+    <div class="spacer"></div>
+    <button class="btn sm ghost" onclick="startFocus(2,'${esc(t.t)}')">Zwei Minuten starten</button>
+  </div>`).join('')}
+  <div style="height:20px"></div>`;
+}
+
+/* =========================================================================
+   MEDIKAMENTE — Dokumentation und Vorbereitung eines Fachgesprächs.
+   Die App ändert nie eine Dosis, empfiehlt nie einen Wechsel und erfindet
+   nach einer vergessenen Einnahme keine Anweisung.
+   ========================================================================= */
+const MED_DEF=[
+  {id:'elv', n:'Elvanse', wirk:'Lisdexamfetamin', zeit:'08:15', stock:0, pack:30, puffer:7},
+  {id:'esc', n:'Escitalopram', wirk:'Escitalopram', zeit:'08:15', stock:0, pack:30, puffer:7}
+];
+function meds(){ if(!S.med.items){ S.med.items=structuredClone(MED_DEF); save(); } return S.med.items; }
+const medTaken=(d,id)=>!!(S.med.taken[d]||{})[id];
+window.medTick=id=>{ const m=S.med.taken[DAY]=S.med.taken[DAY]||{};
+  if(m[id]){ delete m[id]; } else { m[id]=new Date().toTimeString().slice(0,5);
+    const it=meds().find(x=>x.id===id); if(it && it.stock>0) it.stock--; }
+  save(); render(); };
+window.medSet=(id,k,v)=>{ const it=meds().find(x=>x.id===id); if(!it) return;
+  it[k]=(k==='stock'||k==='pack'||k==='puffer')?parseInt(v||0,10):v;
+  if(k==='stock') it.erfasst=true;
+  save(); render(); };
+window.medRefill=id=>{ const it=meds().find(x=>x.id===id); if(!it) return;
+  it.stock=(it.stock||0)+(it.pack||30); it.erfasst=true;
+  save(); render(); toast('Packung gebucht'); };
+
+/* Reichweite in Tagen; Nachfüllpuffer statt Alarm am letzten Tag.
+   Ein nie erfasster Bestand ist kein Notfall — eine Warnung, die falsch losgeht,
+   wird als erste ignoriert und nimmt allen echten Warnungen die Wirkung. */
+function medRange(it){ const s=it.stock||0;
+  return {tage:s, unbekannt:s===0 && !it.erfasst, warn: s>0 && s<=(it.puffer||7)}; }
+
+function vMed(){
+  const M=meds();
+  const lastW=S.med.week[S.med.week.length-1];
+  const lastB=S.med.biweek[S.med.biweek.length-1];
+  const dW=lastW?Math.round((parseISO(todayISO())-parseISO(lastW.d))/864e5):null;
+  const dB=lastB?Math.round((parseISO(todayISO())-parseISO(lastB.d))/864e5):null;
+  let h='';
+
+  if(!S.med.seenSafety){
+    h+=`<div class="card" style="border-color:var(--amber)">
+      <h2 style="color:var(--amber)">Einmalige Sicherheitsinformation</h2>
+      <div class="small" style="line-height:1.7;margin-bottom:11px">
+        Escitalopram wirkt serotonerg. Die Fachinformation von Lisdexamfetamin nennt bei
+        gleichzeitiger Gabe serotonerger Arzneimittel ein erhöhtes Risiko für ein Serotoninsyndrom.
+        <b>Das heißt nicht, dass deine verordnete Kombination falsch ist</b> — sie ist ärztlich
+        gewählt und wird ärztlich überwacht. Es heißt, dass du wissen solltest, worauf zu achten ist.
+        <br><br>Anzeichen, die nicht auf den Wochenbericht warten: plötzliche Unruhe oder Verwirrtheit,
+        Muskelzucken oder -steifigkeit, starkes Schwitzen, Fieber, Herzrasen, Durchfall, Zittern.
+        Dann ärztliche Hilfe — nicht diese App.</div>
+      <button class="btn" onclick="S.med.seenSafety=true;save();render()">Gelesen</button>
+      <div class="note">Quelle: Fachinformation Lisdexamfetamin und Escitalopram. Diese App
+        bewertet deine Kombination nicht und fordert nie zum Absetzen auf.</div></div>`;
+  }
+
+  h+=`<div class="card">
+    <h2>Heute</h2>
+    ${M.map(it=>{const t=medTaken(DAY,it.id); const r=medRange(it);
+      return `<div class="item">
+        <button class="tick ${t?'on':''}" onclick="medTick('${it.id}')">${t?'&#10003;':''}</button>
+        <div class="g"><b>${esc(it.n)}</b>
+          <span>geplant ${esc(it.zeit)}${t?' · genommen '+esc((S.med.taken[DAY]||{})[it.id]):''}</span></div>
+        <div class="v" style="${r.warn?'color:var(--amber)':r.unbekannt?'color:var(--dim);font-weight:400;font-size:12px':''}">${r.unbekannt?'Bestand?':r.tage+' Tage'}</div>
+      </div>`;}).join('')}
+    <div class="note">Wenn eine Einnahme ausgefallen ist, sagt diese App bewusst nichts dazu.
+      Was dann gilt, steht in deiner Packungsinformation oder kommt von deiner Ärztin —
+      keine eigenmächtige Doppel- oder Ersatzdosis.</div>
+  </div>`;
+
+  M.forEach(it=>{ const r=medRange(it);
+    h+=`<div class="card">
+      <div class="row between" style="margin-bottom:8px">
+        <h2 style="margin:0">${esc(it.n)}</h2>
+        ${r.warn?`<span class="tag" style="background:#33210f;color:#fcd34d">nachfüllen</span>`:''}</div>
+      <div class="inline">
+        <label class="f"><span>Bestand (Tage)</span>
+          <input type="number" value="${it.stock||0}" onchange="medSet('${it.id}','stock',this.value)"></label>
+        <label class="f"><span>Packung</span>
+          <input type="number" value="${it.pack||30}" onchange="medSet('${it.id}','pack',this.value)"></label>
+        <label class="f"><span>Puffer</span>
+          <input type="number" value="${it.puffer||7}" onchange="medSet('${it.id}','puffer',this.value)"></label>
+      </div>
+      <label class="f"><span>Geplante Einnahmezeit</span>
+        <input type="time" value="${esc(it.zeit)}" onchange="medSet('${it.id}','zeit',this.value)"></label>
+      <button class="btn sm" onclick="medRefill('${it.id}')">Packung erhalten (+${it.pack||30})</button>
+      ${r.warn?`<div class="warn">Noch ${r.tage} Tage. Rezept jetzt anstoßen, nicht am letzten Tag —
+        der Puffer ist genau dafür da.</div>`
+       :r.unbekannt?`<div class="note">Bestand noch nicht erfasst. Trag einmal ein, für wie viele
+        Tage die Packung reicht — danach zählt die App selbst herunter.</div>`:''}
+    </div>`;
+  });
+
+  h+=`<div class="card">
+    <h2>Rückblick</h2>
+    <div class="item"><div class="g"><b>Wochencheck</b>
+      <span>1–2 Minuten${dW!=null?` · zuletzt vor ${dW} Tagen`:' · noch nie'}</span></div>
+      <button class="btn sm ${dW==null||dW>=7?'acc':''}" onclick="openSheet(medWeekSheet())">Starten</button></div>
+    <div class="item"><div class="g"><b>Zwei-Wochen-Rückblick</b>
+      <span>3–5 Minuten${dB!=null?` · zuletzt vor ${dB} Tagen`:' · noch nie'}</span></div>
+      <button class="btn sm ${dB==null||dB>=14?'acc':''}" onclick="openSheet(medBiSheet())">Starten</button></div>
+    <div class="note">Zwei Ebenen statt täglicher Befragung. Tägliches Abfragen von Wirkung und
+      Nebenwirkung erzeugt selbst Belastung und liefert nicht mehr Information.</div>
+  </div>`;
+
+  if(S.med.week.length){
+    h+=`<div class="card"><h2>Letzte Wochenchecks</h2>
+      ${S.med.week.slice(-6).reverse().map(w=>`<div class="item"><div class="g">
+        <b style="font-weight:520">${human(w.d)}</b>
+        <span>${w.aus>0?w.aus+' Auslassungen · ':''}Wirkung ${esc(w.wirkung||'—')} · Schlaf ${esc(w.schlaf||'—')}</span></div>
+        ${w.neben?`<span class="tag">Nebenwirkung</span>`:''}</div>`).join('')}
+    </div>`;
+  }
+  if(S.med.biweek.length){
+    const b=S.med.biweek[S.med.biweek.length-1];
+    h+=`<div class="card"><h2>Fürs nächste Gespräch</h2>
+      <div class="small muted" style="line-height:1.7">${esc(b.fragen||'Keine offenen Fragen notiert.')}</div>
+      <div class="spacer"></div>
+      <button class="btn sm" onclick="medBericht()">Zusammenfassung anzeigen</button>
+      <div class="note">Bleibt auf deinem Bildschirm. Wird nicht verschickt und nicht freigegeben —
+        du zeigst sie selbst, wenn du willst.</div></div>`;
+  }
+
+  h+=`<div class="card tight">${evTag('A')}
+    <div class="small muted" style="margin-top:8px">NICE NG87 und NG222 stützen strukturiertes
+      Monitoring von Wirkung, Nebenwirkungen, Schlaf, Gewicht und Adhärenz. Sie stützen nicht,
+      dass eine App daraus eine Behandlungsentscheidung ableitet. Diese Seite dokumentiert und
+      bereitet vor — mehr nicht.</div></div>
+  <div style="height:20px"></div>`;
+  return h;
+}
+
+function medWeekSheet(){
+  return `<h2>Wochencheck</h2>
+  <div class="small muted" style="margin-bottom:12px">Fünf Fragen. Was die App schon weiß, ist
+    vorausgefüllt.</div>
+  <label class="f"><span>Ausgelassene Einnahmen diese Woche</span>
+    <input type="number" id="mwAus" value="0"></label>
+  <label class="f"><span>Wirkung auffällig verändert?</span>
+    <select id="mwWirk">
+      <option value="wie sonst">wie sonst</option>
+      <option value="schwächer">schwächer</option>
+      <option value="stärker">stärker</option>
+      <option value="unregelmäßig">unregelmäßig</option>
+    </select></label>
+  <label class="f"><span>Wichtige Nebenwirkung aufgetreten?</span>
+    <input type="text" id="mwNeb" placeholder="leer lassen, wenn nein"></label>
+  <label class="f"><span>Stimmung und Schlaf</span>
+    <select id="mwSchlaf">
+      <option value="unauffällig">unauffällig</option>
+      <option value="Schlaf schlechter">Schlaf schlechter</option>
+      <option value="Stimmung tiefer">Stimmung tiefer</option>
+      <option value="beides">beides</option>
+    </select></label>
+  <label class="f"><span>Bestand reicht bis</span>
+    <input type="text" id="mwBest" placeholder="z. B. Ende September"></label>
+  <button class="btn acc" onclick="saveMedWeek()">Speichern</button>`;
+}
+window.saveMedWeek=()=>{
+  S.med.week.push({d:todayISO(),
+    aus:parseInt(document.getElementById('mwAus').value||0,10),
+    wirkung:document.getElementById('mwWirk').value,
+    neben:document.getElementById('mwNeb').value.trim(),
+    schlaf:document.getElementById('mwSchlaf').value,
+    bestand:document.getElementById('mwBest').value.trim()});
+  save(); closeSheet(); render(); toast('Wochencheck gespeichert'); };
+
+function medBiSheet(){
+  return `<h2>Zwei-Wochen-Rückblick</h2>
+  <div class="small muted" style="margin-bottom:12px">Nicht „geht es besser?“, sondern: in welchen
+    konkreten Lebensbereichen. Das ist die Frage, die im Gespräch weiterhilft.</div>
+  <label class="f"><span>Wo hat es im Alltag konkret geholfen?</span>
+    <textarea id="mbNutz" rows="2" placeholder="Studium, Haushalt, Training, Gespräche…"></textarea></label>
+  <label class="f"><span>Wirkdauer im Tagesverlauf</span>
+    <select id="mbDauer">
+      <option value="trägt bis abends">trägt bis abends</option>
+      <option value="lässt nachmittags nach">lässt nachmittags nach</option>
+      <option value="lässt früh nach">lässt früh nach</option>
+      <option value="unregelmäßig">unregelmäßig</option>
+    </select></label>
+  <label class="f"><span>Schlaf</span><input type="text" id="mbSchlaf"></label>
+  <label class="f"><span>Appetit und Gewicht</span><input type="text" id="mbApp"></label>
+  <label class="f"><span>Stimmung</span><input type="text" id="mbStim"></label>
+  <label class="f"><span>Unruhe oder Angst</span><input type="text" id="mbUnruh"></label>
+  <label class="f"><span>Körperliche Auffälligkeiten</span><input type="text" id="mbKoerp"></label>
+  <label class="f"><span>Offene Fragen fürs nächste Gespräch</span>
+    <textarea id="mbFragen" rows="3"></textarea></label>
+  <button class="btn acc" onclick="saveMedBi()">Speichern</button>
+  <div class="note">Diese App leitet daraus keine Dosis- oder Wechselentscheidung ab. Sie sammelt,
+    was du sonst im Termin vergisst.</div>`;
+}
+window.saveMedBi=()=>{
+  const g=id=>document.getElementById(id).value.trim();
+  S.med.biweek.push({d:todayISO(), nutzen:g('mbNutz'), dauer:document.getElementById('mbDauer').value,
+    schlaf:g('mbSchlaf'), appetit:g('mbApp'), stimmung:g('mbStim'), unruhe:g('mbUnruh'),
+    koerper:g('mbKoerp'), fragen:g('mbFragen')});
+  save(); closeSheet(); render(); toast('Rückblick gespeichert'); };
+
+window.medBericht=()=>{
+  const b=S.med.biweek.slice(-3), w=S.med.week.slice(-6);
+  const txt=['Medikamenten-Verlauf — '+human(todayISO()),'',
+    'Wochenchecks:',...w.map(x=>`  ${x.d}: ${x.aus} Auslassungen, Wirkung ${x.wirkung}, ${x.schlaf}${x.neben?', Nebenwirkung: '+x.neben:''}`),
+    '','Zwei-Wochen-Rückblicke:',
+    ...b.map(x=>`  ${x.d}: Nutzen ${x.nutzen||'—'} | Wirkdauer ${x.dauer} | Schlaf ${x.schlaf||'—'} | Appetit ${x.appetit||'—'} | Stimmung ${x.stimmung||'—'}${x.fragen?'\n     Fragen: '+x.fragen:''}`)
+  ].join('\n');
+  openSheet(`<h2>Zusammenfassung</h2>
+    <textarea rows="14" readonly style="font-size:12.5px;line-height:1.6">${esc(txt)}</textarea>
+    <div class="spacer"></div>
+    <button class="btn" onclick="copyTxt(this)" data-t="${esc(txt)}">Kopieren</button>
+    <div class="note">Nur für dich und dein Fachgespräch. Nichts davon verlässt dieses Gerät.</div>`);
+};
+window.copyTxt=b=>{ navigator.clipboard.writeText(b.dataset.t).then(()=>toast('Kopiert'))
+  .catch(()=>toast('Kopieren nicht möglich — markieren und kopieren')); };
+
+/* =========================================================================
+   FINANZEN — Entscheidungshilfe, keine Buchhaltung und kein Bankzugang.
+   Die App löst keine Überweisung aus und empfiehlt kein Produkt.
+   ========================================================================= */
+window.finSet=(k,v)=>{ S.fin[k]=parseFloat(v)||0; save(); render(); };
+window.kontoAdd=()=>{ S.fin.konten.push({id:uid(), n:'Neuer Topf', betrag:0, typ:'giro'});
+  save(); render(); };
+window.kontoSet=(id,k,v)=>{ const c=S.fin.konten.find(x=>x.id===id); if(!c) return;
+  c[k]=k==='betrag'?(parseFloat(v)||0):v; save(); };
+window.kontoDel=id=>{ S.fin.konten=S.fin.konten.filter(x=>x.id!==id); save(); render(); };
+
+/* Impulskauf-Check: die 40-Euro- und 21-Uhr-Regeln sind persönliche
+   Schutzregeln, keine klinischen Normwerte. */
+window.kaufCheck=()=>openSheet(kaufSheet());
+function kaufSheet(){
+  return `<h2>Kurz prüfen</h2>
+  <label class="f"><span>Was?</span><input type="text" id="kN" autofocus></label>
+  <label class="f"><span>Preis (€)</span><input type="number" step="0.01" id="kP"></label>
+  <label class="f"><span>Geplant gewesen?</span>
+    <select id="kG"><option value="0">nein, spontan</option><option value="1">ja, stand schon fest</option></select></label>
+  <button class="btn acc" onclick="kaufEval()">Prüfen</button>`;
+}
+window.kaufEval=()=>{
+  const n=document.getElementById('kN').value.trim()||'Kauf';
+  const p=parseFloat(document.getElementById('kP').value)||0;
+  const geplant=document.getElementById('kG').value==='1';
+  const h=new Date().getHours();
+  const nacht=h>=(S.fin.nightFrom||21)||h<5;
+  const gross=p>=(S.fin.limit||40);
+  const stop=!geplant&&(gross||nacht);
+  let gruende=[];
+  if(!geplant&&gross) gruende.push(`Über deiner Grenze von ${S.fin.limit||40} €, und nicht geplant.`);
+  if(!geplant&&nacht) gruende.push(`Nach ${S.fin.nightFrom||21} Uhr — deine Regel sagt: heute nichts Ungeplantes.`);
+  openSheet(`<h2>${esc(n)}${p?` · ${r1(p)} €`:''}</h2>
+  ${stop?`<div class="card" style="border-color:var(--amber);margin-bottom:12px">
+      <div class="small" style="line-height:1.7">${gruende.map(g=>'· '+esc(g)).join('<br>')}
+      <br><br><b>Vorschlag:</b> Foto oder Barcode speichern, Warenkorb oder Geschäft jetzt verlassen.
+      Morgen steht es auf der Wunschliste, und du entscheidest ohne den Moment.</div></div>
+    <button class="btn acc" onclick="wishAdd('${esc(n).replace(/'/g,'')}',${p})">Auf die Wunschliste, 24 Stunden</button>
+    <div class="spacer"></div>
+    <button class="btn ghost" onclick="kaufLog('${esc(n).replace(/'/g,'')}',${p},'trotzdem')">Ich kaufe es trotzdem</button>`
+   :`<div class="card tight" style="border-color:var(--acc);margin-bottom:12px">
+      <div class="small">${geplant?'Das stand fest. Keine Reibung nötig.':'Unter deiner Grenze und nicht spät. Passt.'}</div></div>
+    <button class="btn acc" onclick="kaufLog('${esc(n).replace(/'/g,'')}',${p},'gekauft')">Erledigt</button>`}
+  <div class="note">Diese Regeln sind deine, nicht die der Wissenschaft. Selbstbindung und
+    Zugriffshürden sind als Strategieklasse belegt; eine bestimmte Wartezeit oder Eurogrenze ist es
+    nicht. ${Q('impuls')}</div>`);
+};
+window.kaufLog=(n,p,st)=>{ S.fin.log.push({ts:Date.now(),n,betrag:p,st}); save(); closeSheet(); render(); };
+window.wishAdd=(n,p)=>{ S.fin.wish.push({id:uid(), n, preis:p, ts:Date.now(),
+  bis:Date.now()+864e5, status:'warten'}); save(); closeSheet(); render(); toast('Auf der Wunschliste'); };
+window.wishDo=(id,st)=>{ const w=S.fin.wish.find(x=>x.id===id); if(!w) return;
+  w.status=st; if(st==='gekauft') S.fin.log.push({ts:Date.now(),n:w.n,betrag:w.preis,st:'nach Wartezeit'});
+  save(); render(); };
+window.billAdd=()=>{ S.fin.bills.push({id:uid(), n:'Rechnung', betrag:0, faellig:todayISO(), bezahlt:false});
+  save(); render(); };
+window.billSet=(id,k,v)=>{ const b=S.fin.bills.find(x=>x.id===id); if(!b) return;
+  b[k]=k==='betrag'?(parseFloat(v)||0):v; save(); };
+window.billPay=id=>{ const b=S.fin.bills.find(x=>x.id===id); if(b){ b.bezahlt=!b.bezahlt; save(); render(); } };
+window.billDel=id=>{ S.fin.bills=S.fin.bills.filter(x=>x.id!==id); save(); render(); };
+
+function vFin(){
+  const wReif=S.fin.wish.filter(w=>w.status==='warten'&&Date.now()>=w.bis);
+  const wWart=S.fin.wish.filter(w=>w.status==='warten'&&Date.now()<w.bis);
+  const offen=S.fin.bills.filter(b=>!b.bezahlt).sort((a,b)=>a.faellig<b.faellig?-1:1);
+  const monat=S.fin.log.filter(x=>Date.now()-x.ts<30*864e5);
+  let h=`<div class="card">
+    <button class="btn acc" onclick="kaufCheck()">Etwas kaufen? Kurz prüfen</button>
+    <div class="grid2" style="margin-top:10px">
+      <label class="f" style="margin:0"><span>Grenze für Spontankäufe (€)</span>
+        <input type="number" value="${S.fin.limit||40}" onchange="finSet('limit',this.value)"></label>
+      <label class="f" style="margin:0"><span>Ab welcher Uhrzeit nichts Ungeplantes</span>
+        <input type="number" value="${S.fin.nightFrom||21}" onchange="finSet('nightFrom',this.value)"></label>
+    </div></div>`;
+
+  if(wReif.length) h+=`<div class="card" style="border-color:var(--acc)">
+    <h2>Wartezeit vorbei — jetzt entscheiden</h2>
+    ${wReif.map(w=>`<div class="item"><div class="g"><b>${esc(w.n)}</b>
+      <span>${r1(w.preis)} € · seit ${human(iso(new Date(w.ts)))}</span></div>
+      <button class="btn sm acc" onclick="wishDo('${w.id}','gekauft')">Kaufen</button>
+      <button class="btn sm ghost" onclick="wishDo('${w.id}','verworfen')">Lassen</button></div>`).join('')}
+  </div>`;
+
+  if(wWart.length) h+=`<div class="card"><h2>Wunschliste (wartet)</h2>
+    ${wWart.map(w=>{const std=Math.ceil((w.bis-Date.now())/36e5);
+      return `<div class="item"><div class="g"><b>${esc(w.n)}</b>
+        <span>${r1(w.preis)} € · noch ${std} h</span></div></div>`;}).join('')}
+  </div>`;
+
+  h+=`<div class="card">
+    <div class="row between" style="margin-bottom:8px">
+      <h2 style="margin:0">Töpfe und Konten</h2>
+      <button class="btn sm ghost" onclick="kontoAdd()">+</button></div>
+    ${S.fin.konten.length?S.fin.konten.map(c=>`<div class="item">
+      <div class="g"><input type="text" value="${esc(c.n)}" onchange="kontoSet('${c.id}','n',this.value)"
+        style="background:transparent;border:none;padding:0;font-weight:600;font-size:14.5px"></div>
+      <input type="number" step="0.01" value="${c.betrag}" onchange="kontoSet('${c.id}','betrag',this.value)"
+        style="width:100px;text-align:right">
+      <button class="x" onclick="kontoDel('${c.id}')">✕</button></div>`).join('')
+     :`<div class="small muted">Stände trägst du von Hand ein. Keine Bankanbindung — die wäre eine
+       eigene Sicherheitsentscheidung und gehört nicht in die erste Fassung.</div>`}
+    ${S.fin.konten.length?`<div class="hr"></div>
+      <div class="row between"><span class="small muted">Summe</span>
+        <b class="mono">${r1(sum(S.fin.konten.map(c=>c.betrag)))} €</b></div>`:''}
+  </div>
+
+  <div class="card">
+    <div class="row between" style="margin-bottom:8px">
+      <h2 style="margin:0">Fälligkeiten${offen.length?` · ${offen.length} offen`:''}</h2>
+      <button class="btn sm ghost" onclick="billAdd()">+</button></div>
+    ${S.fin.bills.length?S.fin.bills.map(b=>{
+      const spaet=!b.bezahlt&&b.faellig<todayISO();
+      return `<div class="item" style="${spaet?'border-color:#63430f':''}">
+      <button class="tick ${b.bezahlt?'on':''}" onclick="billPay('${b.id}')">${b.bezahlt?'&#10003;':''}</button>
+      <div class="g"><input type="text" value="${esc(b.n)}" onchange="billSet('${b.id}','n',this.value)"
+        style="background:transparent;border:none;padding:0;font-weight:600;font-size:14px">
+        <input type="date" value="${b.faellig}" onchange="billSet('${b.id}','faellig',this.value)"
+          style="background:transparent;border:none;padding:0;font-size:11.5px;color:var(--muted)"></div>
+      <input type="number" step="0.01" value="${b.betrag}" onchange="billSet('${b.id}','betrag',this.value)"
+        style="width:86px;text-align:right">
+      <button class="x" onclick="billDel('${b.id}')">✕</button></div>`;}).join('')
+     :`<div class="small muted">Rechnungen, Abos, Fristen.</div>`}
+  </div>`;
+
+  if(monat.length) h+=`<div class="card"><h2>Geprüfte Käufe (30 Tage)</h2>
+    ${monat.slice(-10).reverse().map(x=>`<div class="item"><div class="g">
+      <b style="font-weight:520">${esc(x.n)}</b><span>${esc(x.st)}</span></div>
+      <div class="v">${r1(x.betrag)} €</div></div>`).join('')}
+    <div class="hr"></div>
+    <div class="row between"><span class="small muted">Summe geprüft</span>
+      <b class="mono">${r1(sum(monat.map(x=>x.betrag)))} €</b></div>
+  </div>`;
+
+  h+=`<div class="card tight">${evTag('B')}
+    <div class="small muted" style="margin-top:8px">Selbstbindung, Budgets und Zugriffshürden sind als
+      Strategieklasse in einer Meta-Analyse über 29 Experimente gestützt. Dass ADHS mit schwierigeren
+      Finanzentscheidungen einhergeht, ist in Beobachtungsstudien gezeigt — eine geprüfte
+      ADHS-Finanz-App gibt es nicht. Deine 40 € und deine 21 Uhr sind Setzungen, keine Normwerte.</div></div>
+  <div style="height:20px"></div>`;
+  return h;
+}
+
+/* =========================================================================
+   TAGESREFLEXION — drei Fragen, dann Schluss
+   ========================================================================= */
+const jToday=()=>S.journal[DAY]||{};
+window.jSet=(k,v)=>{ const j=S.journal[DAY]=S.journal[DAY]||{}; j[k]=v; save(); };
+function vJournal(){
+  const j=jToday();
+  const letzte=Object.keys(S.journal).sort().reverse().slice(0,14);
+  return `<div class="card">
+    <h2>${human(DAY)}</h2>
+    <label class="f"><span>Was lief?</span>
+      <textarea rows="2" onchange="jSet('gut',this.value)">${esc(j.gut||'')}</textarea></label>
+    <label class="f"><span>Was war schwer?</span>
+      <textarea rows="2" onchange="jSet('schwer',this.value)">${esc(j.schwer||'')}</textarea></label>
+    <label class="f"><span>Eine Sache für morgen</span>
+      <textarea rows="2" onchange="jSet('morgen',this.value)">${esc(j.morgen||'')}</textarea></label>
+    <div class="hr"></div>
+    <label class="f" style="margin:0"><span>Freier Text — nur wenn du willst</span>
+      <textarea rows="4" onchange="jSet('frei',this.value)">${esc(j.frei||'')}</textarea></label>
+    <div class="note">Drei Fragen sind das Ziel, nicht das Minimum. Eine beantwortete Frage ist ein
+      vollständiger Eintrag.</div>
+  </div>
+  ${letzte.length>1?`<div class="card"><h2>Letzte Einträge</h2>
+    ${letzte.filter(d=>d!==DAY).slice(0,7).map(d=>{const e=S.journal[d];
+      return `<div class="item"><div class="g"><b style="font-weight:550">${human(d)}</b>
+        <span style="white-space:normal">${esc((e.gut||e.frei||e.schwer||'').slice(0,90))}</span></div>
+        <button class="btn sm ghost" onclick="setDay('${d}')">Öffnen</button></div>`;}).join('')}
+  </div>`:''}
+  <div style="height:20px"></div>`;
+}
+
+/* =========================================================================
+   ZIGARETTEN — zählen und Auslöser sammeln, nicht bewerten
+   ========================================================================= */
+const SMOKE_TR=['Pause','Nach dem Essen','Stress','Langeweile','Mit anderen','Auto','Nach dem Training','Abends'];
+window.smokeAdd=tr=>{ const a=S.smoke[DAY]=S.smoke[DAY]||[];
+  a.push({ts:Date.now(), tr:tr||''}); save(); closeSheet(); render(); };
+window.smokeUndo=()=>{ const a=S.smoke[DAY]||[]; a.pop(); save(); render(); };
+window.smokeSheet=()=>openSheet(`<h2>Wobei?</h2>
+  <div class="chips" style="margin-bottom:14px">
+    ${SMOKE_TR.map(t=>`<button class="pill" onclick="smokeAdd('${t}')">${t}</button>`).join('')}</div>
+  <button class="btn ghost" onclick="smokeAdd('')">Ohne Angabe</button>`);
+function smokeWeek(){ const out=[];
+  for(let i=6;i>=0;i--){ const d=addDays(DAY,-i); out.push((S.smoke[d]||[]).length); } return out; }
+function smokeTop(){ const c={};
+  Object.values(S.smoke).flat().forEach(x=>{ if(x.tr) c[x.tr]=(c[x.tr]||0)+1; });
+  return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,3); }
+
+/* =========================================================================
+   NULLSCHRITT-DRILLS — kleine tägliche Einheiten, auch an Tagen ohne Training
+   ========================================================================= */
+const DRILLS=[
+  {k:'schulter', n:'Außenrotation mit Band', r:20},
+  {k:'hueft', n:'Hüftbeuger-Mobilisation', r:20},
+  {k:'sprung', n:'Beidbeinige Landungen', r:15},
+  {k:'rumpf', n:'Pallof-Press', r:15},
+  {k:'wade', n:'Wadenheben einbeinig', r:20},
+  {k:'hand', n:'Handgelenk und Griff', r:20}
+];
+window.drillAdd=k=>{ const a=S.drills[DAY]=S.drills[DAY]||[];
+  const d=DRILLS.find(x=>x.k===k); a.push({k, n:d.n, r:d.r, ts:Date.now()});
+  save(); render(); toast('+1'); };
+window.drillUndo=()=>{ const a=S.drills[DAY]||[]; a.pop(); save(); render(); };
+
+/* =========================================================================
+   BESCHWERDEN — Belastungsprobleme erfassen, bevor Ausfallzeit entsteht.
+   Logik nach dem OSTRC-Fragebogen. Kein Diagnosealgorithmus.
+   ========================================================================= */
+const KOERPER=['Schulter','Ellenbogen','Handgelenk','Rücken','Hüfte/Leiste','Oberschenkel',
+               'Knie','Wade','Sprunggelenk','Fuß','Sonstiges'];
+window.beschwAdd=()=>openSheet(`<h2>Neue Beschwerde</h2>
+  <label class="f"><span>Körperstelle</span>
+    <select id="bO">${KOERPER.map(k=>`<option>${k}</option>`).join('')}</select></label>
+  <label class="f"><span>Seit wann</span><input type="date" id="bS" value="${todayISO()}"></label>
+  <label class="f"><span>Wie ist es entstanden?</span>
+    <select id="bM">
+      <option value="allmählich">allmählich, ohne einzelnes Ereignis</option>
+      <option value="akut">bei einem bestimmten Ereignis</option>
+      <option value="unklar">unklar</option>
+    </select></label>
+  <button class="btn acc" onclick="saveBeschw()">Anlegen</button>
+  <div class="note">Das ist eine Verlaufsdokumentation. Anhaltender oder starker Schmerz,
+    Schwellung, Instabilität oder Kraftverlust gehören zur Ärztin oder Physiotherapie —
+    diese App bewertet das nicht.</div>`);
+window.saveBeschw=()=>{ S.beschw.unshift({id:uid(),
+  ort:document.getElementById('bO').value, seit:document.getElementById('bS').value,
+  mech:document.getElementById('bM').value, offen:true, verlauf:[]});
+  save(); closeSheet(); render(); };
+window.beschwClose=id=>{ const b=S.beschw.find(x=>x.id===id); if(b){ b.offen=false; save(); render(); } };
+window.beschwDel=id=>{ S.beschw=S.beschw.filter(x=>x.id!==id); save(); render(); };
+window.beschwLog=id=>openSheet(`<h2>Wie ist es jetzt?</h2>
+  <div class="small muted" style="margin-bottom:12px">Vier Fragen nach der OSTRC-Logik. Sie erfassen
+    Beschwerden, die noch keinen Trainingsausfall verursachen — genau die werden sonst übersehen.</div>
+  ${[['teil','Hast du wegen der Beschwerde weniger teilgenommen?'],
+     ['umfang','Musstest du Umfang oder Intensität reduzieren?'],
+     ['leistung','Ist deine Leistung beeinträchtigt?'],
+     ['schmerz','Wie stark sind die Beschwerden?']].map(([k,q])=>
+    `<label class="f"><span>${q}</span>
+      <select id="bl_${k}">
+        <option value="0">gar nicht</option><option value="8">leicht</option>
+        <option value="17">mäßig</option><option value="25">stark / gar nicht möglich</option>
+      </select></label>`).join('')}
+  <button class="btn acc" onclick="saveBeschwLog('${id}')">Eintragen</button>`);
+window.saveBeschwLog=id=>{ const b=S.beschw.find(x=>x.id===id); if(!b) return;
+  const g=k=>parseInt(document.getElementById('bl_'+k).value,10);
+  const v={d:todayISO(), teil:g('teil'), umfang:g('umfang'), leistung:g('leistung'), schmerz:g('schmerz')};
+  v.score=v.teil+v.umfang+v.leistung+v.schmerz;
+  b.verlauf.push(v); save(); closeSheet(); render(); };
+
+function vBeschw(){
+  const offen=S.beschw.filter(b=>b.offen), zu=S.beschw.filter(b=>!b.offen);
+  return `<div class="card">
+    <button class="btn acc" onclick="beschwAdd()">Beschwerde anlegen</button>
+    <div class="note">Die häufigsten Handballverletzungen liegen in der unteren Extremität
+      (Oberschenkel, Knie, Sprunggelenk) und in der Schulter. Häufigkeit ist keine Vorhersage
+      für dich — sie sagt nur, worauf sich Prävention lohnt zu richten. ${Q('verletzung')}</div></div>
+  ${offen.length?offen.map(b=>{ const l=b.verlauf[b.verlauf.length-1];
+    return `<div class="card">
+      <div class="row between" style="margin-bottom:6px">
+        <h2 style="margin:0">${esc(b.ort)}</h2>
+        ${l?`<span class="mono small">${l.score}/100</span>`:''}</div>
+      <div class="xs muted" style="margin-bottom:11px">seit ${human(b.seit)} · ${esc(b.mech)}
+        ${l?` · zuletzt ${human(l.d)}`:''}</div>
+      ${b.verlauf.length>1?`<div class="bar" style="margin-bottom:10px">
+        <i style="width:${clamp(l.score,0,100)}%;background:var(--amber)"></i></div>`:''}
+      <div class="btnrow">
+        <button class="btn sm acc" onclick="beschwLog('${b.id}')">Verlauf eintragen</button>
+        <button class="btn sm ghost" onclick="beschwClose('${b.id}')">Abgeklungen</button></div>
+    </div>`;}).join('')
+   :`<div class="empty">Nichts Offenes.</div>`}
+  ${zu.length?`<div class="card"><h2>Abgeklungen</h2>
+    ${zu.map(b=>`<div class="item"><div class="g"><b>${esc(b.ort)}</b>
+      <span>${human(b.seit)} · ${b.verlauf.length} Einträge</span></div>
+      <button class="x" onclick="beschwDel('${b.id}')">✕</button></div>`).join('')}</div>`:''}
+  <div class="card tight">${evTag('B')}
+    <div class="small muted" style="margin-top:8px">Der OSTRC-Fragebogen wurde an 313 Athletinnen und
+      Athleten aus fünf Sportarten über 13 Wochen entwickelt und validiert; Handball war dabei. Die
+      deutsche Fassung wurde an 24 Paralympics-Athletinnen und -Athleten über 20 Wochen geprüft —
+      eine schmale Basis, die man kennen sollte. Vier Fragen ersetzen keine Untersuchung.</div></div>
+  <div style="height:20px"></div>`;
+}
+
+/* =========================================================================
+   WOCHENBLICK — wenige Minuten, sonntagabends
+   ========================================================================= */
+function weekNums(){
+  const days=[]; for(let i=6;i>=0;i--) days.push(addDays(DAY,-i));
+  const ses=days.flatMap(d=>sessionsOn(d));
+  const fenster=days.reduce((a,d)=>{ const m=S.adhs.meals[d]||{};
+    return a+Object.values(m).filter(v=>v==='done').length; },0);
+  const checks=days.filter(d=>hooper(d)!=null).length;
+  const zig=days.reduce((a,d)=>a+(S.smoke[d]||[]).length,0);
+  const dr=days.reduce((a,d)=>a+(S.drills[d]||[]).length,0);
+  const last=sum(days.map(d=>loadOn(d)));
+  return {days, ses:ses.length, fenster, checks, zig, dr, last};
+}
+function vWeek(){
+  const w=weekNums(), top=smokeTop();
+  const anker=S.week.anker||'';
+  return `<div class="card">
+    <h2>Die letzten sieben Tage</h2>
+    <div class="grid2">
+      <div><div class="big mono">${w.ses}</div><div class="xs muted">Einheiten</div></div>
+      <div><div class="big mono">${w.last}</div><div class="xs muted">Wochenlast (sRPE)</div></div>
+      <div><div class="big mono">${w.fenster}/28</div><div class="xs muted">Essensfenster erfüllt</div></div>
+      <div><div class="big mono">${w.checks}/7</div><div class="xs muted">Tages-Checks</div></div>
+      <div><div class="big mono">${w.dr}</div><div class="xs muted">Drills</div></div>
+      <div><div class="big mono">${w.zig}</div><div class="xs muted">Zigaretten</div></div>
+    </div></div>
+
+  ${top.length?`<div class="card"><h2>Häufigste Auslöser</h2>
+    ${top.map(([t,n])=>`<div class="item"><div class="g"><b style="font-weight:520">${esc(t)}</b></div>
+      <div class="v">${n}×</div></div>`).join('')}
+    <div class="hr"></div>
+    <button class="btn sm" onclick="ruleFromTrigger('${esc(top[0][0])}')">
+      Wenn-dann-Regel für „${esc(top[0][0])}“ anlegen</button>
+    <div class="note">Der häufigste Auslöser ist der einzige, für den sich eine Regel lohnt.
+      Drei Regeln gleichzeitig heißt keine Regel.</div></div>`:''}
+
+  <div class="card">
+    <h2>Wochenanker mit Evi</h2>
+    <label class="f" style="margin:0"><span>Eine feste Sache diese Woche</span>
+      <input type="text" value="${esc(anker)}" placeholder="Kino, kochen, spazieren…"
+        onchange="S.week.anker=this.value;save()"></label>
+    <div class="row between" style="margin-top:10px">
+      <span class="small muted">Erledigt?</span>
+      <button class="tick ${S.week.ankerDone?'on':''}"
+        onclick="S.week.ankerDone=!S.week.ankerDone;save();render()">${S.week.ankerDone?'&#10003;':''}</button></div>
+  </div>
+
+  <div class="card">
+    <h2>Vier Fragen</h2>
+    ${[['lief','Was hat funktioniert?'],['vergessen','Was ist untergegangen?'],
+       ['gross','Was war zu groß angesetzt?'],['anders','Was soll die App nächste Woche anders vorschlagen?']]
+      .map(([k,q])=>`<label class="f"><span>${q}</span>
+        <textarea rows="2" onchange="S.week['${k}']=this.value;save()">${esc(S.week[k]||'')}</textarea></label>`).join('')}
+    <div class="note">Bewusst kurz. Ein Wochenritual, das eine halbe Stunde dauert, findet nach
+      drei Wochen nicht mehr statt.</div>
+  </div>
+
+  <div class="card">
+    <h2>Bericht für Claude</h2>
+    <div class="small muted" style="margin-bottom:11px">Erzeugt eine kompakte Zusammenfassung deiner
+      letzten Tage zum Kopieren. Nichts wird verschickt.</div>
+    <button class="btn" onclick="claudeBericht()">Bericht erzeugen</button></div>
+  <div style="height:20px"></div>`;
+}
+window.ruleFromTrigger=t=>{ S.adhs.rules.push({id:uid(), trigger:'frei',
+  wenn:'ich '+t.toLowerCase()+' habe', dann:'…'}); save(); go('tag'); toast('Regel angelegt — Rest ausfüllen'); };
+
+window.claudeBericht=()=>{
+  const w=weekNums(), M=meds();
+  const L=[];
+  L.push('Pivot-Bericht · '+human(todayISO()));
+  L.push('');
+  L.push(`Training: ${w.ses} Einheiten, Wochenlast ${w.last} sRPE`);
+  const st=weekStats(DAY);
+  if(st) L.push(`Monotonie ${r1(st.mono)}, Strain ${r0(st.strain)}`);
+  L.push(`Tages-Checks: ${w.checks}/7${hooper(DAY)!=null?`, heute Hooper ${hooper(DAY)}`:''}`);
+  L.push(`Essensfenster erfüllt: ${w.fenster}/28`);
+  L.push(`Drills: ${w.dr} · Zigaretten: ${w.zig}`);
+  const bw=S.beschw.filter(b=>b.offen);
+  if(bw.length) L.push('Beschwerden offen: '+bw.map(b=>b.ort+(b.verlauf.length?` (${b.verlauf[b.verlauf.length-1].score}/100)`:'')).join(', '));
+  const lowStock=M.filter(m=>medRange(m).warn);
+  if(lowStock.length) L.push('Medikamentenbestand knapp: '+lowStock.map(m=>m.n).join(', '));
+  const top=smokeTop(); if(top.length) L.push('Häufigster Auslöser: '+top[0][0]+' ('+top[0][1]+'×)');
+  if(S.week.lief) L.push('Lief: '+S.week.lief);
+  if(S.week.vergessen) L.push('Untergegangen: '+S.week.vergessen);
+  const txt=L.join('\n');
+  openSheet(`<h2>Bericht</h2>
+    <textarea rows="14" readonly style="font-size:12.5px;line-height:1.6">${esc(txt)}</textarea>
+    <div class="spacer"></div>
+    <button class="btn acc" onclick="copyTxt(this)" data-t="${esc(txt)}">Kopieren</button>`);
+};
+
+/* =========================================================================
    VIEW: PROFIL
    ========================================================================= */
 function vMe(){
@@ -1960,6 +3448,20 @@ function vMe(){
       <span class="muted">Tage mit Ernährung</span><b class="mono">${Object.keys(S.diary).length}</b></div>
     <div class="row between small">
       <span class="muted">Tage mit Check</span><b class="mono">${Object.keys(S.well).length}</b></div>
+  </div>
+
+  <div class="card">
+    <h2>Was diese App nicht kann</h2>
+    <div class="small muted" style="line-height:1.7">
+      Als Web-App im Browser hat Pivot <b>keinen Zugriff</b> auf Android-Alarme, Vollbild-Hinweise,
+      Vibration nach Zeitplan, ortsbezogene Erinnerungen, Health Connect, Samsung Health oder
+      Huawei Health. Das sind native Schnittstellen, und keine Berechtigung öffnet sie einer
+      Webseite. Eine eskalierende Erinnerungsleiter ist deshalb hier bewusst nicht eingebaut,
+      statt sie halb funktionierend vorzutäuschen.
+      <br><br>Was stattdessen trägt: Der Google Calendar, in dem du ohnehin lebst, und
+      Kontextanker in der App — nach dem Essen, beim Heimkommen, vor dem Aussteigen.</div>
+    <div class="note">Änderbar würde das nur durch einen nativen Wrapper (Capacitor + Android
+      Studio + Signaturschlüssel). Das ist ein eigenes Projekt, keine Erweiterung dieser Datei.</div>
   </div>
 
   <div class="card">

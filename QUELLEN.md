@@ -288,3 +288,183 @@ Kein eigener Studienbeleg. Die Begründung ist die Handlungsinitiierung als Kern
 Die Zwei-Minuten-Grenze ist eine Konvention, keine Wirkgröße.
 
 Recherchiert über PubMed.
+
+---
+
+## 9. Lebensbereiche (ab V5)
+
+Die folgenden Module stammen aus Masterplan V8 und dem Evidenzdossier V1. Bewertet wird nach
+vier Stufen — A stark, B mittel, C begrenzt, D Erfahrungswert. Die Stufe steht in der App an
+der jeweiligen Aussage, nicht nur hier.
+
+### 9.1 Haushalt — Stufe C
+
+Kein einziges Modul dieser Seite beruht auf einer kontrollierten Studie zum Sauberhalten von
+Küche, Zimmer und Auto bei Erwachsenen mit ADHS. Es gibt sie nicht. Gestützt sind nur die
+allgemeineren Bausteine:
+
+- Ergotherapeutischer Fachkonsens zu Umgebungsanpassung, Routine und Aufgabenanpassung bei
+  Erwachsenen mit ADHS. *Grenze:* das Papier benennt selbst ausdrücklichen Forschungsbedarf.
+- Scoping Review zu Alltagsroutinen und Gewohnheiten bei ADHS, 31 Studien. *Grenze:* nur sechs
+  davon sind Interventionen, und die Erwachsenenlage ist dünn.
+- W3C/WCAG „Help Users Focus": kurze kritische Pfade, wenig Ablenkung, klare Orientierung.
+  *Grenze:* Zugänglichkeitsstandard, keine klinische Wirksamkeitsstudie.
+
+**Konsequenz im Code:** Genau ein sichtbarer nächster Schritt, drei Reaktionen, kein
+Rückstandsspeicher über Nacht, und ein Evidenzhinweis C am Fuß der Seite. Die
+Reinigungsfrequenzen (zweimal wöchentlich kurz saugen, wöchentlich vollständig, feuchtes
+Staubwischen) sind persönliche Startwerte bei zwei Hunden und einer Katze — **keine
+medizinischen Grenzwerte**, und für Allergie oder Asthma ausdrücklich nicht gültig.
+
+**Sicherheitsregeln, die nicht verhandelbar sind:** kein Nasswischen eines unbekannten
+Holz- oder Laminatbodens; keine Flüssigkeit direkt auf Elektronik; keine rutschigen
+Pflegemittel an Lenkrad, Schalthebel oder Pedalen; nach Kontakt mit rohen tierischen
+Lebensmitteln getrennte Reinigung von Händen, Geräten und Flächen. Das ist der einzige
+Küchenschritt, der wirklich sicherheitsrelevant ist — der Rest ist Ordnung, kein Risiko.
+
+### 9.2 Body Doubling und Fokusmodus — Stufe C
+
+Eagle et al. (2024): Befragungs- und Designstudie mit 220 neurodivergenten Teilnehmenden.
+Beschreibt reale, virtuelle und aufgezeichnete Formen sowie Einsatzfelder wie Lernen, Putzen
+und Bewegung.
+*Grenze:* **kein Wirksamkeits-RCT.** Was berichtet wird, sind wahrgenommene Vorteile. Deshalb
+steht Body Doubling in der App als persönliche Fokusstrategie, nie als ADHS-Behandlung.
+
+Community-Berichte nennen übereinstimmend die Videosuche als eigene Ablenkung. Der Fokusmodus
+startet deshalb ohne Auswahl, ohne Video und ohne Feed.
+
+Der Ablenkungsparkplatz folgt der JITAI-Designlogik (richtige Hilfe, richtige Menge, richtiger
+Zeitpunkt) — ein Designrahmen, kein Wirksamkeitsbeleg für die einzelne Funktion.
+
+### 9.3 Ergebnis vorstellen statt Weg planen — Stufe B
+
+Randomisierte Studie mit 196 Erwachsenen, davon 98 mit ADHS: episodisches Zukunftsdenken half
+beim prospektiven Gedächtnis, und zwar besonders die **ergebnisorientierte** Vorstellung. Die
+prozessorientierte Variante half der ADHS-Gruppe nur moderat.
+*Grenze:* erste Studie, Replikation steht aus. In der App als fünf Sekunden im
+Werkzeugkasten umgesetzt, nicht als Pflichtschritt.
+
+**Gegenbefund, der mitgehört:** In einer ADHS-Internetintervention verbesserten einfache
+Standard-SMS weder Modulerfüllung noch Logins noch Strategieanwendung. Mehr Erinnerungen sind
+nicht besser. Relevanz, Handlungsschritt, Kontext und Bestätigung schlagen Häufigkeit.
+
+### 9.4 Medikamentenmodul — Stufe A für das Monitoring, keine Stufe für Entscheidungen
+
+- NICE NG87 (ADHS): gemeinsame Entscheidung, Umweltanpassung, Behandlung und Monitoring von
+  Wirkung, Nebenwirkungen, Gewicht, Schlaf, Puls und Blutdruck.
+- NICE NG222 (Depression): frühe Überprüfung, Nebenwirkungen, Adhärenz, Absetzsymptome.
+- Fachinformation Lisdexamfetamin: laufendes Gewicht-, Herz-Kreislauf- und psychiatrisches
+  Monitoring; **erhöhtes Risiko für ein Serotoninsyndrom bei Kombination mit serotonergen
+  Arzneimitteln.**
+- Fachinformation Escitalopram: abruptes Absetzen vermeiden, mögliche Absetzsymptome.
+
+**Konsequenz im Code:** Die App zeigt die Serotonin-Information genau einmal, sachlich, ohne
+die verordnete Kombination zu bewerten und ohne zum Absetzen aufzufordern. Sie nennt die
+Warnzeichen, die nicht auf den Wochenbericht warten. Nach einer vergessenen Einnahme sagt sie
+bewusst **nichts** — kein Vorschlag, keine Ersatzdosis. Sie erzeugt keinen verkürzten
+klinischen Score und leitet keine Dosis- oder Wechselentscheidung ab.
+
+Zwei Ebenen statt täglicher Befragung: wöchentlich 1–2 Minuten, alle zwei Wochen 3–5 Minuten.
+Begründung aus einer systematischen Übersicht zu Stimmungsmonitoring: Monitoring kann nützen,
+erzeugt aber auch Belastung. *Grenze dieser Quelle:* untersucht wurde bipolare Störung.
+
+Zur Adhärenz: Meta-Analyse über 9 RCTs mit 1.159 Teilnehmenden zeigt mögliche Verbesserung
+durch Erinnerungs-Apps. *Grenze:* überwiegend ältere Teilnehmende, viel Selbstbericht,
+Übertragbarkeit auf Elvanse und Escitalopram mäßig.
+
+### 9.5 Beschwerden — Stufe B
+
+Clarsen B, Myklebust G, Bahr R (2013). *Development and validation of a new method for the
+registration of overuse injuries in sports injury epidemiology: the OSTRC overuse injury
+questionnaire.* Br J Sports Med 47(8):495–502.
+DOI [10.1136/bjsports-2012-091524](https://doi.org/10.1136/bjsports-2012-091524) (PMID 23038786).
+Über PubMed geprüft. 13 Wochen, 313 Athletinnen und Athleten aus fünf Sportarten, Handball
+dabei. Zentrales Ergebnis: die Standardregistrierung erfasste nur 40 Überlastungsverletzungen,
+das neue Verfahren 419 Probleme, davon 142 substanziell. Wöchentlich berichteten im Schnitt
+39 % Beschwerden, 13 % substanzielle.
+
+Hirschmüller A, Steffen K, Fassbender K, et al. (2017). *German translation and content
+validation of the OSTRC Questionnaire.* Br J Sports Med 51(4):260–263.
+DOI [10.1136/bjsports-2016-096669](https://doi.org/10.1136/bjsports-2016-096669) (PMID 27797733).
+Cronbachs α 0,92, ICC 0,91.
+*Grenze, die in der App genannt wird:* validiert an **24 Paralympics-Athletinnen und -Athleten**
+über 20 Wochen. Das ist eine schmale und spezielle Basis — der Quellenkatalog V1 beschreibt sie
+zu allgemein als „deutschsprachige strukturierte Erfassung".
+
+Vier Fragen mit je 0/8/17/25 Punkten, Summe 0–100. Die App zeigt den Verlauf und bewertet ihn
+nicht. Sie stellt keine Diagnose und ersetzt keine Untersuchung.
+
+### 9.6 Worauf Prävention zielt — Stufe B, mit ausdrücklichem Widerspruch
+
+Vila H, Barreiro A, Ayán C, et al. (2022). *The Most Common Handball Injuries: A Systematic
+Review.* Int J Environ Res Public Health 19(17):10688.
+DOI [10.3390/ijerph191710688](https://doi.org/10.3390/ijerph191710688) (PMID 36078403).
+27 Studien: häufigste Lokalisationen sind untere Extremität (Oberschenkel, Knie, Sprunggelenk)
+und Schulter; die meisten Verletzungen entstehen im Wettkampf. Rückraumspieler über der
+6-Meter-Linie sind besonders betroffen.
+
+**Der Widerspruch, den die App offen benennt:** Yonneau J, Lefèvre-Colau MM, Compagnat M, et al.
+(2025). *Shoulder injuries prevention programmes in handball: a systematic review with
+meta-analysis.* BMJ Open Sport Exerc Med 11(3):e002416.
+DOI [10.1136/bmjsem-2024-002416](https://doi.org/10.1136/bmjsem-2024-002416) (PMID 41035524).
+Fünf eingeschlossene Arbeiten mit 1.872 Spielenden, aber nur **drei** in der Meta-Analyse
+(n=747): **OR 0,73; 95 %-KI 0,45–1,17 — kein statistisch gesicherter Effekt.**
+
+Konsequenz: multimodale Prävention ja, Schultergarantie nein. Die App verspricht für die
+Schulter ausdrücklich nichts.
+
+Zum Trainingsinhalt bleibt die Lage gut: Bragazzi NL, Rouissi M, Hermassi S, Chamari K (2020),
+*Resistance Training and Handball Players' Isokinetic, Isometric and Maximal Strength, Muscle
+Power and Throwing Ball Velocity.* Int J Environ Res Public Health 17(8):2663.
+DOI [10.3390/ijerph17082663](https://doi.org/10.3390/ijerph17082663) (PMID 32294971) —
+18 Studien, 275 Spieler, Gesamteffekt 1,00 (95 %-KI 0,83–1,17), Wurfgeschwindigkeit 1,36,
+Maximalkraft 1,82; isokinetische Kraft dagegen **nicht** signifikant (0,08).
+*Grenze:* hohe Heterogenität und Hinweise auf Publikationsbias — von den Autoren selbst benannt.
+
+Wang X, Zhang K, Samsudin SB, et al. (2024), *Effects of Plyometric Training on Physical Fitness
+Attributes in Handball Players.* J Sports Sci Med 23(1):177–195.
+DOI [10.52082/jssm.2024.177](https://doi.org/10.52082/jssm.2024.177) (PMID 38455436) —
+20 Studien, 563 Spielende. Sprung mit Armschwung 1,84, Agilität −1,60, Maximalkraft 0,52.
+**Balance wurde nicht verbessert.** Programme über acht Wochen wirkten auf Sprint deutlich
+stärker als kürzere.
+
+Alle sechs Arbeiten dieses Abschnitts wurden über PubMed abgerufen und die Zahlen gegen die
+Abstracts geprüft, nicht aus einer Sekundärquelle übernommen.
+
+### 9.7 Finanzieller Impulsschutz — Stufe B für das Prinzip, D für die Zahlen
+
+Gestützt ist die Strategieklasse: eine Meta-Analyse über 29 Experimente zu finanziellen
+Selbstkontrollstrategien (Budgets, Sparautomatik, Zugriffshürden) und die ökonomische
+Übersichtsarbeit zu Commitment Devices. *Grenze:* hohe Heterogenität, Wirkung stark
+kontextabhängig.
+
+Der Zusammenhang zwischen ADHS und schwierigeren Finanzentscheidungen ist in
+Beobachtungsstudien gezeigt (u. a. n=1.292 Gemeindestichprobe; 225 ADHS gegen 121 Vergleich zu
+Kaufimpuls und Belohnungsaufschub). *Grenze:* Korrelation, Selbstbericht, und **keine einzige
+geprüfte ADHS-Finanz-App.**
+
+**Nicht gestützt sind die konkreten Zahlen.** Die 40-Euro-Grenze und die 21-Uhr-Regel sind
+Maiks persönliche Schutzregeln. Die 24-Stunden-Wartezeit stammt aus Erfahrungsberichten und ist
+eine runde Zahl, kein Messergebnis. In der App als Stufe D gekennzeichnet und frei einstellbar.
+
+### 9.8 Was diese App als Web-App nicht kann
+
+Kein Quellenbeleg nötig, sondern Plattformdokumentation — und die wichtigste Einschränkung
+des ganzen Masterplans:
+
+- **Exact Alarms** (`android.developer.android.com/develop/background-work/services/alarms`),
+  **Full-screen intents** (Android-14-Verhaltensänderungen) und geplante Vibration sind native
+  Android-Schnittstellen. Eine Seite im Browser erreicht sie nicht, mit keiner Berechtigung.
+- **Health Connect** ist eine Android-Schnittstelle für native Apps. Gleiches gilt für Samsung
+  Health und Huawei Health.
+- **Geofencing** für ortsbezogene Erinnerungen: nativ.
+- **Web Push** bräuchte einen eigenen Server und wird von Android zusätzlich gedrosselt.
+
+Die in Masterplan V8 beschriebene eskalierende Erinnerungsleiter — Ton, Vibration, dauerhaft
+sichtbare Karte, Zwei-Stunden-Vorlauf — ist damit **in dieser Architektur nicht baubar**. Der
+Masterplan zitiert die Android-Dokumentation korrekt, zieht aber nicht die Konsequenz, dass er
+dafür eine native App verlangt.
+
+Pivot baut deshalb auf Kontextankern (nach dem Essen, beim Heimkommen, vor dem Aussteigen) und
+auf dem Google Calendar, in dem Maik ohnehin lebt. Änderbar wäre das nur über einen
+Capacitor-Wrapper mit Android Studio und Signaturschlüssel — ein eigenes Projekt.
