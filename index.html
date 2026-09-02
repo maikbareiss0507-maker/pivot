@@ -1,0 +1,2010 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0b0d10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Pivot — Training, Last & Ernährung</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#121620; --surface:#1b212c; --surface2:#242b39; --line:#333c4d;
+  --text:#eef2f8; --muted:#9aa5b6; --dim:#6b7789;
+  --acc:#4ade80; --acc-dim:#1e3d2b;
+  --blue:#63a9f5; --amber:#f5b13d; --red:#f87171; --violet:#ab8cf7;
+  --area:#4ade80;
+  --r:15px; --pad:16px;
+  color-scheme:dark;
+}
+body[data-ph="morning"]  {--ph1:#3a2f14; --ph2:#1c2130; --phc:#f5b13d}
+body[data-ph="midday"]   {--ph1:#153226; --ph2:#1a2130; --phc:#4ade80}
+body[data-ph="dip"]      {--ph1:#3a2a15; --ph2:#1c2130; --phc:#f5b13d}
+body[data-ph="evening"]  {--ph1:#1b2c40; --ph2:#1a2030; --phc:#63a9f5}
+body[data-ph="winddown"] {--ph1:#26203f; --ph2:#1a1f2e; --phc:#ab8cf7}
+body[data-ph="night"]    {--ph1:#1a1e2b; --ph2:#171b26; --phc:#9aa5b6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  overscroll-behavior-y:none}
+body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+h1,h2,h3{margin:0;font-weight:650;letter-spacing:-.01em}
+a{color:var(--blue)}
+
+/* ---------- Layout ---------- */
+header.top{position:sticky;top:0;z-index:40;background:rgba(18,22,32,.93);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
+  padding:calc(10px + env(safe-area-inset-top)) var(--pad) 10px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px}
+header.top h1{font-size:19px}
+header.top .sub{font-size:12px;color:var(--muted);font-weight:400;margin-top:1px}
+main{padding:var(--pad);max-width:640px;margin:0 auto}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:50;
+  background:rgba(24,29,40,.97);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);
+  padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{padding:9px 2px 10px;display:flex;flex-direction:column;align-items:center;
+  gap:3px;color:var(--dim);font-size:10.5px;font-weight:550;letter-spacing:.01em}
+nav.tabs button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button.on{color:var(--area)}
+nav.tabs button.on svg{filter:drop-shadow(0 0 7px color-mix(in srgb,var(--area) 55%,transparent))}
+
+/* ---------- Building blocks ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px;margin-bottom:12px}
+.card.tight{padding:11px 13px}
+.card h2::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--area);margin-right:7px;vertical-align:middle;transform:translateY(-1px)}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
+  margin-bottom:10px;font-weight:600}
+.row{display:flex;align-items:center;gap:10px}
+.row.between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.muted{color:var(--muted)}.dim{color:var(--dim)}
+.small{font-size:12.5px}.xs{font-size:11.5px}
+.big{font-size:27px;font-weight:680;letter-spacing:-.02em;line-height:1.1}
+.mono{font-variant-numeric:tabular-nums}
+.spacer{height:6px}
+.hr{height:1px;background:var(--line);margin:12px -14px}
+
+.btn{background:var(--surface2);border:1px solid var(--line);border-radius:11px;
+  padding:11px 14px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;
+  justify-content:center;gap:7px;width:100%}
+.btn:active{transform:scale(.985)}
+.btn.acc{background:var(--acc);color:#06210f;border-color:transparent}
+.btn.ghost{background:transparent}
+.btn.sm{padding:8px 11px;font-size:13px;width:auto;border-radius:9px}
+.btn.danger{color:var(--red)}
+.btnrow{display:flex;gap:8px}
+
+input[type=text],input[type=number],input[type=date],select,textarea{
+  width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:10px;
+  padding:11px 12px;font-size:16px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)}
+label.f{display:block;margin-bottom:11px}
+label.f>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:550}
+.inline{display:flex;gap:8px}.inline>*{flex:1}
+
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);
+  border:1px solid var(--line);border-radius:999px;padding:6px 11px;font-size:12.5px;font-weight:550}
+.pill.on{background:var(--acc-dim);border-color:var(--acc);color:var(--acc)}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+
+.bar{height:7px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:99px;background:var(--acc);transition:width .35s}
+
+.item{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:none}
+.item .g{flex:1;min-width:0}
+.item .g b{display:block;font-weight:600;font-size:14.5px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.item .g span{font-size:12px;color:var(--muted)}
+.item .v{font-weight:650;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.x{color:var(--dim);padding:6px;font-size:17px;line-height:1}
+
+.empty{text-align:center;color:var(--dim);padding:26px 10px;font-size:13.5px}
+
+/* ---------- Sheet / modal ---------- */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:90;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.sheet-bg.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:91;background:var(--surface);
+  border-radius:20px 20px 0 0;border-top:1px solid var(--line);
+  max-height:88vh;overflow-y:auto;transform:translateY(102%);transition:transform .26s cubic-bezier(.2,.8,.3,1);
+  padding:8px var(--pad) calc(20px + env(safe-area-inset-bottom))}
+.sheet.on{transform:translateY(0)}
+.sheet .handle{width:38px;height:4px;border-radius:9px;background:var(--line);margin:6px auto 14px}
+.sheet h2{font-size:17px;margin-bottom:12px;text-transform:none;letter-spacing:-.01em;color:var(--text)}
+
+/* ---------- Readiness ---------- */
+.ready{display:flex;align-items:center;gap:16px}
+.ring{position:relative;width:96px;height:96px;flex:0 0 auto}
+.ring svg{transform:rotate(-90deg)}
+.ring .lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:0}
+.ring .lbl b{font-size:26px;font-weight:680;letter-spacing:-.02em}
+.ring .lbl span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+.scale{display:flex;gap:5px;margin-top:6px}
+.scale button{flex:1;padding:11px 0;border-radius:9px;background:var(--surface2);
+  border:1px solid var(--line);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.scale button.on{background:var(--acc);color:#06210f;border-color:transparent}
+.scale.warm button.on{background:var(--amber);color:#2b1d00}
+
+/* ---------- Scanner ---------- */
+#scanwrap{position:relative;border-radius:14px;overflow:hidden;background:#000;
+  aspect-ratio:4/3;display:none}
+#scanwrap.on{display:block}
+#scanvid{width:100%;height:100%;object-fit:cover;display:block}
+.reticle{position:absolute;inset:18% 10%;border:2px solid rgba(74,222,128,.9);
+  border-radius:12px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
+.scanmsg{position:absolute;left:0;right:0;bottom:0;padding:9px 12px;font-size:12.5px;
+  background:linear-gradient(transparent,rgba(0,0,0,.85));text-align:center}
+
+/* ---------- Chart ---------- */
+.chart{width:100%;height:112px;display:block}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart text{fill:var(--dim);font-size:9px}
+
+.tag{font-size:10.5px;font-weight:650;padding:2.5px 7px;border-radius:6px;
+  background:var(--surface2);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.tag.hb{background:#3a2a12;color:#fbbf24}
+.tag.gym{background:#12303c;color:#60a5fa}
+.tag.other{background:#2a2440;color:#a78bfa}
+
+.note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:8px}
+.warn{background:#33210f;border:1px solid #63430f;color:#fcd34d;border-radius:10px;
+  padding:9px 11px;font-size:12.5px;margin-top:9px}
+
+/* ---------- Die eine nächste Handlung ---------- */
+.now{background:linear-gradient(155deg,var(--ph1,#16301f),var(--ph2,#141a17));
+  border:1px solid color-mix(in srgb,var(--phc,#4ade80) 55%,transparent);
+  border-radius:var(--r);padding:18px 16px;margin-bottom:12px;cursor:pointer;
+  box-shadow:0 6px 22px rgba(0,0,0,.28)}
+.now:active{transform:scale(.99)}
+.now-k{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--phc,var(--acc));
+  font-weight:700;margin-bottom:6px}
+.now-t{font-size:22px;font-weight:680;letter-spacing:-.02em;line-height:1.2}
+.now-s{font-size:13.5px;color:var(--muted);margin-top:5px;line-height:1.4}
+.now-go{font-size:12.5px;color:var(--phc,var(--acc));font-weight:620;margin-top:11px}
+.phase-h{font-size:12.5px;color:var(--muted);margin:-2px 0 12px;line-height:1.45}
+.seg{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--line);
+  border-radius:11px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;padding:8px 0;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--area);color:#0b1220}
+.rest{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;margin-bottom:12px}
+.rest::-webkit-scrollbar{display:none}
+.rest a{flex:0 0 auto;background:var(--surface);border:1px solid var(--line);border-radius:11px;
+  padding:9px 12px;font-size:12.5px;font-weight:600;color:var(--text);
+  display:flex;align-items:center;gap:7px}
+.rest a i{width:7px;height:7px;border-radius:50%;background:var(--area);font-style:normal}
+
+/* ---------- Essensfenster ---------- */
+.win{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+  padding:11px 12px;border-radius:11px;background:var(--surface2);
+  border:1px solid var(--line);margin-bottom:7px}
+.win:active{transform:scale(.99)}
+.win-i{font-size:19px;flex:0 0 auto}
+.win-g{flex:1;min-width:0}
+.win-g b{display:block;font-size:14.5px;font-weight:620}
+.win-g span{font-size:11.5px;color:var(--muted)}
+.win-s{font-size:11px;font-weight:650;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--dim);white-space:nowrap}
+.win.now{background:var(--acc-dim);border-color:var(--acc);border-radius:11px;padding:11px 12px;
+  margin-bottom:7px;background-image:none}
+.win.now .win-s{color:var(--acc)}
+.win.done{opacity:.5}
+.win.done .win-s{color:var(--acc)}
+.win.skip{opacity:.45}
+.win.missed{border-color:#5a3b12}
+.win.missed .win-s{color:var(--amber)}
+
+/* ---------- Mahlzeiten unter dem Fenster ---------- */
+.mealrow{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 9px 30px}
+.meal{display:flex;flex-direction:column;align-items:flex-start;gap:1px;
+  background:var(--surface2);border:1px solid var(--line);border-radius:9px;
+  padding:7px 10px;text-align:left}
+.meal b{font-size:12.5px;font-weight:620}
+.meal span{font-size:10.5px;color:var(--muted)}
+.meal:active{background:var(--acc);color:#06210f}
+.meal.add{color:var(--muted);font-size:12.5px;font-weight:600;justify-content:center;
+  border-style:dashed}
+
+/* ---------- Tagesleiste ---------- */
+.track{position:relative;height:26px;border-radius:8px;background:var(--surface2);
+  overflow:hidden;border:1px solid var(--line)}
+.track .dip{position:absolute;top:0;bottom:0;background:rgba(251,191,36,.14);
+  border-left:1px solid rgba(251,191,36,.35);border-right:1px solid rgba(251,191,36,.35)}
+.track .wblk{position:absolute;top:6px;bottom:6px;border-radius:4px;background:var(--dim)}
+.track .wblk.now{background:var(--acc)}
+.track .wblk.done{background:var(--acc);opacity:.5}
+.track .wblk.missed{background:var(--amber);opacity:.6}
+.track .wblk.skip{background:var(--dim);opacity:.35}
+.track .mark{position:absolute;top:0;bottom:0;width:2px;background:var(--blue)}
+.track .nowline{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--text);
+  box-shadow:0 0 0 2px rgba(0,0,0,.45)}
+
+/* ---------- Warum-Knopf ---------- */
+.qm{width:17px;height:17px;border-radius:50%;border:1px solid var(--line);
+  background:var(--surface2);color:var(--muted);font-size:10.5px;font-weight:750;
+  line-height:1;display:inline-flex;align-items:center;justify-content:center;
+  vertical-align:middle;margin-left:3px;flex:0 0 auto;padding:0}
+.qm:active{background:var(--acc);color:#06210f}
+
+/* ---------- Ritual-Uhr ---------- */
+.clock{font-size:56px;font-weight:700;letter-spacing:-.03em;text-align:center;
+  font-variant-numeric:tabular-nums;color:var(--acc);padding:14px 0}
+
+/* ---------- Abhaken ---------- */
+.tick{width:28px;height:28px;flex:0 0 auto;border-radius:9px;border:1.8px solid var(--line);
+  background:var(--surface2);color:#06210f;font-weight:800;font-size:14px;
+  display:flex;align-items:center;justify-content:center}
+.tick.on{background:var(--acc);border-color:var(--acc)}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);
+  bottom:calc(84px + env(safe-area-inset-bottom));background:var(--surface2);
+  border:1px solid var(--line);border-radius:11px;padding:10px 16px;font-size:13.5px;
+  font-weight:550;z-index:120;opacity:0;pointer-events:none;transition:all .22s;max-width:88vw}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1 id="hTitle">Heute</h1>
+    <div class="sub" id="hSub"></div>
+  </div>
+  <button class="btn sm ghost" id="dateBtn">📅</button>
+</header>
+
+<main id="app"></main>
+
+<nav class="tabs" id="nav"></nav>
+
+<div class="sheet-bg" id="sheetBg"></div>
+<div class="sheet" id="sheet"><div class="handle"></div><div id="sheetBody"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+/* =========================================================================
+   Pivot — lokaler Trainings-, Last- und Ernährungstracker
+   Alle Daten bleiben im Browser (localStorage). Kein Server, kein Account.
+   Wissenschaftliche Grundlagen sind in ./QUELLEN.md dokumentiert.
+   ========================================================================= */
+
+const KEY='pivot.v1';
+const APP_VERSION='4.0';
+const DEF={
+  profile:{sex:'m',age:25,height:183,weight:84,pal:1.5,protPerKg:1.8,carbPerKg:5,
+           goal:'maintain',kcalOverride:null},
+  foods:[],        // Favoriten
+  diary:{},        // 'YYYY-MM-DD' -> [{n,g,kcal,p,c,f,bc,ts}]
+  sessions:[],     // {id,date,type,label,min,rpe,ex:[{n,sets:[{w,r,rir}]}],note}
+  well:{},         // 'YYYY-MM-DD' -> {sleepQ,fat,str,sore,sleepH,hrv,bw}
+  adhs:{
+    medTime:'08:15',   // Einnahmezeit — einziger Anker, alle Fenster leiten sich davon ab
+    useWindows:true,
+    std:{},            // Fenster -> [{n,kcal100,p,c,f,g}] Standardmahlzeit
+    meals:{},          // 'YYYY-MM-DD' -> {w1:'done'|'skip', ...}
+    rules:[],          // Wenn-dann-Regeln
+    tasks:{},          // 'YYYY-MM-DD' -> [{t,first,slot,done}]
+    ruleDone:{},       // 'YYYY-MM-DD' -> {ruleId:true}
+    wake:'08:00', bed:'00:00',
+    routines:null,     // wird beim ersten Start gesetzt
+    rDone:{},          // 'YYYY-MM-DD' -> {stepId:true}
+    emergency:{},      // 'YYYY-MM-DD' -> true, wenn Notfallversion gewählt
+    focus:{}           // 'YYYY-MM-DD' -> {used:true}
+  },
+  seen:{}
+};
+
+let S = load();
+function load(){
+  try{ const r=JSON.parse(localStorage.getItem(KEY)||'null');
+       return r? deepMerge(structuredClone(DEF),r) : structuredClone(DEF); }
+  catch(e){ return structuredClone(DEF); }
+}
+function deepMerge(a,b){ for(const k in b){
+  if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])&&a[k]) deepMerge(a[k],b[k]);
+  else a[k]=b[k]; } return a; }
+let saveT=null;
+function save(){ clearTimeout(saveT); saveT=setTimeout(flush,120); }
+/* Sofort schreiben, wenn die App in den Hintergrund geht oder geschlossen wird —
+   sonst geht eine Eingabe verloren, die kurz vor dem Schließen gemacht wurde. */
+function flush(){ clearTimeout(saveT);
+  try{ localStorage.setItem(KEY,JSON.stringify(S)); }
+  catch(e){ toast('Speicher voll — bitte exportieren'); } }
+window.addEventListener('pagehide',flush);
+window.addEventListener('beforeunload',flush);
+
+/* ---------- Datum & Helfer ---------- */
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parseISO=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c);};
+const addDays=(s,n)=>{const d=parseISO(s);d.setDate(d.getDate()+n);return iso(d);};
+const todayISO=()=>iso(new Date());
+let DAY = todayISO();
+const DOW=['So','Mo','Di','Mi','Do','Fr','Sa'];
+const MON=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+function human(s){ const d=parseISO(s); const t=todayISO();
+  if(s===t) return 'Heute'; if(s===addDays(t,-1)) return 'Gestern';
+  return DOW[d.getDay()]+', '+d.getDate()+'. '+MON[d.getMonth()]; }
+const r0=n=>Math.round(n), r1=n=>Math.round(n*10)/10;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const mean=a=>a.length?sum(a)/a.length:0;
+function sd(a){ if(a.length<2)return 0; const m=mean(a);
+  return Math.sqrt(sum(a.map(x=>(x-m)**2))/(a.length-1)); }
+
+window.setInput=(id,v)=>{document.getElementById(id).value=v;};
+function toast(msg){ const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('on');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),2100); }
+
+/* =========================================================================
+   WISSENSCHAFTLICHE RECHENLOGIK
+   ========================================================================= */
+
+/* Grundumsatz — Mifflin-St Jeor (1990), genauer als Harris-Benedict */
+function bmr(){ const p=S.profile;
+  const base=10*p.weight + 6.25*p.height - 5*p.age;
+  return p.sex==='f' ? base-161 : base+5; }
+
+/* Trainingsenergie: MET × kg × h  (Compendium of Physical Activities) */
+const MET={handball:7.0, gym:5.0, other:6.5};
+function sessionKcal(s){ return (MET[s.type]||6)*S.profile.weight*(s.min/60); }
+
+/* Tagesziel Energie: Grundumsatz × PAL + Trainingsanteil des Tages */
+function kcalTarget(day){
+  const p=S.profile;
+  if(p.kcalOverride) return p.kcalOverride;
+  let t = bmr()*p.pal;
+  t += sum(sessionsOn(day).map(sessionKcal))*0.5; // Hälfte, weil der PAL-Faktor Training teils enthält
+  if(p.goal==='gain') t+=300; if(p.goal==='lose') t-=350;
+  return r0(t/10)*10;
+}
+/* Protein: ISSN Position Stand 1,4–2,0 g/kg | KH: ACSM 5–7 g/kg im Mannschaftssport */
+const protTarget=()=>r0(S.profile.weight*S.profile.protPerKg);
+function carbTarget(day){
+  const hard=sum(sessionsOn(day||DAY).map(s=>s.min))>=45;
+  const gk = hard ? S.profile.carbPerKg : Math.max(3, S.profile.carbPerKg-2);
+  return r0(S.profile.weight*gk); }
+function fatTarget(day){
+  const rest=kcalTarget(day)-protTarget()*4-carbTarget(day)*4;
+  return Math.max(35, r0(rest/9)); }
+
+/* session-RPE (Foster 1998): Last = RPE(0–10) × Dauer in Minuten */
+const srpe=s=>(s.rpe||0)*(s.min||0);
+const sessionsOn=d=>S.sessions.filter(s=>s.date===d);
+function loadOn(d){ return sum(sessionsOn(d).map(srpe)); }
+function loadRange(endDay,n){ const out=[];
+  for(let i=n-1;i>=0;i--){ const d=addDays(endDay,-i); out.push({d,v:loadOn(d)}); }
+  return out; }
+/* Monotonie & Strain (Foster 1998): Wochenlast / SD der Tageslasten */
+function weekStats(endDay){
+  const days=loadRange(endDay,7).map(x=>x.v);
+  const total=sum(days), s=sd(days);
+  const enough = days.filter(v=>v>0).length>=3;
+  const mono = (enough && s>0) ? mean(days)/s : 0;
+  return {total, mono, strain: total*mono, days};
+}
+/* 7:28-Verhältnis — NUR als Darstellung, nicht als Verletzungsprognose.
+   Siehe Impellizzeri et al. 2020 zur Kritik an der ACWR. */
+function ratio728(endDay){
+  const hist=S.sessions.filter(s=>s.date<=endDay).map(s=>s.date).sort();
+  if(!hist.length || hist[0] > addDays(endDay,-20)) return 0;   // erst ab ~3 Wochen sinnvoll
+  const acute=sum(loadRange(endDay,7).map(x=>x.v));
+  const chron=sum(loadRange(endDay,28).map(x=>x.v))/4;
+  return chron>0 ? acute/chron : 0;
+}
+
+/* Hooper-Index (Hooper & Mackinnon 1995): 4 Items je 1–7, Summe 4–28, niedrig = gut */
+const HOOP=[
+  {k:'sleepQ', s:'Schlaf',      l:'Schlafqualität', lo:'sehr gut', hi:'sehr schlecht'},
+  {k:'fat',    s:'Müdigkeit',  l:'Müdigkeit',      lo:'sehr frisch', hi:'sehr müde'},
+  {k:'str',    s:'Stress',     l:'Stress',         lo:'sehr wenig', hi:'sehr viel'},
+  {k:'sore',   s:'Muskelkater',l:'Muskelkater',    lo:'keiner', hi:'stark'}
+];
+function hooper(d){ const w=S.well[d]; if(!w) return null;
+  const v=HOOP.map(h=>w[h.k]); if(v.some(x=>!x)) return null; return sum(v); }
+/* Baseline: individuelle 14-Tage-Referenz (Saw et al. 2016: Abweichung vom
+   eigenen Normalwert ist aussagekräftiger als ein absoluter Score) */
+function hooperBase(endDay){
+  const vals=[]; for(let i=1;i<=14;i++){ const h=hooper(addDays(endDay,-i)); if(h!=null)vals.push(h); }
+  return vals.length>=4 ? {m:mean(vals),s:sd(vals),n:vals.length} : null;
+}
+function readiness(d){
+  const h=hooper(d); if(h==null) return null;
+  const b=hooperBase(d);
+  let score;
+  if(b && b.s>0.4){ const z=(h-b.m)/b.s; score=clamp(50-z*18,0,100); }   // relativ
+  else { score=clamp((28-h)/24*100,0,100); }                             // absolut
+  return {score:r0(score), hooper:h, base:b};
+}
+
+/* e1RM — Epley, RIR als zusätzliche Wiederholungen (Zourdos et al. 2016) */
+function e1rm(w,reps,rir){ const r=(reps||0)+(rir||0);
+  if(!w||!r) return 0; if(r===1) return w; return w*(1+r/30); }
+function bestE1RM(name){ let best=0,when=null;
+  for(const s of S.sessions) for(const e of (s.ex||[]))
+    if(e.n.toLowerCase()===name.toLowerCase())
+      for(const st of e.sets){ const v=e1rm(st.w,st.r,st.rir); if(v>best){best=v;when=s.date;} }
+  return {v:best,when}; }
+function volumeWeek(endDay){ const from=addDays(endDay,-6); const map={};
+  for(const s of S.sessions){ if(s.date<from||s.date>endDay) continue;
+    for(const e of (s.ex||[])){ const v=sum(e.sets.map(x=>(x.w||0)*(x.r||0)));
+      map[e.n]=(map[e.n]||0)+v; } }
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]); }
+
+/* Ernährung des Tages */
+function dayMacros(d){ const e=S.diary[d]||[];
+  return {kcal:sum(e.map(x=>x.kcal)), p:sum(e.map(x=>x.p)),
+          c:sum(e.map(x=>x.c)), f:sum(e.map(x=>x.f)), n:e.length}; }
+
+/* =========================================================================
+   ADHS-SCHICHT
+   Grundgedanke: Nicht der Hunger steuert das Essen, sondern die Uhr.
+   Stimulanzien dämpfen den Appetit über die Wirkdauer; wer auf das
+   Hungersignal wartet, isst tagsüber zu wenig und abends zu viel.
+   Alle Fenster leiten sich aus einer einzigen Zeit ab: der Einnahme.
+   ========================================================================= */
+const hm2m=s=>{const[h,m]=String(s).split(':').map(Number);return h*60+m;};
+const m2hm=m=>pad(Math.floor(((m%1440)+1440)%1440/60))+':'+pad(((m%60)+60)%60);
+const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes();};
+
+/* Offsets in Minuten ab Einnahme. Anlehnung an den Wirkverlauf von
+   Lisdexamfetamin: Wirkeintritt nach etwa 1–1,5 h, Spitze nach 3,5–4,5 h,
+   Nachlassen nach etwa 10–12 h. */
+const WIN=[
+  {k:'w1', n:'Vor dem Wirkeintritt', off:[-20,45], p:.30, c:.25, ico:'☀️',
+   why:'Jetzt ist der Appetit noch da. Was hier nicht reingeht, fehlt dir den ganzen Tag.'},
+  {k:'w2', n:'Mittag', off:[240,330], p:.30, c:.30, ico:'🍽',
+   why:'Wirkspitze — der Hunger meldet sich nicht. Trotzdem essen, gegen das Gefühl.'},
+  {k:'w3', n:'Nachmittag', off:[420,480], p:.15, c:.15, ico:'🥤',
+   why:'Kleine Portion gegen das Tief. Darf etwas sein, das keine Vorbereitung braucht.'},
+  {k:'w4', n:'Abend', off:[600,720], p:.25, c:.30, ico:'🌙',
+   why:'Wirkung lässt nach, der Hunger kommt zurück. Vorbereitetes Essen schlägt den Lieferdienst.'}
+];
+function windowsFor(day){
+  const base=hm2m(S.adhs.medTime||'08:15');
+  const past = day<todayISO();
+  const now = nowMin();
+  return WIN.map(w=>{
+    const from=base+w.off[0], to=base+w.off[1];
+    const set=(S.adhs.meals[day]||{})[w.k];
+    let status = set || 'open';
+    if(!set){ if(past || now>to) status='missed'; else if(now>=from) status='now'; }
+    return {...w, from, to, status,
+      kcal:r0(kcalTarget(day)*w.c), prot:r0(protTarget()*w.p)};
+  });
+}
+function markWindow(day,k,st){
+  const m=S.adhs.meals[day]=S.adhs.meals[day]||{}; m[k]=st; save();
+}
+/* Mahlzeiten eines Fensters. Altes Einzel-Format wird automatisch migriert. */
+function stdMeals(k){
+  let v=S.adhs.std[k];
+  if(!v||!v.length) return [];
+  if(v[0] && v[0].items===undefined){        // altes Format: flache Zutatenliste
+    v=[{name:'Standard', items:v}]; S.adhs.std[k]=v; save();
+  }
+  return v;
+}
+const mealSum=m=>({
+  kcal:sum(m.items.map(f=>f.kcal100*f.g/100)),
+  p:sum(m.items.map(f=>f.p*f.g/100))
+});
+/* Eine Mahlzeit in einem Tap eintragen */
+window.eatMeal=(k,i)=>{
+  const m=stdMeals(k)[i]; if(!m) return;
+  let kc=0;
+  for(const f of m.items){ const q=f.g/100;
+    (S.diary[DAY]=S.diary[DAY]||[]).push({n:f.n,g:f.g,kcal:f.kcal100*q,p:f.p*q,c:f.c*q,f:f.f*q,ts:Date.now()});
+    kc+=f.kcal100*q; }
+  markWindow(DAY,k,'done'); save(); closeSheet(); render();
+  toast(esc(m.name)+' · '+r0(kc)+' kcal eingetragen');
+};
+window.skipWindow=(k)=>{ markWindow(DAY,k,'skip'); closeSheet(); render();
+  toast('Übersprungen — kein Problem'); };
+window.doneWindow=(k)=>{ markWindow(DAY,k,'done'); closeSheet(); render();
+  toast('Abgehakt'); };
+
+/* ---------- Wenn-dann-Regeln (Implementation Intentions) ---------- */
+const TRIG={
+  wake:'nach dem Aufwachen', med:'nach der Einnahme', train:'nach dem Training',
+  missed:'wenn ein Essensfenster verstreicht', dip:'im Nachmittagstief', eve:'abends'
+};
+const RULE_SEED=[
+  {wenn:'ich aufwache', dann:'trinke ich ein Glas Wasser, bevor ich aufs Handy schaue', trigger:'wake'},
+  {wenn:'das Training endet', dann:'trinke ich sofort meinen Shake', trigger:'train'},
+  {wenn:'ein Essensfenster verstreicht', dann:'esse ich die kleine Notfallportion statt gar nichts', trigger:'missed'},
+  {wenn:'ich um 15 Uhr durchhänge', dann:'gehe ich fünf Minuten vor die Tür ins Licht', trigger:'dip'}
+];
+function activeRules(day){
+  const now=nowMin(), base=hm2m(S.adhs.medTime||'08:15');
+  const trained=sessionsOn(day).length>0;
+  const missed=windowsFor(day).some(w=>w.status==='missed');
+  return S.adhs.rules.filter(r=>{
+    if(r.trigger==='wake') return now<base+120;
+    if(r.trigger==='med')  return now>=base && now<base+180;
+    if(r.trigger==='train')return trained;
+    if(r.trigger==='missed')return missed;
+    if(r.trigger==='dip')  return now>=900 && now<=1020;
+    if(r.trigger==='eve')  return now>=1140;
+    return true;
+  });
+}
+const ruleDone=(day,id)=>!!(S.adhs.ruleDone[day]||{})[id];
+window.tickRule=(id)=>{
+  const d=S.adhs.ruleDone[DAY]=S.adhs.ruleDone[DAY]||{};
+  d[id]=!d[id]; save(); render(); if(d[id]) toast('Gut.');
+};
+
+/* ---------- Tagesplan: höchstens drei Hauptaufgaben ---------- */
+const SLOTS={vor:'Vormittag',nach:'Nachmittag',abend:'Abend'};
+const tasksFor=d=>S.adhs.tasks[d]||[];
+window.tickTask=(i)=>{ const t=tasksFor(DAY); t[i].done=!t[i].done; save(); render();
+  if(t[i].done) toast('Erledigt.'); };
+window.delTask=(i)=>{ tasksFor(DAY).splice(i,1); save(); render(); };
+
+/* ---------- Reparatur statt Streak ----------
+   Kein Streak-Zähler. Gemessen wird, wie viele der letzten 14 Tage erfasst
+   sind und wie schnell nach einer Lücke wieder erfasst wurde. Ein Aussetzer
+   darf nichts zurücksetzen. */
+function coverage(day,n=14){
+  let hit=0; for(let i=0;i<n;i++){ const d=addDays(day,-i);
+    if(hooper(d)!=null || (S.diary[d]||[]).length || sessionsOn(d).length) hit++; }
+  return {hit,n,pct:r0(hit/n*100)};
+}
+function gapInfo(day){
+  let gap=0; for(let i=1;i<=14;i++){ const d=addDays(day,-i);
+    if(hooper(d)!=null || (S.diary[d]||[]).length || sessionsOn(d).length) break; gap++; }
+  return gap;
+}
+/* Offene Punkte von gestern, die sich nachtragen lassen */
+function repairables(day){
+  const y=addDays(day,-1), out=[];
+  if(hooper(y)==null) out.push({k:'check', l:'Tages-Check von gestern', act:`setDay('${y}');openSheet(wellSheet())`});
+  if(!sessionsOn(y).length) out.push({k:'ses', l:'Einheit von gestern nachtragen', act:`setDay('${y}');VIEW='train';render()`});
+  if(!(S.diary[y]||[]).length) out.push({k:'eat', l:'Essen von gestern nachtragen', act:`setDay('${y}');VIEW='food';render()`});
+  return out;
+}
+
+/* ---------- Routinen ----------
+   Feste Anker, kleine Schritte, plus eine Notfallversion für schlechte Tage.
+   Die Notfallversion ist kein Scheitern, sondern der eingeplante Weg zurück. */
+const DEF_ROUT={
+  morning:[
+    {id:'m1', t:'Aufstehen, Handy liegen lassen'},
+    {id:'m2', t:'Ans Fenster oder raus — direktes Licht', why:'licht'},
+    {id:'m3', t:'Ein Glas Wasser'},
+    {id:'m4', t:'Hygiene'},
+    {id:'m5', t:'Einnahme'},
+    {id:'m6', t:'Dehnblock: Waden, hintere Kette, Hüftbeuger, Haltung'}
+  ],
+  evening:[
+    {id:'e1', t:'Handy weglegen'},
+    {id:'e2', t:'Hygiene'},
+    {id:'e3', t:'Drei Aufgaben für morgen festlegen'},
+    {id:'e4', t:'Leises Audio mit Sleeptimer'},
+    {id:'e5', t:'Licht runter', why:'licht'}
+  ],
+  emergency:[
+    {id:'n1', t:'Licht ins Gesicht — Fenster auf', why:'licht'},
+    {id:'n2', t:'Ein Glas Wasser'},
+    {id:'n3', t:'Zähne putzen, Gesicht waschen'},
+    {id:'n4', t:'Drei Dehnübungen, mehr nicht'}
+  ]
+};
+function routines(){ if(!S.adhs.routines){ S.adhs.routines=structuredClone(DEF_ROUT); save(); }
+  return S.adhs.routines; }
+const isEmergency=d=>!!S.adhs.emergency[d];
+function routineSteps(kind,day){
+  const r=routines();
+  if(kind==='morning' && isEmergency(day)) return r.emergency;
+  return r[kind];
+}
+const stepDone=(d,id)=>!!(S.adhs.rDone[d]||{})[id];
+window.tickStep=(id)=>{ const m=S.adhs.rDone[DAY]=S.adhs.rDone[DAY]||{};
+  m[id]=!m[id]; save(); render(); if(m[id]) toast('✓'); };
+window.setEmergency=(v)=>{ if(v) S.adhs.emergency[DAY]=true; else delete S.adhs.emergency[DAY];
+  save(); render(); toast(v?'Notfallversion — reicht völlig':'Volle Version'); };
+function routineProgress(kind,day){
+  const st=routineSteps(kind,day);
+  return {done:st.filter(x=>stepDone(day,x.id)).length, all:st.length};
+}
+
+/* ---------- Fokusfenster nach dem Training ----------
+   Mehren et al. 2019: 30 min moderates Radfahren verbesserte bei Erwachsenen mit
+   ADHS die Reaktionszeiten im Flanker-Test, bei Kontrollpersonen nicht.
+   Einzelstudie, n=23 — die Dauer eines solchen Fensters ist damit NICHT belegt.
+   Die App schlägt es deshalb vor und lässt Maik selbst prüfen, ob es bei ihm trägt. */
+function focusWindow(day){
+  if(day!==todayISO()) return null;
+  const ses=sessionsOn(day); if(!ses.length) return null;
+  if((S.adhs.focus[day]||{}).used) return null;
+  const open=tasksFor(day).filter(t=>!t.done);
+  return {n:ses.length, task:open[0]||null};
+}
+window.useFocus=()=>{ (S.adhs.focus[DAY]=S.adhs.focus[DAY]||{}).used=true; save();
+  closeSheet(); render(); };
+
+/* ---------- Startritual: zwei Minuten, mehr wird nicht verlangt ---------- */
+let ritT=null, ritLeft=0;
+window.startRitual=(txt)=>{
+  ritLeft=120; openSheet(ritualSheet(txt));
+  clearInterval(ritT);
+  ritT=setInterval(()=>{
+    ritLeft--; const el=document.getElementById('ritClock');
+    if(!el){ clearInterval(ritT); return; }
+    el.textContent=pad(Math.floor(ritLeft/60))+':'+pad(ritLeft%60);
+    if(ritLeft<=0){ clearInterval(ritT);
+      document.getElementById('ritBody').innerHTML=
+        `<div class="now-t" style="margin-bottom:8px">Zwei Minuten sind um.</div>
+         <div class="small muted" style="margin-bottom:16px">Mehr war nicht abgemacht.
+           Wenn du weitermachst, weil es gerade läuft — gut. Wenn nicht, hast du trotzdem angefangen.</div>
+         <button class="btn acc" onclick="closeSheet()">Ich mache weiter</button>
+         <div class="spacer"></div>
+         <button class="btn ghost sm" onclick="closeSheet()">Reicht für jetzt</button>`;
+      if(navigator.vibrate) navigator.vibrate([80,60,80]);
+    }
+  },1000);
+};
+
+/* ---------- Warum? — Evidenz an der Zahl, nicht in der Fußnote ---------- */
+const WHY={
+  bereit:{t:'Bereitschaft',
+    b:'Kein Gesundheitswert. Die Zahl ist die Abweichung deines heutigen Hooper-Index vom eigenen 14-Tage-Schnitt. Ein Wert von 12 sagt für sich nichts — 12 bei einem Schnitt von 9 ist ein Signal, 12 bei einem Schnitt von 15 ist Erholung.',
+    q:'Hooper & Mackinnon 1995 (vier Items); Saw, Main & Gastin 2016, Br J Sports Med: subjektive Selbstauskunft reagiert sensibler auf Belastung als objektive Marker.',
+    g:'Braucht mindestens vier erfasste Tage, vorher rechnet die App gegen eine feste Skala.'},
+  srpe:{t:'Wochenlast (sRPE)',
+    b:'RPE mal Dauer in Minuten, summiert über sieben Tage. Der Trick daran: eine Handballeinheit und ein Krafttraining landen auf derselben Skala und werden vergleichbar.',
+    q:'Foster 1998, Med Sci Sports Exerc; Foster et al. 2001, J Strength Cond Res.',
+    g:'RPE erst etwa 30 Minuten nach Ende bewerten — sonst überlagert die letzte harte Übung das Urteil.'},
+  mono:{t:'Monotonie',
+    b:'Wochenschnitt geteilt durch die Streuung der Tageslasten. Über 2,0 heißt: zu wenig Unterschied zwischen harten und leichten Tagen. Ein echter Ruhetag senkt sie stärker als ein durchgehend lockeres Programm.',
+    q:'Foster 1998 — Zusammenhang mit Infekten und Stagnation.',
+    g:'Erst ab drei belasteten Tagen in der Woche aussagekräftig.'},
+  acwr:{t:'7:28-Verhältnis',
+    b:'Akute Wochenlast geteilt durch den Schnitt der letzten vier Wochen. Bewusst ohne Ampel dargestellt.',
+    q:'Gabbett 2016 hat die Kennzahl populär gemacht; Impellizzeri et al. 2020 und Lolli et al. 2019 haben sie methodisch zerlegt (mathematical coupling).',
+    g:'Als Verletzungsprognose nicht haltbar. Nur als Bild deiner Belastungsverteilung brauchbar.'},
+  kcal:{t:'Kalorienziel',
+    b:'Grundumsatz nach Mifflin-St Jeor mal PAL-Faktor, plus die geschätzte Trainingsenergie zur Hälfte. Die Hälfte deshalb, weil ein PAL von 1,5 schon einen Teil Sport enthält — doppelt gerechnete Trainingskalorien sind der häufigste Fehler in Tracking-Apps.',
+    q:'Mifflin & St Jeor 1990, Am J Clin Nutr; MET-Werte nach Ainsworth et al., Compendium of Physical Activities.',
+    g:'Populationsformel. Der reale Grundumsatz kann um ±10 % abweichen; nur eine indirekte Kalorimetrie misst ihn.'},
+  prot:{t:'Proteinziel',
+    b:'Gramm pro Kilogramm Körpergewicht, verteilt auf die vier Fenster mit 30/30/15/25 Prozent. Vorn mehr, weil das erste Fenster das ist, das am ehesten ausfällt.',
+    q:'Jäger et al. 2017, ISSN Position Stand: 1,4–2,0 g/kg.',
+    g:'Obergrenze ist keine Wirkgrenze, sondern der Punkt, ab dem kein Zusatznutzen mehr belegt ist.'},
+  fenster:{t:'Essensfenster',
+    b:'Vier Fenster, abgeleitet aus deiner Einnahmezeit: −20 Minuten, +4, +7 und +10 Stunden. Grundlage ist der Wirkverlauf von Lisdexamfetamin — Eintritt nach etwa einer Stunde, Spitze nach dreieinhalb bis viereinhalb, Nachlassen nach zehn bis zwölf Stunden. Verminderter Appetit ist eine sehr häufige Nebenwirkung. Wer auf Hunger wartet, isst unter der Wirkung zu wenig und danach zu viel.',
+    q:'Fachinformation Lisdexamfetamin; Wirkverlauf aus der Zulassungsdokumentation.',
+    g:'Strukturhilfe, keine medizinische Empfehlung. Fragen zur Medikation gehören zu deiner Ärztin.'},
+  fokus:{t:'Fokusfenster nach dem Training',
+    b:'Nach einer Trainingseinheit ist die Chance auf eine gute Konzentrationsphase erhöht. In einer Studie an 23 Erwachsenen mit ADHS verbesserten 30 Minuten moderates Radfahren die Reaktionszeiten im Flanker-Test — bei den gesunden Kontrollpersonen nicht.',
+    q:'Mehren et al. 2019, Front Psychiatry. Recherchiert über PubMed, DOI 10.3389/fpsyt.2019.00132.',
+    g:'Einzelstudie mit kleiner Stichprobe, anderes Belastungsprotokoll als deins. Wie lange so ein Fenster hält, ist damit nicht belegt. Probier es aus und entscheide nach deiner eigenen Erfahrung.'},
+  licht:{t:'Morgenlicht',
+    b:'Erwachsene mit ADHS zeigen häufiger eine verzögerte innere Uhr — späterer Melatoninanstieg, spätere Aufwachzeit. Stimulanzien verschieben sie zusätzlich nach hinten. Helles Licht am Morgen zieht sie nach vorn; in einer Pilotstudie ging eine solche Vorverlagerung mit geringeren ADHS-Symptomwerten einher.',
+    q:'Snitselaar et al., J Atten Disord, DOI 10.1177/1087054713479663; Fargason et al. 2017, J Psychiatr Res, DOI 10.1016/j.jpsychires.2017.03.004. Beides über PubMed recherchiert.',
+    g:'Die Lichtstudie ist eine Pilotstudie mit wenigen Teilnehmern und nutzte 10.000 Lux Therapielicht. Tageslicht am Fenster ist schwächer — schadet aber nichts und deckt sich mit deiner eigenen Beobachtung.'},
+  wenndann:{t:'Wenn-dann-Regeln',
+    b:'Ein fertiger Satz aus Auslöser und Handlung. Der Punkt ist die Delegation: die Situation stößt die Handlung an, statt dass du im Moment entscheiden musst. Genau diese Entscheidung im Moment ist der teure Schritt.',
+    q:'Gollwitzer 1999; Gollwitzer & Sheeran 2006 (Meta-Analyse); Gawrilow & Gollwitzer 2008 speziell bei ADHS.',
+    g:'Die ADHS-Belege stammen überwiegend aus Studien mit Kindern.'},
+  streak:{t:'Warum kein Streak',
+    b:'Ein Streak setzt die ganze Belohnung auf einen fernen Zeitpunkt und entwertet mit einem einzigen Aussetzer alles Bisherige. Bei ADHS fällt der Wert einer Belohnung mit der Verzögerung steiler ab als sonst — also wirkt genau der falsche Hebel. Gezählt wird deshalb, wie viele der letzten 14 Tage erfasst sind.',
+    q:'Lally et al. 2010: Gewohnheitsaufbau dauert im Median 66 Tage, und einzelne ausgelassene Gelegenheiten beeinträchtigten ihn nicht messbar.',
+    g:'Kein Ersatz für Motivation — nur die Entfernung einer unnötigen Strafe.'}
+};
+window.why=k=>{ const w=WHY[k]; if(!w) return;
+  openSheet(`<h2>${w.t}</h2>
+    <div class="small" style="margin-bottom:14px;line-height:1.6">${w.b}</div>
+    <div class="card tight" style="margin-bottom:10px">
+      <div class="xs muted" style="margin-bottom:4px">Quelle</div>
+      <div class="small">${w.q}</div></div>
+    <div class="card tight" style="margin-bottom:14px">
+      <div class="xs muted" style="margin-bottom:4px">Grenze</div>
+      <div class="small">${w.g}</div></div>
+    <button class="btn" onclick="closeSheet()">Verstanden</button>`);
+};
+const Q=k=>`<button class="qm" onclick="event.stopPropagation();why('${k}')">?</button>`;
+
+/* ---------- Die eine nächste Handlung ---------- */
+function nextAction(day){
+  if(day!==todayISO()) return null;
+  if(hooper(day)==null)
+    return {t:'Tages-Check', s:'Vier Fragen, zwanzig Sekunden.', a:'openSheet(wellSheet())', ico:'✓'};
+  const w=windowsFor(day).find(x=>x.status==='now');
+  if(w) return {t:w.n, s:`Bis ${m2hm(w.to)} · Ziel ${w.kcal} kcal, ${w.prot} g Protein`,
+                a:`openSheet(winSheet('${w.k}'))`, ico:w.ico};
+  const t=tasksFor(day).find(x=>!x.done);
+  if(t) return {t:t.t, s:t.first?('Kleinster Start: '+t.first):'Erste Hauptaufgabe',
+                a:`openSheet(taskSheet())`, ico:'→'};
+  const ses=sessionsOn(day);
+  if(!ses.length) return {t:'Einheit erfassen', s:'Falls du heute trainiert hast.',
+                a:"VIEW='train';render()", ico:'🏋️'};
+  return {t:'Für heute erledigt', s:'Alles erfasst.', a:'', ico:'✓'};
+}
+
+/* =========================================================================
+   UI-Grundgerüst
+   ========================================================================= */
+const ICON={
+  now:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  tag:'<rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M7.5 14h3M7.5 17.5h6"/>',
+  food:'<path d="M4 3v8a3 3 0 006 0V3"/><path d="M7 11v10"/><path d="M17 3c-1.5 2-2 4-2 7 0 2 1 3 2 3s2-1 2-3c0-3-.5-5-2-7z"/><path d="M17 13v8"/>',
+  train:'<path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/>',
+  me:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/>'
+};
+const TABS=[['now','Jetzt'],['tag','Tag'],['food','Essen'],['train','Training'],['me','Profil']];
+const AREA={now:'var(--phc,#4ade80)', tag:'#4ade80', food:'#f5b13d', train:'#63a9f5', me:'#ab8cf7'};
+const TITLE={now:'Jetzt', tag:'Dein Tag', food:'Essen', train:'Training', me:'Profil'};
+let VIEW='now', trainSeg='ses';
+
+function phase(){
+  const n=nowMin(), w=hm2m(S.adhs.wake||'08:00'), m=hm2m(S.adhs.medTime||'08:15');
+  if(n < w-45) return 'night';
+  if(n < m+150) return 'morning';
+  if(n < 900)   return 'midday';
+  if(n <= 1020) return 'dip';
+  if(n < 1260)  return 'evening';
+  return 'winddown';
+}
+const PHASE={
+  morning:{t:'Morgen', s:'Deine beste Phase beginnt. Routine, essen, dann das Wichtigste.'},
+  midday: {t:'Vormittag', s:'Konzentrationsfenster. Hier gehört die Hauptaufgabe hin.'},
+  dip:    {t:'Nachmittagstief', s:'Deine schwächste Phase. Jetzt nichts Großes — essen, Licht, Bewegung.'},
+  evening:{t:'Abend', s:'Training erfassen, essen, langsam runterkommen.'},
+  winddown:{t:'Wind-down', s:'Abendroutine und drei Aufgaben für morgen. Mehr nicht.'},
+  night:  {t:'Nacht', s:'Eigentlich Schlafzeit.'}
+};
+
+function renderNav(){
+  document.getElementById('nav').innerHTML=TABS.map(([k,l])=>
+    `<button data-t="${k}" class="${VIEW===k?'on':''}">
+      <svg viewBox="0 0 24 24">${ICON[k]}</svg><span>${l}</span></button>`).join('');
+}
+document.getElementById('nav').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-t]'); if(!b) return;
+  stopScan(); VIEW=b.dataset.t; render(); window.scrollTo(0,0);
+});
+document.getElementById('dateBtn').addEventListener('click',()=>openSheet(dateSheet()));
+window.go=(v,seg)=>{ VIEW=v; if(seg) trainSeg=seg; closeSheet(); render(); window.scrollTo(0,0); };
+window.setSeg=v=>{ trainSeg=v; render(); };
+
+/* Sheet */
+const sheetEl=document.getElementById('sheet'), bgEl=document.getElementById('sheetBg');
+function openSheet(html){ document.getElementById('sheetBody').innerHTML=html;
+  sheetEl.classList.add('on'); bgEl.classList.add('on'); }
+function closeSheet(){ sheetEl.classList.remove('on'); bgEl.classList.remove('on'); stopScan(); }
+bgEl.addEventListener('click',closeSheet);
+window.closeSheet=closeSheet;
+
+function dateSheet(){
+  return `<h2>Tag wählen</h2>
+  <label class="f"><span>Datum</span>
+    <input type="date" id="dPick" value="${DAY}" max="${todayISO()}"></label>
+  <div class="btnrow">
+    <button class="btn" onclick="setDay('${addDays(DAY,-1)}')">← Vortag</button>
+    <button class="btn" onclick="setDay('${todayISO()}')">Heute</button>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn acc" onclick="setDay(document.getElementById('dPick').value)">Übernehmen</button>`;
+}
+window.setDay=d=>{ if(d){DAY=d; closeSheet(); render();} };
+
+function render(){
+  document.body.dataset.ph=phase();
+  document.documentElement.style.setProperty('--area', AREA[VIEW]);
+  renderNav();
+  document.getElementById('hTitle').textContent=TITLE[VIEW];
+  const dd=parseISO(DAY);
+  document.getElementById('hSub').textContent=
+    (DAY===todayISO()?'':human(DAY)+' · ')+DOW[dd.getDay()]+', '+dd.getDate()+'. '+MON[dd.getMonth()];
+  document.getElementById('app').innerHTML=
+    ({now:vNow, tag:vTag, food:vFood, train:vTrain, me:vMe})[VIEW]();
+  if(VIEW==='train' && trainSeg==='load') drawCharts();
+}
+
+/* Ring-SVG */
+function ring(pct,color,label,sub){
+  const R=42,C=2*Math.PI*R,off=C*(1-clamp(pct,0,100)/100);
+  return `<div class="ring"><svg width="96" height="96" viewBox="0 0 96 96">
+    <circle cx="48" cy="48" r="${R}" stroke="var(--surface2)" stroke-width="9" fill="none"/>
+    <circle cx="48" cy="48" r="${R}" stroke="${color}" stroke-width="9" fill="none"
+      stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}"/>
+  </svg><div class="lbl"><b>${label}</b><span>${sub}</span></div></div>`;
+}
+function barRow(label,val,target,unit,color){
+  const p=target?clamp(val/target*100,0,100):0;
+  return `<div style="margin-bottom:9px">
+    <div class="row between xs" style="margin-bottom:4px">
+      <span class="muted" style="font-weight:600">${label}</span>
+      <span class="mono">${r0(val)} / ${r0(target)} ${unit}</span></div>
+    <div class="bar"><i style="width:${p}%;background:${color}"></i></div></div>`;
+}
+
+/* =========================================================================
+   VIEW: HEUTE
+   ========================================================================= */
+/* =========================================================================
+   VIEW: JETZT — nur was zu dieser Uhrzeit zählt
+   ========================================================================= */
+function miniRoutine(kind){
+  const st=routineSteps(kind,DAY), pr=routineProgress(kind,DAY);
+  const next=st.find(x=>!stepDone(DAY,x.id));
+  const title=kind==='morning'?(isEmergency(DAY)?'Morgen · Notfallversion':'Morgenroutine'):'Abendroutine';
+  if(!next) return `<div class="card tight"><div class="row between">
+    <span class="small"><b>${title}</b> — durch</span>
+    <span class="small" style="color:var(--acc);font-weight:650">${pr.done}/${pr.all} &#10003;</span></div></div>`;
+  return `<div class="card">
+    <div class="row between" style="margin-bottom:9px">
+      <h2 style="margin:0">${title}</h2><span class="xs muted mono">${pr.done}/${pr.all}</span></div>
+    <div class="item" style="padding:5px 0">
+      <button class="tick" onclick="tickStep('${next.id}')"></button>
+      <div class="g"><b style="font-weight:550;white-space:normal;font-size:14.5px">${esc(next.t)}</b>
+        <span>nächster Schritt</span></div>
+      ${next.why?Q(next.why):''}</div>
+    <div class="hr"></div>
+    <button class="btn ghost sm" onclick="go('tag')">Ganze Routine öffnen</button>
+  </div>`;
+}
+function winCard(k){
+  const w=windowsFor(DAY).find(x=>x.k===k); if(!w) return '';
+  if(w.status==='done'||w.status==='skip') return '';
+  const meals=stdMeals(k);
+  return `<div class="card">
+    <div class="row between" style="margin-bottom:4px">
+      <h2 style="margin:0">${w.ico} ${w.n}</h2>
+      <span class="xs muted mono">${m2hm(w.from)}–${m2hm(w.to)}</span></div>
+    <div class="xs muted" style="margin-bottom:10px">Ziel ${w.kcal} kcal · ${w.prot} g Protein</div>
+    ${meals.length?`<div class="mealrow" style="margin-left:0">
+      ${meals.map((m,i)=>{const su=mealSum(m);
+        return `<button class="meal" onclick="eatMeal('${k}',${i})">
+          <b>${esc(m.name)}</b><span>${r0(su.kcal)} kcal · ${r0(su.p)} P</span></button>`;}).join('')}
+      </div>`:''}
+    <div class="btnrow">
+      <button class="btn sm ${meals.length?'':'acc'}" onclick="openSheet(winSheet('${k}'))">
+        ${meals.length?'Etwas anderes':'Mahlzeit anlegen'}</button>
+      <button class="btn sm ghost" onclick="skipWindow('${k}')">Auslassen</button>
+    </div></div>`;
+}
+
+function vNow(){
+  const ph=phase(), P=PHASE[ph];
+  const na=nextAction(DAY), wins=windowsFor(DAY);
+  const cov=coverage(DAY), gap=gapInfo(DAY), ses=sessionsOn(DAY);
+  const tasks=tasksFor(DAY), open=tasks.filter(t=>!t.done);
+  let h='';
+
+  if(S.seen.updated){
+    h+=`<div class="card tight" style="border-color:var(--acc)">
+      <div class="small"><b>Version ${APP_VERSION} installiert.</b> Deine Einträge sind alle da.</div>
+      <div class="spacer"></div>
+      <button class="btn ghost sm" onclick="S.seen.updated=0;save();render()">Verstanden</button></div>`;
+  }
+  if(!S.seen.setup){
+    h+=`<div class="card" style="border-color:var(--acc)">
+      <h2 style="color:var(--acc)">Zuerst einrichten</h2>
+      <div class="small muted" style="margin-bottom:12px">Gewicht, Größe, Alter, Alltagsaktivität
+        und Einnahmezeit. Eine Minute, danach nie wieder.</div>
+      <button class="btn acc" onclick="S.seen.setup=1;save();go('me')">Profil ausfüllen</button>
+      <div class="spacer"></div>
+      <button class="btn ghost sm" onclick="S.seen.setup=1;save();render()">Später</button></div>`;
+  }
+
+  if(na){
+    h+=`<div class="now" ${na.a?`onclick="${na.a}"`:''}>
+      <div class="now-k">${P.t} · ${m2hm(nowMin())}</div>
+      <div class="now-t">${na.ico} ${esc(na.t)}</div>
+      <div class="now-s">${esc(na.s)}</div>
+      ${na.a?'<div class="now-go">Antippen →</div>':''}</div>`;
+  }
+  h+=`<div class="phase-h">${P.s}</div>`;
+
+  if(gap>=2 && cov.hit>=2 && (hooper(DAY)!=null||(S.diary[DAY]||[]).length||ses.length)){
+    h+=`<div class="card tight" style="border-color:var(--acc)">
+      <div class="small"><b>Willkommen zurück.</b> ${gap} Tage Lücke — die zählt nicht gegen dich.</div></div>`;
+  }
+
+  const fw=focusWindow(DAY);
+  if(fw){
+    h+=`<div class="card" style="border-color:var(--violet)">
+      <div class="row between" style="margin-bottom:6px">
+        <b style="font-size:15px">Fokusfenster offen ${Q('fokus')}</b></div>
+      <div class="small muted" style="margin-bottom:11px">Du hast trainiert. Direkt nach Belastung
+        ist die Chance auf eine gute Konzentrationsphase erhöht${fw.task?` — ${esc(fw.task.t)} wäre dran`:''}.</div>
+      <div class="btnrow">
+        <button class="btn sm acc" onclick="${fw.task?`startRitual('${esc(fw.task.first||fw.task.t).replace(/'/g,'')}')`:`openSheet(taskSheet())`}">Zwei Minuten starten</button>
+        <button class="btn sm ghost" onclick="useFocus()">Später</button></div></div>`;
+  }
+
+  const cur = wins.find(x=>x.status==='now');
+  if(ph==='morning'){
+    h+=miniRoutine('morning');
+    h+=winCard(cur?cur.k:'w1');
+  }
+  else if(ph==='midday'){
+    if(cur) h+=winCard(cur.k);
+    if(open.length){
+      const t=open[0];
+      h+=`<div class="card">
+        <h2>Jetzt ist deine Phase</h2>
+        <div class="small muted" style="margin-bottom:11px">Nach der Einnahme und vor dem Tief —
+          hier gehört die wichtigste Aufgabe hin.</div>
+        <div class="item" style="padding:4px 0"><button class="tick" onclick="tickTask(${tasks.indexOf(t)})"></button>
+          <div class="g"><b>${esc(t.t)}</b><span>${t.first?'Start: '+esc(t.first):''}</span></div></div>
+        <div class="spacer"></div>
+        <button class="btn acc" onclick="startRitual('${esc(t.first||t.t).replace(/'/g,'')}')">Zwei Minuten starten</button>
+      </div>`;
+    } else {
+      h+=`<div class="card"><h2>Keine Aufgabe gesetzt</h2>
+        <div class="small muted" style="margin-bottom:11px">Deine beste Phase läuft gerade ungenutzt.</div>
+        <button class="btn acc" onclick="openSheet(taskSheet())">Eine Aufgabe setzen</button></div>`;
+    }
+  }
+  else if(ph==='dip'){
+    h+=`<div class="card tight" style="border-color:var(--amber)">
+      <div class="small"><b>Jetzt nichts Großes anfangen.</b> Zwischen 15 und 17 Uhr ist deine
+      Initiierung am schwächsten. Essen, raus ins Licht, kurz bewegen — das reicht.</div></div>`;
+    h+=winCard(cur?cur.k:'w3');
+    const dipRules=S.adhs.rules.filter(r=>r.trigger==='dip');
+    if(dipRules.length) h+=`<div class="card"><h2>Deine Regel für jetzt</h2>
+      ${dipRules.map(r=>`<div class="item"><button class="tick ${ruleDone(DAY,r.id)?'on':''}"
+        onclick="tickRule('${r.id}')">${ruleDone(DAY,r.id)?'&#10003;':''}</button>
+        <div class="g"><b style="font-weight:500;white-space:normal">Wenn ${esc(r.wenn)},
+        dann ${esc(r.dann)}.</b></div></div>`).join('')}</div>`;
+  }
+  else if(ph==='evening'){
+    if(!ses.length) h+=`<div class="card"><h2>Heute trainiert?</h2>
+      <div class="small muted" style="margin-bottom:11px">Erfassen dauert zwanzig Sekunden.
+        RPE etwa eine halbe Stunde nach Ende bewerten.</div>
+      <button class="btn acc" onclick="go('train')">Einheit erfassen</button></div>`;
+    h+=winCard(cur?cur.k:'w4');
+    h+=miniRoutine('evening');
+  }
+  else if(ph==='winddown'||ph==='night'){
+    h+=miniRoutine('evening');
+    const tomo=tasksFor(addDays(DAY,1));
+    h+=`<div class="card"><h2>Morgen</h2>
+      ${tomo.length? tomo.map(t=>`<div class="item"><div class="g"><b>${esc(t.t)}</b>
+        <span>${t.first?esc(t.first):''}</span></div></div>`).join('')
+        :`<div class="small muted" style="margin-bottom:11px">Noch nichts festgelegt. Drei Stück,
+          jede mit einem ersten Schritt — dann startet morgen früh von selbst.</div>`}
+      <button class="btn ${tomo.length?'ghost sm':'acc'}" onclick="setDay('${addDays(DAY,1)}');openSheet(taskSheet())">
+        ${tomo.length?'Ändern':'Drei Aufgaben setzen'}</button></div>`;
+  }
+
+  if(hooper(DAY)==null && ph!=='night')
+    h+=`<div class="card tight"><div class="row between">
+      <span class="small muted">Tages-Check fehlt noch</span>
+      <button class="btn sm" onclick="openSheet(wellSheet())">20 Sekunden</button></div></div>`;
+
+  const offen=wins.filter(w=>w.status==='open'||w.status==='now').length;
+  h+=`<div class="rest">
+    <a onclick="go('tag')"><i></i>Tagesplan</a>
+    <a onclick="go('food')"><i style="background:var(--amber)"></i>${offen} Fenster offen</a>
+    <a onclick="go('train')"><i style="background:var(--blue)"></i>${ses.length} Einheiten</a>
+    <a onclick="go('train','load')"><i style="background:var(--violet)"></i>Wochenlast</a>
+  </div>`;
+  return h;
+}
+
+/* =========================================================================
+   VIEW: TAG — Planer, Routinen, Aufgaben, Regeln
+   ========================================================================= */
+function vTag(){
+  const rd=readiness(DAY), tasks=tasksFor(DAY), rules=S.adhs.rules;
+  const rep=repairables(DAY), cov=coverage(DAY);
+  let h=dayBar(DAY);
+
+  if(rd){
+    const col = rd.score>=60?'var(--acc)':rd.score>=40?'var(--amber)':'var(--red)';
+    const txt = rd.score>=60?'Über deinem Normalwert':rd.score>=40?'Im normalen Bereich':'Unter deinem Normalwert';
+    h+=`<div class="card"><div class="ready">
+      ${ring(rd.score,col,rd.score,'Bereit')}
+      <div style="flex:1">
+        <div style="font-weight:640;font-size:15px;margin-bottom:3px">${txt} ${Q('bereit')}</div>
+        <div class="small muted">Hooper ${rd.hooper}/28${rd.base?` · Schnitt ${r1(rd.base.m)}`:''}</div>
+        <div class="chips" style="margin-top:9px">
+          ${HOOP.map(x=>`<span class="pill xs">${x.s} ${S.well[DAY][x.k]}</span>`).join('')}</div>
+      </div></div>
+      <div class="hr"></div>
+      <button class="btn ghost sm" onclick="openSheet(wellSheet())">Check anpassen</button></div>`;
+  } else {
+    h+=`<div class="card"><h2>Tages-Check</h2>
+      <div class="small muted" style="margin-bottom:12px">Vier Fragen, zwanzig Sekunden.
+        Subjektives Befinden reagiert sensibler auf Belastung als jeder Sensor.</div>
+      <button class="btn acc" onclick="openSheet(wellSheet())">Check starten</button></div>`;
+  }
+
+  h+=routineCard('morning');
+  h+=routineCard('evening');
+
+  h+=`<div class="card">
+    <div class="row between" style="margin-bottom:10px">
+      <h2 style="margin:0">Heute wichtig${tasks.length?` · ${tasks.filter(t=>t.done).length}/${tasks.length}`:''}</h2>
+      ${tasks.length<3?`<button class="btn sm" onclick="openSheet(taskSheet())">+</button>`:''}</div>
+    ${tasks.length? tasks.map((t,i)=>`
+      <div class="item">
+        <button class="tick ${t.done?'on':''}" onclick="tickTask(${i})">${t.done?'&#10003;':''}</button>
+        <div class="g" style="${t.done?'opacity:.45;text-decoration:line-through':''}">
+          <b>${esc(t.t)}</b>
+          <span>${t.first?'Start: '+esc(t.first):''}${t.slot?' · '+SLOTS[t.slot]:''}</span></div>
+        ${t.done?'':`<button class="btn sm acc" style="padding:6px 9px;font-size:11.5px"
+          onclick="startRitual('${esc(t.first||t.t).replace(/'/g,'')}')">2 Min</button>`}
+        <button class="x" onclick="delTask(${i})">✕</button></div>
+      ${t.slot==='nach'&&!t.done?`<div class="warn">Nachmittag ist deine schwächste Phase.
+        Wenn das wirklich passieren soll, zieh es auf den Vormittag.</div>`:''}`).join('')
+      : `<div class="empty">Höchstens drei. Mehr hält kein Tag aus.</div>
+         <button class="btn acc" onclick="openSheet(taskSheet())">Erste Aufgabe setzen</button>`}
+  </div>`;
+
+  h+=`<div class="card">
+    <div class="row between" style="margin-bottom:10px">
+      <h2 style="margin:0">Wenn-dann ${Q('wenndann')}</h2>
+      <button class="btn sm" onclick="openSheet(ruleSheet())">${rules.length?'Regeln':'+'}</button></div>
+    ${rules.length? rules.map(r=>`
+      <div class="item">
+        <button class="tick ${ruleDone(DAY,r.id)?'on':''}" onclick="tickRule('${r.id}')">${ruleDone(DAY,r.id)?'&#10003;':''}</button>
+        <div class="g" style="${ruleDone(DAY,r.id)?'opacity:.45':''}">
+          <b style="font-weight:500;white-space:normal">Wenn ${esc(r.wenn)}, dann ${esc(r.dann)}.</b>
+          <span>${TRIG[r.trigger]||''}</span></div></div>`).join('')
+      : `<div class="empty">Noch keine Regeln.</div>
+         <button class="btn acc" onclick="openSheet(ruleSheet())">Regeln anlegen</button>`}
+  </div>`;
+
+  if(rep.length && cov.hit>=2){
+    h+=`<div class="card"><h2>Nachtragen</h2>
+      <div class="small muted" style="margin-bottom:10px">Von gestern offen. Kostet nichts.</div>
+      ${rep.map(r=>`<button class="btn ghost sm" style="width:100%;justify-content:flex-start;margin-bottom:6px"
+        onclick="${r.act}">${r.l}</button>`).join('')}</div>`;
+  }
+
+  const dSince = S.seen.lastExport ? (Date.now()-S.seen.lastExport)/864e5 : null;
+  h+=`<div class="card tight">
+    <div class="row between xs">
+      <span class="muted">Erfasst · 14 Tage ${Q('streak')}</span>
+      <span class="mono">${cov.hit}/${cov.n} Tage</span></div>
+    <div class="bar" style="margin-top:6px"><i style="width:${cov.pct}%"></i></div>
+    ${cov.hit>=3 && (dSince===null||dSince>7)?`<div class="warn">
+      ${dSince===null?'Du hast noch nie exportiert.':'Letzter Export vor '+r0(dSince)+' Tagen.'}
+      Deine Daten liegen nur in diesem Browser.
+      <div class="spacer"></div>
+      <button class="btn sm" onclick="expo()">Jetzt exportieren</button></div>`:''}
+  </div>`;
+  return h;
+}
+
+/* ---------- Tagesleiste ---------- */
+function dayBar(day){
+  const w=hm2m(S.adhs.wake||'08:00');
+  let b=hm2m(S.adhs.bed||'00:00'); if(b<=w) b+=1440;
+  const pos=m=>clamp((m-w)/(b-w)*100,0,100);
+  const wins=windowsFor(day);
+  const now=nowMin(), showNow=(day===todayISO() && now>=w-60);
+  const dipA=pos(900), dipB=pos(1020);
+  return `<div class="card tight">
+    <div class="row between xs muted" style="margin-bottom:7px">
+      <span>Tag · ${S.adhs.wake} bis ${S.adhs.bed}</span>
+      <span>${showNow?'jetzt '+m2hm(now):''}</span></div>
+    <div class="track">
+      <div class="dip" style="left:${dipA}%;width:${Math.max(dipB-dipA,0)}%"></div>
+      ${wins.map(x=>`<div class="wblk ${x.status}" title="${x.n}"
+        style="left:${pos(x.from)}%;width:${Math.max(pos(x.to)-pos(x.from),1.5)}%"></div>`).join('')}
+      <div class="mark med" style="left:${pos(hm2m(S.adhs.medTime))}%"></div>
+      ${showNow?`<div class="nowline" style="left:${pos(now>=w?now:now+1440)}%"></div>`:''}
+    </div>
+    <div class="row between xs dim" style="margin-top:6px">
+      <span>Einnahme ${S.adhs.medTime}</span>
+      <span style="color:var(--amber)">Tief 15–17</span>
+      <span>Bett ${S.adhs.bed}</span></div>
+  </div>`;
+}
+
+/* ---------- Routinen-Karte ---------- */
+function routineCard(kind){
+  const day=DAY, st=routineSteps(kind,day), pr=routineProgress(kind,day);
+  const emer=kind==='morning'&&isEmergency(day);
+  const title=kind==='morning'?(emer?'Morgen · Notfallversion':'Morgenroutine'):'Abendroutine';
+  const done=pr.done===pr.all;
+  return `<div class="card">
+    <div class="row between" style="margin-bottom:10px">
+      <h2 style="margin:0">${title}</h2>
+      <span class="xs ${done?'':'muted'}" style="${done?'color:var(--acc);font-weight:650':''}">${pr.done}/${pr.all}</span></div>
+    ${st.map(x=>`<div class="item" style="padding:7px 0">
+      <button class="tick ${stepDone(day,x.id)?'on':''}" onclick="tickStep('${x.id}')">${stepDone(day,x.id)?'✓':''}</button>
+      <div class="g" style="${stepDone(day,x.id)?'opacity:.42;text-decoration:line-through':''}">
+        <b style="font-weight:500;white-space:normal;font-size:14px">${esc(x.t)}</b></div>
+      ${x.why?Q(x.why):''}</div>`).join('')}
+    ${kind==='morning'?`<div class="hr"></div>
+      <button class="btn ghost sm" onclick="setEmergency(${emer?'false':'true'})">
+        ${emer?'Zurück zur vollen Version':'Heute nur die Notfallversion'}</button>
+      ${emer?'':'<div class="note">Schlechter Tag? Die Notfallversion ist vier Schritte und zählt genauso.</div>'}`:''}
+  </div>`;
+}
+
+/* ---------- Startritual ---------- */
+function ritualSheet(txt){
+  return `<div id="ritBody">
+    <div class="xs muted" style="text-transform:uppercase;letter-spacing:.09em;font-weight:700;margin-bottom:8px">Zwei Minuten</div>
+    <div class="now-t" style="margin-bottom:6px">${esc(txt||'Anfangen')}</div>
+    <div class="small muted" style="margin-bottom:18px">Mehr ist nicht abgemacht. Wenn nach zwei
+      Minuten Schluss sein soll, ist Schluss.</div>
+    <div class="clock" id="ritClock">02:00</div>
+    <div class="spacer"></div>
+    <button class="btn ghost sm" onclick="clearInterval(ritT);closeSheet()">Abbrechen</button>
+  </div>`;
+}
+
+/* ---------- Sheet: Essensfenster ---------- */
+function winSheet(k){
+  const w=windowsFor(DAY).find(x=>x.k===k); const meals=stdMeals(k);
+  return `<h2>${w.ico} ${w.n}</h2>
+  <div class="small muted" style="margin-bottom:6px">${m2hm(w.from)} bis ${m2hm(w.to)} ·
+    Ziel ${w.kcal} kcal, ${w.prot} g Protein</div>
+  <div class="small" style="margin-bottom:14px">${w.why}</div>
+  ${meals.length? meals.map((m,i)=>{const su=mealSum(m);
+    return `<div class="card tight" style="margin-bottom:9px">
+      <div class="row between" style="margin-bottom:6px">
+        <b style="font-size:14.5px">${esc(m.name)}</b>
+        <span class="xs mono muted">${r0(su.kcal)} kcal · ${r0(su.p)} g P</span></div>
+      ${m.items.map(f=>`<div class="row between xs"><span class="muted">${esc(f.n)}</span>
+        <span class="mono dim">${f.g} g</span></div>`).join('')}
+      <div class="btnrow" style="margin-top:9px">
+        <button class="btn sm acc" onclick="eatMeal('${k}',${i})">Eintragen</button>
+        <button class="btn sm" onclick="openSheet(mealSheet('${k}',${i}))">Ändern</button>
+      </div></div>`;}).join('')
+   :`<div class="empty">Noch keine Mahlzeit hinterlegt. Eine feste Mahlzeit pro Fenster ist der
+      ganze Trick: kein Entscheiden, kein Suchen, ein Tap.</div>`}
+  <button class="btn" onclick="openSheet(mealSheet('${k}'))">+ Mahlzeit anlegen</button>
+  <div class="hr"></div>
+  <div class="btnrow">
+    <button class="btn ghost sm" onclick="closeSheet();VIEW='food';render()">Etwas anderes</button>
+    <button class="btn ghost sm" onclick="doneWindow('${k}')">Habe gegessen</button>
+    <button class="btn ghost sm" onclick="skipWindow('${k}')">Ausgelassen</button>
+  </div>`;
+}
+
+/* ---------- Sheet: Mahlzeit zusammenstellen ---------- */
+function mealSheet(k,mi){
+  const w=WIN.find(x=>x.k===k), meals=stdMeals(k);
+  const m = mi!=null ? meals[mi] : null;
+  const items = m ? m.items : (S._draft||[]);
+  if(mi==null) S._draft = items;
+  const su = items.length? {kcal:sum(items.map(f=>f.kcal100*f.g/100)), p:sum(items.map(f=>f.p*f.g/100))} : {kcal:0,p:0};
+  return `<h2>${m?'Mahlzeit ändern':'Neue Mahlzeit'} · ${w.n}</h2>
+  <div class="small muted" style="margin-bottom:12px">Ziel in diesem Fenster:
+    ${r0(kcalTarget(DAY)*w.c)} kcal, ${r0(protTarget()*w.p)} g Protein.</div>
+  <label class="f"><span>Name</span>
+    <input type="text" id="mealName" value="${esc(m?m.name:'')}"
+      placeholder="${k==='w1'?'Haferflocken mit Quark':k==='w4'?'Reis mit Hähnchen':'Shake'}"></label>
+  ${items.length? items.map((f,i)=>`<div class="item"><div class="g"><b>${esc(f.n)}</b>
+      <span>${f.g} g · ${r0(f.kcal100*f.g/100)} kcal</span></div>
+      <button class="x" onclick="mealDel('${k}',${mi},${i})">✕</button></div>`).join('')
+    :'<div class="empty">Noch keine Zutat</div>'}
+  ${items.length?`<div class="row between small" style="padding:8px 0">
+    <span class="muted">Summe</span><b class="mono">${r0(su.kcal)} kcal · ${r0(su.p)} g P</b></div>`:''}
+  <div class="hr"></div>
+  ${S.foods.length?`
+    <label class="f"><span>Zutat aus deinen Favoriten</span>
+      <select id="stdF">${S.foods.map((f,i)=>`<option value="${i}">${esc(f.n)}</option>`).join('')}</select></label>
+    <label class="f"><span>Menge in Gramm</span>
+      <input type="number" id="stdG" value="150" inputmode="decimal"></label>
+    <button class="btn" onclick="mealAdd('${k}',${mi})">+ Zutat</button>`
+  :`<div class="warn">Du hast noch keine Favoriten. Scanne erst ein paar Produkte, dann kannst du
+     sie hier zu Mahlzeiten zusammenstellen.</div>
+    <button class="btn" onclick="closeSheet();VIEW='food';render()">Zu Essen</button>`}
+  <div class="spacer"></div>
+  <div class="btnrow">
+    <button class="btn acc" onclick="mealSave('${k}',${mi})">Speichern</button>
+    ${m?`<button class="btn sm danger" onclick="mealRemove('${k}',${mi})">Löschen</button>`:''}
+  </div>`;
+}
+window.mealAdd=(k,mi)=>{
+  const i=parseInt(document.getElementById('stdF').value);
+  const g=parseFloat(document.getElementById('stdG').value)||0;
+  if(!g){toast('Menge fehlt');return;}
+  const f=S.foods[i], it={n:f.n,kcal100:f.kcal100,p:f.p,c:f.c,f:f.f,g};
+  const name=document.getElementById('mealName').value;
+  if(mi!=null){ stdMeals(k)[mi].items.push(it); save(); }
+  else { S._draft=(S._draft||[]); S._draft.push(it); }
+  openSheet(mealSheet(k,mi));
+  const el=document.getElementById('mealName'); if(el) el.value=name;
+};
+window.mealDel=(k,mi,i)=>{
+  if(mi!=null) stdMeals(k)[mi].items.splice(i,1); else S._draft.splice(i,1);
+  save(); openSheet(mealSheet(k,mi));
+};
+window.mealSave=(k,mi)=>{
+  const name=document.getElementById('mealName').value.trim()||'Mahlzeit';
+  if(mi!=null){ stdMeals(k)[mi].name=name; }
+  else {
+    const items=S._draft||[];
+    if(!items.length){ toast('Noch keine Zutat'); return; }
+    S.adhs.std[k]=stdMeals(k); S.adhs.std[k].push({name,items}); S._draft=null;
+  }
+  save(); openSheet(winSheet(k)); render(); toast('Gespeichert');
+};
+window.mealRemove=(k,mi)=>{ stdMeals(k).splice(mi,1); save(); openSheet(winSheet(k)); render(); };
+
+/* ---------- Sheet: Wenn-dann-Regeln ---------- */
+function ruleSheet(){
+  return `<h2>Wenn-dann-Regeln</h2>
+  <div class="small muted" style="margin-bottom:14px">Ein fertiger Satz aus Auslöser und Handlung.
+    Der Punkt ist nicht die Absicht, sondern dass die Situation die Handlung auslöst,
+    ohne dass du in dem Moment entscheiden musst.</div>
+  ${S.adhs.rules.map((r,i)=>`<div class="item">
+    <div class="g"><b style="font-weight:500;white-space:normal">Wenn ${esc(r.wenn)}, dann ${esc(r.dann)}.</b>
+      <span>${TRIG[r.trigger]||''}</span></div>
+    <button class="x" onclick="ruleDel(${i})">✕</button></div>`).join('')}
+  ${S.adhs.rules.length?'<div class="hr"></div>':''}
+  ${S.adhs.rules.length<4?`<div class="chips" style="margin-bottom:14px">
+    ${RULE_SEED.filter(sd=>!S.adhs.rules.some(r=>r.wenn===sd.wenn))
+      .map((sd,i)=>`<button class="pill" onclick="ruleSeed(${RULE_SEED.indexOf(sd)})">+ ${esc(sd.wenn)}</button>`).join('')}
+  </div>`:''}
+  <label class="f"><span>Wenn …</span>
+    <input type="text" id="rW" placeholder="ich vom Training komme"></label>
+  <label class="f"><span>… dann</span>
+    <input type="text" id="rD" placeholder="stelle ich sofort die Dose in die Mikrowelle"></label>
+  <label class="f"><span>Wann soll die Regel auftauchen?</span>
+    <select id="rT">${Object.entries(TRIG).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label>
+  <button class="btn acc" onclick="ruleAdd()">Regel anlegen</button>`;
+}
+window.ruleAdd=()=>{
+  const w=document.getElementById('rW').value.trim(), d=document.getElementById('rD').value.trim();
+  if(!w||!d){toast('Beide Hälften nötig');return;}
+  S.adhs.rules.push({id:uid(),wenn:w,dann:d,trigger:document.getElementById('rT').value});
+  save(); openSheet(ruleSheet()); render(); toast('Regel angelegt');
+};
+window.ruleSeed=i=>{ const sd=RULE_SEED[i];
+  S.adhs.rules.push({id:uid(),...sd}); save(); openSheet(ruleSheet()); render(); };
+window.ruleDel=i=>{ S.adhs.rules.splice(i,1); save(); openSheet(ruleSheet()); render(); };
+
+/* ---------- Sheet: Hauptaufgabe ---------- */
+function taskSheet(){
+  const t=tasksFor(DAY);
+  return `<h2>Heute wichtig</h2>
+  <div class="small muted" style="margin-bottom:14px">Höchstens drei. Jede bekommt einen ersten Schritt,
+    der unter einer Minute dauert — das ist die Stelle, an der es sonst hängen bleibt.</div>
+  ${t.map((x,i)=>`<div class="item">
+    <button class="tick ${x.done?'on':''}" onclick="tickTask(${i})">${x.done?'✓':''}</button>
+    <div class="g"><b>${esc(x.t)}</b><span>${x.first?esc(x.first):''}</span></div>
+    <button class="x" onclick="delTask(${i});openSheet(taskSheet())">✕</button></div>`).join('')}
+  ${t.length>=3?'<div class="warn">Drei sind voll. Erst etwas abhaken oder streichen.</div>'
+  :`<div class="hr"></div>
+    <label class="f"><span>Aufgabe</span>
+      <input type="text" id="tT" placeholder="Trainingsplan für Freitag schreiben"></label>
+    <label class="f"><span>Kleinster erster Schritt</span>
+      <input type="text" id="tF" placeholder="Datei öffnen und eine Überschrift tippen"></label>
+    <label class="f"><span>Wann</span>
+      <select id="tS">${Object.entries(SLOTS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label>
+    <button class="btn acc" onclick="taskAdd()">Hinzufügen</button>`}`;
+}
+window.taskAdd=()=>{
+  const t=document.getElementById('tT').value.trim();
+  if(!t){toast('Titel fehlt');return;}
+  (S.adhs.tasks[DAY]=S.adhs.tasks[DAY]||[]).push({
+    t, first:document.getElementById('tF').value.trim(),
+    slot:document.getElementById('tS').value, done:false});
+  save(); closeSheet(); render(); toast('Gesetzt.');
+};
+
+
+function sesRow(s){
+  const t={handball:'Handball',gym:'Gym',other:'Sonstiges'}[s.type];
+  return `<div class="item">
+    <span class="tag ${s.type==='handball'?'hb':s.type==='gym'?'gym':'other'}">${t}</span>
+    <div class="g"><b>${esc(s.label||t)}</b>
+      <span>${s.min} min · RPE ${s.rpe}${s.ex&&s.ex.length?` · ${s.ex.length} Übungen`:''}</span></div>
+    <div class="v">${r0(srpe(s))}<div class="xs muted" style="font-weight:400">AU</div></div>
+    <button class="x" onclick="delSession('${s.id}')">✕</button></div>`;
+}
+window.delSession=id=>{ S.sessions=S.sessions.filter(x=>x.id!==id); save(); render(); toast('Einheit gelöscht'); };
+
+/* Wellness-Sheet */
+function wellSheet(){
+  const w=S.well[DAY]||{};
+  return `<h2>Tages-Check · ${human(DAY)}</h2>
+  ${HOOP.map(x=>`
+    <div style="margin-bottom:15px">
+      <div class="row between xs" style="margin-bottom:2px">
+        <span style="font-weight:620;font-size:13px;color:var(--text)">${x.l}</span></div>
+      <div class="row between xs muted"><span>1 = ${x.lo}</span><span>7 = ${x.hi}</span></div>
+      <div class="scale warm" data-k="${x.k}">
+        ${[1,2,3,4,5,6,7].map(n=>`<button class="${w[x.k]===n?'on':''}" onclick="setWell('${x.k}',${n},this)">${n}</button>`).join('')}
+      </div>
+    </div>`).join('')}
+  <div class="hr"></div>
+  <div class="inline">
+    <label class="f"><span>Schlaf (h)</span>
+      <input type="number" step="0.5" id="wSleep" value="${w.sleepH??''}" placeholder="7.5"></label>
+    <label class="f"><span>HRV rMSSD (ms)</span>
+      <input type="number" id="wHrv" value="${w.hrv??''}" placeholder="optional"></label>
+    <label class="f"><span>Gewicht (kg)</span>
+      <input type="number" step="0.1" id="wBw" value="${w.bw??''}" placeholder="${S.profile.weight}"></label>
+  </div>
+  <div class="note">HRV nur als Wochenmittel interpretieren, nie einzelne Tageswerte (Plews et al. 2013).</div>
+  <div class="spacer"></div>
+  <button class="btn acc" onclick="saveWell()">Speichern</button>`;
+}
+window.setWell=(k,n,el)=>{
+  S.well[DAY]=S.well[DAY]||{}; S.well[DAY][k]=n; save();
+  [...el.parentNode.children].forEach(b=>b.classList.remove('on')); el.classList.add('on');
+};
+window.saveWell=()=>{
+  const w=S.well[DAY]=S.well[DAY]||{};
+  const g=id=>{const v=document.getElementById(id).value; return v===''?undefined:parseFloat(v);};
+  w.sleepH=g('wSleep'); w.hrv=g('wHrv'); const bw=g('wBw');
+  if(bw){ w.bw=bw; S.profile.weight=bw; }
+  save(); closeSheet(); render(); toast('Check gespeichert');
+};
+
+/* =========================================================================
+   VIEW: ESSEN  (Barcode-Scan + Open Food Facts + Favoriten)
+   ========================================================================= */
+function vFood(){
+  const list=S.diary[DAY]||[], m=dayMacros(DAY), kt=kcalTarget(DAY);
+  return `
+  <div class="card tight">
+    <div class="row between">
+      <div><div class="big mono">${r0(m.kcal)}<span class="xs muted" style="font-weight:400"> / ${kt}</span></div>
+        <div class="xs muted">${r0(m.p)} P · ${r0(m.c)} KH · ${r0(m.f)} F</div></div>
+      ${ring(kt?m.kcal/kt*100:0, m.kcal>kt*1.1?'var(--amber)':'var(--acc)',
+             kt?r0(m.kcal/kt*100)+'%':'—','Ziel')}
+    </div>
+  </div>
+
+  ${S.adhs.useWindows?`<div class="card">
+    <div class="row between" style="margin-bottom:10px">
+      <h2 style="margin:0">Essensfenster ${Q('fenster')}</h2>
+      <span class="xs dim">Einnahme ${S.adhs.medTime}</span></div>
+    ${windowsFor(DAY).map(w=>{
+      const st={open:'',now:'now',done:'done',skip:'skip',missed:'missed'}[w.status];
+      const lbl={open:'',now:'jetzt',done:'erledigt',skip:'übersprungen',missed:'verstrichen'}[w.status];
+      const meals=stdMeals(w.k);
+      return `<button class="win ${st}" onclick="openSheet(winSheet('${w.k}'))">
+        <span class="win-i">${w.ico}</span>
+        <span class="win-g"><b>${w.n}</b>
+          <span>${m2hm(w.from)}–${m2hm(w.to)} · ${w.kcal} kcal · ${w.prot} g P</span></span>
+        <span class="win-s">${lbl}</span></button>
+      ${w.status==='done'||w.status==='skip'?'':`<div class="mealrow">
+        ${meals.map((m,i)=>{const su=mealSum(m);
+          return `<button class="meal" onclick="eatMeal('${w.k}',${i})">
+            <b>${esc(m.name)}</b><span>${r0(su.kcal)} kcal · ${r0(su.p)} P</span></button>`;}).join('')}
+        <button class="meal add" onclick="openSheet(mealSheet('${w.k}'))">
+          ${meals.length?'+':'+ Mahlzeit anlegen'}</button></div>`}`;}).join('')}
+    <div class="note">Die Fenster hängen an deiner Einnahmezeit, nicht am Hungergefühl.</div>
+  </div>`:''}
+
+  <div class="card">
+    <h2>Erfassen</h2>
+    <div id="scanwrap">
+      <video id="scanvid" playsinline muted></video>
+      <div class="reticle"></div>
+      <div class="scanmsg" id="scanmsg">Barcode ins Feld halten</div>
+    </div>
+    <div class="btnrow" style="margin-top:10px">
+      <button class="btn acc" id="scanBtn" onclick="toggleScan()">📷 Barcode scannen</button>
+      <button class="btn sm" onclick="openSheet(manualSheet())">✎</button>
+    </div>
+    <div class="note" id="scanNote"></div>
+  </div>
+
+  ${S.foods.length?`<div class="card">
+    <h2>Favoriten — 1 Tap</h2>
+    <div class="chips">
+      ${S.foods.map((f,i)=>`<button class="pill" onclick="quickAdd(${i})">${esc(f.n)}
+        <span class="dim">${r0(f.kcal100)}</span></button>`).join('')}
+    </div>
+    <div class="note">Langes Halten nicht nötig — Menge fragt die App danach. Favoriten verwalten unter Profil.</div>
+  </div>`:`<div class="card"><h2>Favoriten</h2>
+    <div class="empty">Noch keine. Nach jedem Scan kannst du das Produkt als Favorit sichern —
+    danach ist es ein Tap.</div></div>`}
+
+  <div class="card">
+    <h2>${human(DAY)}</h2>
+    ${list.length? list.map((e,i)=>`
+      <div class="item"><div class="g"><b>${esc(e.n)}</b>
+        <span>${r0(e.g)} g · ${r0(e.p)} P / ${r0(e.c)} KH / ${r0(e.f)} F</span></div>
+        <div class="v">${r0(e.kcal)}<div class="xs muted" style="font-weight:400">kcal</div></div>
+        <button class="x" onclick="delFood(${i})">✕</button></div>`).join('')
+      : '<div class="empty">Nichts erfasst</div>'}
+  </div>`;
+}
+window.delFood=i=>{ S.diary[DAY].splice(i,1); save(); render(); };
+window.quickAdd=i=>openSheet(portionSheet(S.foods[i],true));
+
+/* ---------- Scanner ---------- */
+let stream=null, scanning=false, detector=null, lastCode=null;
+window.toggleScan=async()=>{
+  if(scanning){ stopScan(); return; }
+  const wrap=document.getElementById('scanwrap'), note=document.getElementById('scanNote');
+  if(!('BarcodeDetector' in window)){
+    note.innerHTML='<div class="warn">Dieser Browser kennt die BarcodeDetector-API nicht. '+
+      'Auf Android-Chrome funktioniert sie. Nutze solange die manuelle Eingabe (✎) — '+
+      'dort kannst du die EAN auch eintippen.</div>'; return; }
+  try{
+    detector = detector || new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});
+    stream = await navigator.mediaDevices.getUserMedia(
+      {video:{facingMode:{ideal:'environment'},width:{ideal:1280}}});
+    const v=document.getElementById('scanvid');
+    v.srcObject=stream; await v.play();
+    wrap.classList.add('on'); scanning=true; lastCode=null;
+    document.getElementById('scanBtn').textContent='■ Scan stoppen';
+    note.innerHTML=''; loopScan(v);
+  }catch(e){
+    note.innerHTML='<div class="warn">Kamera nicht verfügbar: '+esc(e.name)+
+      '. Die Seite muss über HTTPS laufen und der Kamerazugriff erlaubt sein.</div>'; }
+};
+function stopScan(){
+  scanning=false;
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  const w=document.getElementById('scanwrap'); if(w) w.classList.remove('on');
+  const b=document.getElementById('scanBtn'); if(b) b.textContent='📷 Barcode scannen';
+}
+async function loopScan(v){
+  if(!scanning) return;
+  try{
+    const codes=await detector.detect(v);
+    if(codes.length){
+      const c=codes[0].rawValue;
+      if(c && c!==lastCode){
+        lastCode=c;
+        if(navigator.vibrate) navigator.vibrate(35);
+        document.getElementById('scanmsg').textContent='Gefunden: '+c;
+        stopScan(); lookup(c); return;
+      }
+    }
+  }catch(e){/* Einzelframe-Fehler ignorieren */}
+  requestAnimationFrame(()=>loopScan(v));
+}
+
+/* ---------- Open Food Facts ---------- */
+const OFF_FIELDS='product_name,product_name_de,brands,nutriments,quantity,serving_quantity,serving_size,nutriscore_grade';
+async function lookup(bc){
+  const fav=S.foods.find(f=>f.bc===bc);
+  if(fav){ openSheet(portionSheet(fav,true)); return; }
+  openSheet(`<h2>Suche…</h2><div class="empty">EAN ${bc} wird bei Open Food Facts abgefragt.</div>`);
+  try{
+    const url=`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(bc)}.json?fields=${OFF_FIELDS}`;
+    const res=await fetch(url,{headers:{'Accept':'application/json'}});
+    const j=await res.json();
+    if(j.status!==1 || !j.product){ openSheet(manualSheet(bc,true)); return; }
+    const p=j.product, n=p.nutriments||{};
+    const num=k=>{const v=n[k]; return typeof v==='number'?v:0;};
+    let kcal=num('energy-kcal_100g');
+    if(!kcal && num('energy_100g')) kcal=num('energy_100g')/4.184;
+    const food={
+      n:(p.product_name_de||p.product_name||'Unbenannt')+(p.brands?' · '+p.brands.split(',')[0].trim():''),
+      kcal100:r1(kcal), p:r1(num('proteins_100g')), c:r1(num('carbohydrates_100g')),
+      f:r1(num('fat_100g')), bc, serv:p.serving_quantity?parseFloat(p.serving_quantity):null,
+      grade:p.nutriscore_grade||null
+    };
+    openSheet(portionSheet(food,false));
+  }catch(e){
+    openSheet(`<h2>Keine Verbindung</h2>
+      <div class="small muted" style="margin-bottom:12px">Open Food Facts ist gerade nicht erreichbar.
+      Du kannst die Werte von der Verpackung eintippen — sie werden als Favorit gespeichert
+      und beim nächsten Scan dieser EAN sofort erkannt.</div>
+      ${manualSheet(bc,true)}`);
+  }
+}
+
+/* Plausibilitätsprüfung: Atwater 4/4/9 gegen deklarierte kcal */
+function plausible(f){
+  const calc=f.p*4+f.c*4+f.f*9;
+  if(!f.kcal100||!calc) return null;
+  const dev=Math.abs(calc-f.kcal100)/f.kcal100;
+  return dev>0.15 ? r0(calc) : null;
+}
+
+let PENDING=null;
+function portionSheet(f,isFav){
+  PENDING=f;
+  const warn=plausible(f);
+  const def=f.serv||100;
+  return `<h2>${esc(f.n)}</h2>
+  <div class="small muted" style="margin-bottom:12px">
+    Pro 100 g: ${r0(f.kcal100)} kcal · ${r1(f.p)} P · ${r1(f.c)} KH · ${r1(f.f)} F
+    ${f.grade?` · Nutri-Score ${f.grade.toUpperCase()}`:''}</div>
+  ${warn?`<div class="warn">Rechnerisch ergeben die Makros ${warn} kcal statt ${r0(f.kcal100)} —
+    Abweichung über 15 %. Open-Food-Facts-Daten sind community-gepflegt; Werte kurz gegen die
+    Verpackung prüfen.</div>`:''}
+  <div class="spacer"></div>
+  <label class="f"><span>Menge in Gramm</span>
+    <input type="number" id="pGram" value="${def}" inputmode="decimal"></label>
+  <div class="chips" style="margin-bottom:14px">
+    ${[30,50,100,150,200,250,330,500].map(g=>
+      `<button class="pill" onclick="setInput('pGram',${g})">${g} g</button>`).join('')}
+  </div>
+  <div class="btnrow">
+    <button class="btn acc" onclick="addPortion(false)">Eintragen</button>
+    ${isFav?'':`<button class="btn sm" onclick="addPortion(true)">+ ⭐</button>`}
+  </div>
+  ${isFav?'':'<div class="note">⭐ speichert das Produkt als Favorit — danach ein Tap statt Scan.</div>'}`;
+}
+window.addPortion=(fav)=>{
+  const f=PENDING; if(!f) return;
+  const g=parseFloat(document.getElementById('pGram').value)||0;
+  if(g<=0){ toast('Menge fehlt'); return; }
+  const k=g/100;
+  (S.diary[DAY]=S.diary[DAY]||[]).push({
+    n:f.n, g, kcal:f.kcal100*k, p:f.p*k, c:f.c*k, f:f.f*k, bc:f.bc||null, ts:Date.now()});
+  if(fav && !S.foods.some(x=>x.bc&&x.bc===f.bc)) S.foods.push(f);
+  save(); closeSheet(); VIEW='food'; render(); toast(r0(f.kcal100*k)+' kcal eingetragen');
+};
+
+function manualSheet(bc,unknown){
+  return `${unknown?'':'<h2>Manuell eintragen</h2>'}
+  ${unknown?`<div class="warn">EAN ${esc(bc)} ist Open Food Facts nicht bekannt.
+    Trag die Werte von der Verpackung ein — dann kennt deine App sie ab sofort.</div><div class="spacer"></div>`:''}
+  <label class="f"><span>Name</span><input type="text" id="mN" placeholder="z. B. Magerquark"></label>
+  <div class="inline">
+    <label class="f"><span>kcal /100 g</span><input type="number" id="mK" inputmode="decimal"></label>
+    <label class="f"><span>Protein</span><input type="number" id="mP" inputmode="decimal"></label>
+  </div>
+  <div class="inline">
+    <label class="f"><span>Kohlenhydrate</span><input type="number" id="mC" inputmode="decimal"></label>
+    <label class="f"><span>Fett</span><input type="number" id="mF" inputmode="decimal"></label>
+  </div>
+  <button class="btn acc" onclick="manualNext('${esc(bc||'')}')">Weiter</button>`;
+}
+window.manualNext=bc=>{
+  const g=id=>parseFloat(document.getElementById(id).value)||0;
+  const f={n:document.getElementById('mN').value.trim()||'Eigener Eintrag',
+    kcal100:g('mK'), p:g('mP'), c:g('mC'), f:g('mF'), bc:bc||null, serv:null};
+  if(!f.kcal100){ toast('kcal fehlt'); return; }
+  openSheet(portionSheet(f,false));
+};
+
+/* =========================================================================
+   VIEW: TRAINING
+   ========================================================================= */
+const RPE_TXT=['','sehr leicht','leicht','moderat','etwas fordernd','fordernd',
+  'fordernd+','hart','sehr hart','sehr sehr hart','maximal'];
+
+function vTrain(){
+  const seg=`<div class="seg">
+    <button class="${trainSeg==='ses'?'on':''}" onclick="setSeg('ses')">Einheiten</button>
+    <button class="${trainSeg==='load'?'on':''}" onclick="setSeg('load')">Last &amp; Erholung</button>
+  </div>`;
+  if(trainSeg==='load') return seg+vLoad();
+  const ses=sessionsOn(DAY);
+  const hist=S.sessions.filter(s=>s.date<DAY&&s.date>=addDays(DAY,-14))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  const vol=volumeWeek(DAY);
+  return seg+`
+  <div class="grid3" style="margin-bottom:12px">
+    <button class="btn" onclick="openSheet(newSesSheet('handball'))">🤾<br><span class="xs">Handball</span></button>
+    <button class="btn" onclick="openSheet(newSesSheet('gym'))">🏋️<br><span class="xs">Gym</span></button>
+    <button class="btn" onclick="openSheet(newSesSheet('other'))">➕<br><span class="xs">Sonstiges</span></button>
+  </div>
+
+  <div class="card">
+    <h2>${human(DAY)}</h2>
+    ${ses.length? ses.map(s=>`
+      <div class="item" onclick="${s.type==='gym'?`openSheet(exSheet('${s.id}'))`:`openSheet(newSesSheet('${s.type}','${s.id}'))`}">
+        <span class="tag ${s.type==='handball'?'hb':s.type==='gym'?'gym':'other'}">${
+          {handball:'HB',gym:'GYM',other:'DIV'}[s.type]}</span>
+        <div class="g"><b>${esc(s.label||'Einheit')}</b>
+          <span>${s.min} min · RPE ${s.rpe} · ${r0(srpe(s))} AU${
+            s.ex&&s.ex.length?` · ${sum(s.ex.map(e=>e.sets.length))} Sätze`:''}</span></div>
+        <div class="v dim">›</div></div>`).join('')
+      : '<div class="empty">Noch nichts erfasst</div>'}
+    ${ses.length?`<div class="hr"></div><div class="row between small">
+      <span class="muted">Tageslast</span>
+      <b class="mono">${r0(loadOn(DAY))} AU</b></div>`:''}
+  </div>
+
+  ${vol.length?`<div class="card">
+    <h2>Volumen 7 Tage (Last × Wdh)</h2>
+    ${vol.slice(0,8).map(([n,v])=>{
+      const b=bestE1RM(n);
+      return `<div class="item"><div class="g"><b>${esc(n)}</b>
+        <span>${b.v?`e1RM ${r1(b.v)} kg`:'—'}</span></div>
+        <div class="v">${(v/1000).toFixed(1)}<div class="xs muted" style="font-weight:400">t</div></div></div>`;
+    }).join('')}
+    <div class="note">e1RM nach Epley, RIR wird als zusätzliche Wiederholung gerechnet.
+      Ab etwa 10 Wiederholungen wird die Schätzung ungenau.</div>
+  </div>`:''}
+
+  <div class="card">
+    <h2>Letzte 14 Tage</h2>
+    ${hist.length? hist.map(sesRow).join('') : '<div class="empty">Keine Einträge</div>'}
+  </div>`;
+}
+
+function newSesSheet(type,id){
+  const s = id? S.sessions.find(x=>x.id===id) : null;
+  const presets={
+    handball:['Mannschaftstraining','Spiel','Torwurf/Technik','D-Jugend Training (Coaching)'],
+    gym:['Oberkörper','Unterkörper','Ganzkörper','Kraft & Explosivität'],
+    other:['Sprint/Athletik','Lauf','Mobility','Nullschritt-Drill']
+  }[type];
+  return `<h2>${s?'Einheit bearbeiten':{handball:'Handball',gym:'Gym',other:'Einheit'}[type]}</h2>
+  <label class="f"><span>Bezeichnung</span>
+    <input type="text" id="sLabel" value="${esc(s?.label||'')}" placeholder="${presets[0]}"></label>
+  <div class="chips" style="margin-bottom:14px">
+    ${presets.map(p=>`<button class="pill" data-v="${esc(p)}" onclick="setInput('sLabel',this.dataset.v)">${esc(p)}</button>`).join('')}
+  </div>
+  <label class="f"><span>Dauer in Minuten</span>
+    <input type="number" id="sMin" value="${s?.min||''}" inputmode="numeric" placeholder="90"></label>
+  <div class="chips" style="margin-bottom:16px">
+    ${[45,60,75,90,120].map(m=>`<button class="pill" onclick="setInput('sMin',${m})">${m}</button>`).join('')}
+  </div>
+  <div style="font-weight:620;font-size:13px;margin-bottom:2px">Anstrengung (RPE 1–10)</div>
+  <div class="xs muted" style="margin-bottom:4px">Etwa 30 Minuten nach Ende bewerten — wie hart war
+    die Einheit insgesamt?</div>
+  <div class="scale" id="rpeScale">
+    ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="${s?.rpe===n?'on':''}"
+      style="padding:11px 0;font-size:13px" onclick="pickRpe(${n},this)">${n}</button>`).join('')}
+  </div>
+  <div class="xs muted" id="rpeTxt" style="margin:6px 0 14px;min-height:16px">${s?RPE_TXT[s.rpe]||'':''}</div>
+  <label class="f"><span>Notiz</span>
+    <input type="text" id="sNote" value="${esc(s?.note||'')}" placeholder="optional"></label>
+  <button class="btn acc" onclick="saveSes('${type}','${id||''}')">${s?'Speichern':'Einheit anlegen'}</button>
+  ${s?`<div class="spacer"></div>
+    <button class="btn ghost danger" onclick="delSession('${s.id}');closeSheet()">Löschen</button>`:''}`;
+}
+let pickedRpe=0;
+window.pickRpe=(n,el)=>{ pickedRpe=n;
+  [...el.parentNode.children].forEach(b=>b.classList.remove('on')); el.classList.add('on');
+  document.getElementById('rpeTxt').textContent=RPE_TXT[n]; };
+window.saveSes=(type,id)=>{
+  const label=document.getElementById('sLabel').value.trim();
+  const min=parseInt(document.getElementById('sMin').value)||0;
+  const note=document.getElementById('sNote').value.trim();
+  const on=document.querySelector('#rpeScale button.on');
+  const rpe=on?parseInt(on.textContent):0;
+  if(!min||!rpe){ toast('Dauer und RPE nötig'); return; }
+  if(id){ const s=S.sessions.find(x=>x.id===id);
+    Object.assign(s,{label,min,rpe,note}); }
+  else { const s={id:uid(),date:DAY,type,label,min,rpe,note,ex:[]};
+    S.sessions.push(s);
+    save(); closeSheet(); render();
+    if(type==='gym') openSheet(exSheet(s.id));
+    toast('Einheit angelegt'); return; }
+  save(); closeSheet(); render(); toast('Gespeichert');
+};
+
+/* ---------- Gym: Übungen & Sätze ---------- */
+function exSheet(sid){
+  const s=S.sessions.find(x=>x.id===sid); if(!s) return '';
+  const known=[...new Set(S.sessions.flatMap(x=>(x.ex||[]).map(e=>e.n)))].slice(0,12);
+  return `<h2>${esc(s.label||'Gym')}</h2>
+  <div class="small muted" style="margin-bottom:12px">${s.min} min · RPE ${s.rpe} · ${r0(srpe(s))} AU
+    · <a onclick="openSheet(newSesSheet('gym','${s.id}'))">bearbeiten</a></div>
+  ${(s.ex||[]).map((e,ei)=>{
+    const b=bestE1RM(e.n);
+    return `<div class="card tight" style="margin-bottom:10px">
+      <div class="row between" style="margin-bottom:7px">
+        <b style="font-size:14.5px">${esc(e.n)}</b>
+        <span class="xs muted mono">${b.v?`Best e1RM ${r1(b.v)} kg`:''}</span></div>
+      ${e.sets.map((st,si)=>`<div class="row between small" style="padding:4px 0">
+        <span class="mono">${st.w} kg × ${st.r}${st.rir!=null?` @ ${st.rir} RIR`:''}</span>
+        <span class="row" style="gap:8px"><span class="xs dim mono">e1RM ${r1(e1rm(st.w,st.r,st.rir))}</span>
+        <button class="x" onclick="delSet('${sid}',${ei},${si})">✕</button></span></div>`).join('')}
+      <div class="inline" style="margin-top:8px">
+        <input type="number" step="0.5" inputmode="decimal" placeholder="kg" id="w${ei}">
+        <input type="number" inputmode="numeric" placeholder="Wdh" id="r${ei}">
+        <input type="number" inputmode="numeric" placeholder="RIR" id="i${ei}">
+        <button class="btn sm acc" onclick="addSet('${sid}',${ei})">+</button>
+      </div>
+    </div>`;}).join('')}
+  <div class="hr"></div>
+  <label class="f"><span>Übung hinzufügen</span>
+    <input type="text" id="exName" placeholder="z. B. Kniebeuge"></label>
+  ${known.length?`<div class="chips" style="margin-bottom:12px">
+    ${known.map(k=>`<button class="pill" data-v="${esc(k)}" onclick="setInput('exName',this.dataset.v)">${esc(k)}</button>`).join('')}
+  </div>`:''}
+  <button class="btn" onclick="addEx('${sid}')">+ Übung</button>
+  <div class="spacer"></div>
+  <button class="btn acc" onclick="closeSheet();render()">Fertig</button>
+  <div class="note">RIR = Reps in Reserve, also wie viele Wiederholungen du noch geschafft hättest
+    (Zourdos et al. 2016). 0 = Muskelversagen.</div>`;
+}
+window.addEx=sid=>{ const n=document.getElementById('exName').value.trim();
+  if(!n){toast('Name fehlt');return;}
+  const s=S.sessions.find(x=>x.id===sid); (s.ex=s.ex||[]).push({n,sets:[]});
+  save(); openSheet(exSheet(sid)); };
+window.addSet=(sid,ei)=>{
+  const g=id=>{const v=document.getElementById(id).value; return v===''?null:parseFloat(v);};
+  const w=g('w'+ei), r=g('r'+ei), rir=g('i'+ei);
+  if(w==null||r==null){toast('kg und Wdh nötig');return;}
+  const s=S.sessions.find(x=>x.id===sid);
+  s.ex[ei].sets.push({w,r,rir}); save(); openSheet(exSheet(sid));
+  setTimeout(()=>{const el=document.getElementById('w'+ei); if(el) el.focus();},60); };
+window.delSet=(sid,ei,si)=>{ const s=S.sessions.find(x=>x.id===sid);
+  s.ex[ei].sets.splice(si,1); if(!s.ex[ei].sets.length) s.ex.splice(ei,1);
+  save(); openSheet(exSheet(sid)); };
+
+/* =========================================================================
+   VIEW: LAST & ERHOLUNG
+   ========================================================================= */
+function vLoad(){
+  const ws=weekStats(DAY), prev=weekStats(addDays(DAY,-7));
+  const rt=ratio728(DAY);
+  const diff=prev.total? (ws.total-prev.total)/prev.total*100 : 0;
+  const byType={handball:0,gym:0,other:0};
+  for(let i=0;i<7;i++) for(const s of sessionsOn(addDays(DAY,-i))) byType[s.type]+=srpe(s);
+  const tot=sum(Object.values(byType))||1;
+  const hs=[]; for(let i=13;i>=0;i--){const d=addDays(DAY,-i); hs.push({d,v:hooper(d)});}
+  const sleeps=[]; for(let i=6;i>=0;i--){const w=S.well[addDays(DAY,-i)]; if(w?.sleepH) sleeps.push(w.sleepH);}
+  const hrvs=[]; for(let i=6;i>=0;i--){const w=S.well[addDays(DAY,-i)]; if(w?.hrv) hrvs.push(w.hrv);}
+
+  return `
+  <div class="card">
+    <h2>Wochenlast · 7 Tage</h2>
+    <div class="row between" style="margin-bottom:12px">
+      <div><div class="big mono">${r0(ws.total)}</div><div class="xs muted">AU (sRPE)</div></div>
+      <div style="text-align:right">
+        <div class="mono" style="font-size:15px;font-weight:640;color:${Math.abs(diff)>30?'var(--amber)':'var(--muted)'}">
+          ${prev.total?(diff>0?'+':'')+r0(diff)+' %':'—'}</div>
+        <div class="xs muted">ggü. Vorwoche</div></div>
+    </div>
+    <svg class="chart" id="cLoad" viewBox="0 0 320 112" preserveAspectRatio="none"></svg>
+    <div class="hr"></div>
+    <div class="grid3">
+      <div><div class="xs muted">Monotonie ${Q('mono')}</div>
+        <div style="font-size:18px;font-weight:650" class="mono">${ws.mono?r1(ws.mono):'—'}</div>
+        <div class="xs dim">${!ws.mono?'ab 3 Tagen':ws.mono>2?'hoch':'ok'}</div></div>
+      <div><div class="xs muted">Strain</div>
+        <div style="font-size:18px;font-weight:650" class="mono">${r0(ws.strain)}</div>
+        <div class="xs dim">Last × Mono</div></div>
+      <div><div class="xs muted">7:28 ${Q('acwr')}</div>
+        <div style="font-size:18px;font-weight:650" class="mono">${rt?r1(rt):'—'}</div>
+        <div class="xs dim">${rt?'nur Info':'ab 3 Wochen'}</div></div>
+    </div>
+    ${ws.mono>2?`<div class="warn">Monotonie über 2,0 — deine Tage sind sich zu ähnlich.
+      Foster (1998) verband hohe Monotonie mit mehr Infekten und Stagnation.
+      Ein echter Ruhetag senkt sie stärker als ein lockerer Tag.</div>`:''}
+    <div class="note">7:28 ist bewusst ohne Ampel dargestellt. Die Acute:Chronic Workload Ratio
+      gilt als Verletzungsprognose nicht als haltbar (Impellizzeri et al. 2020, Lolli et al. 2019) —
+      als reines Bild deiner Belastungsverteilung ist sie brauchbar.</div>
+  </div>
+
+  <div class="card">
+    <h2>Verteilung 7 Tage</h2>
+    <div class="bar" style="height:12px;display:flex;gap:2px;background:none">
+      <i style="width:${byType.handball/tot*100}%;background:var(--amber)"></i>
+      <i style="width:${byType.gym/tot*100}%;background:var(--blue)"></i>
+      <i style="width:${byType.other/tot*100}%;background:var(--violet)"></i>
+    </div>
+    <div class="row" style="gap:14px;margin-top:9px">
+      <span class="xs"><span class="tag hb">HB</span> ${r0(byType.handball)} AU</span>
+      <span class="xs"><span class="tag gym">GYM</span> ${r0(byType.gym)} AU</span>
+      <span class="xs"><span class="tag other">DIV</span> ${r0(byType.other)} AU</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Befinden · 14 Tage (niedrig = besser)</h2>
+    <svg class="chart" id="cHoop" viewBox="0 0 320 112" preserveAspectRatio="none"></svg>
+    <div class="hr"></div>
+    <div class="grid3">
+      <div><div class="xs muted">Hooper heute</div>
+        <div style="font-size:18px;font-weight:650" class="mono">${hooper(DAY)??'—'}<span class="xs muted">/28</span></div></div>
+      <div><div class="xs muted">Schlaf Ø 7 T</div>
+        <div style="font-size:18px;font-weight:650" class="mono">${sleeps.length?r1(mean(sleeps))+' h':'—'}</div></div>
+      <div><div class="xs muted">HRV Ø 7 T</div>
+        <div style="font-size:18px;font-weight:650" class="mono">${hrvs.length?r0(mean(hrvs))+' ms':'—'}</div></div>
+    </div>
+    <div class="note">Der Wochenschnitt des rMSSD ist die belastbare Größe, nicht der Tageswert
+      (Plews et al. 2013). Erfasse den Wert immer gleich — morgens, direkt nach dem Aufwachen.</div>
+  </div>
+
+  <div class="card">
+    <h2>Was die Zahlen bedeuten</h2>
+    <div class="small muted" style="line-height:1.6">
+      <b style="color:var(--text)">sRPE</b> — RPE × Minuten. Macht eine Handballeinheit und ein
+      Krafttraining auf einer Skala vergleichbar (Foster 1998).<br><br>
+      <b style="color:var(--text)">Monotonie</b> — Wochenschnitt geteilt durch die Streuung der
+      Tageslasten. Über 2,0 heißt: zu wenig Unterschied zwischen harten und leichten Tagen.<br><br>
+      <b style="color:var(--text)">Bereitschaft</b> — kein Gesundheitswert, sondern die Abweichung
+      deines Hooper-Index vom eigenen 14-Tage-Schnitt. Ab vier erfassten Tagen wird relativ
+      gerechnet (Saw et al. 2016).
+    </div>
+  </div>`;
+}
+
+function drawCharts(){
+  const days=loadRange(DAY,14);
+  bars('cLoad', days.map(x=>x.v), days.map(x=>DOW[parseISO(x.d).getDay()]));
+  const hs=[]; for(let i=13;i>=0;i--){const d=addDays(DAY,-i); hs.push(hooper(d));}
+  line('cHoop', hs, 4, 28);
+}
+function bars(id,vals,labels){
+  const el=document.getElementById(id); if(!el) return;
+  const W=320,H=112,pb=16,mx=Math.max(...vals,1);
+  const bw=W/vals.length;
+  let s=`<line class="gl" x1="0" y1="${H-pb}" x2="${W}" y2="${H-pb}"/>`;
+  vals.forEach((v,i)=>{
+    const h=(v/mx)*(H-pb-8), x=i*bw+bw*0.18, w=bw*0.64;
+    s+=`<rect x="${x}" y="${H-pb-h}" width="${w}" height="${Math.max(h,v>0?2:0)}" rx="2"
+        fill="${i===vals.length-1?'var(--acc)':'var(--blue)'}" opacity="${v?1:.25}"/>`;
+    if(i%2===1||i===vals.length-1)
+      s+=`<text x="${i*bw+bw/2}" y="${H-4}" text-anchor="middle">${labels[i]}</text>`;
+  });
+  el.innerHTML=s;
+}
+function line(id,vals,lo,hi){
+  const el=document.getElementById(id); if(!el) return;
+  const W=320,H=112,pb=14,pt=8;
+  const pts=vals.map((v,i)=>v==null?null:
+    [i/(vals.length-1)*W, pt+(1-(v-lo)/(hi-lo))*(H-pb-pt)]);
+  let d='',started=false,s='';
+  for(const p of pts){ if(!p){started=false;continue;}
+    d+=(started?' L':' M')+p[0].toFixed(1)+' '+p[1].toFixed(1); started=true; }
+  const good=pt+(1-(10-lo)/(hi-lo))*(H-pb-pt);
+  s+=`<line class="gl" x1="0" y1="${good}" x2="${W}" y2="${good}" stroke-dasharray="3 4"/>`;
+  s+=`<text x="2" y="${good-3}">gut</text>`;
+  if(d) s+=`<path d="${d}" fill="none" stroke="var(--acc)" stroke-width="2"
+    stroke-linejoin="round" stroke-linecap="round"/>`;
+  pts.forEach(p=>{ if(p) s+=`<circle cx="${p[0]}" cy="${p[1]}" r="2.6" fill="var(--acc)"/>`; });
+  if(!d) s+=`<text x="${W/2}" y="${H/2}" text-anchor="middle">noch keine Daten</text>`;
+  el.innerHTML=s;
+}
+
+/* =========================================================================
+   VIEW: PROFIL
+   ========================================================================= */
+function vMe(){
+  const p=S.profile, b=bmr(), kt=kcalTarget(DAY);
+  return `
+  <div class="card">
+    <h2>Körperdaten</h2>
+    <div class="inline">
+      <label class="f"><span>Gewicht (kg)</span>
+        <input type="number" step="0.1" id="pW" value="${p.weight}" onchange="setP('weight',this.value)"></label>
+      <label class="f"><span>Größe (cm)</span>
+        <input type="number" id="pH" value="${p.height}" onchange="setP('height',this.value)"></label>
+      <label class="f"><span>Alter</span>
+        <input type="number" id="pA" value="${p.age}" onchange="setP('age',this.value)"></label>
+    </div>
+    <label class="f"><span>Geschlecht (für die Grundumsatzformel)</span>
+      <select onchange="setP('sex',this.value)">
+        <option value="m" ${p.sex==='m'?'selected':''}>männlich</option>
+        <option value="f" ${p.sex==='f'?'selected':''}>weiblich</option>
+      </select></label>
+  </div>
+
+  <div class="card">
+    <h2>Ziele</h2>
+    <label class="f"><span>Alltagsaktivität (PAL, ohne Training)</span>
+      <select onchange="setP('pal',this.value)">
+        <option value="1.4" ${p.pal==1.4?'selected':''}>1,4 — überwiegend sitzend</option>
+        <option value="1.5" ${p.pal==1.5?'selected':''}>1,5 — sitzend, etwas Bewegung</option>
+        <option value="1.6" ${p.pal==1.6?'selected':''}>1,6 — Studium/Büro + Alltag</option>
+        <option value="1.75" ${p.pal==1.75?'selected':''}>1,75 — viel auf den Beinen</option>
+        <option value="1.9" ${p.pal==1.9?'selected':''}>1,9 — körperliche Arbeit</option>
+      </select></label>
+    <label class="f"><span>Gewichtsziel</span>
+      <select onchange="setP('goal',this.value)">
+        <option value="maintain" ${p.goal==='maintain'?'selected':''}>halten</option>
+        <option value="gain" ${p.goal==='gain'?'selected':''}>aufbauen (+300 kcal)</option>
+        <option value="lose" ${p.goal==='lose'?'selected':''}>reduzieren (−350 kcal)</option>
+      </select></label>
+    <div class="inline">
+      <label class="f"><span>Protein g/kg</span>
+        <input type="number" step="0.1" value="${p.protPerKg}" onchange="setP('protPerKg',this.value)"></label>
+      <label class="f"><span>Kohlenhydrate g/kg</span>
+        <input type="number" step="0.5" value="${p.carbPerKg}" onchange="setP('carbPerKg',this.value)"></label>
+    </div>
+    <div class="hr"></div>
+    <div class="small muted" style="line-height:1.7">
+      Grundumsatz (Mifflin-St Jeor): <b class="mono" style="color:var(--text)">${r0(b)} kcal</b><br>
+      Ziel ${human(DAY).toLowerCase()}: <b class="mono" style="color:var(--text)">${kt} kcal</b>
+      · ${protTarget()} g Protein · ${carbTarget(DAY)} g KH · ${fatTarget(DAY)} g Fett
+    </div>
+    <div class="note">Protein 1,4–2,0 g/kg nach ISSN Position Stand (Jäger et al. 2017).
+      Kohlenhydrate 5–7 g/kg für Mannschaftssport mit moderatem Umfang, an harten Tagen bis 8
+      (ACSM/AND/DC Position Stand 2016). Trainingsenergie wird pro Einheit aus MET × kg × Stunden
+      geschätzt und zu 55 % addiert, weil der PAL-Faktor einen Teil schon enthält.</div>
+  </div>
+
+  <div class="card">
+    <h2>ADHS-Schicht</h2>
+    <label class="f"><span>Einnahmezeit — der Anker für alle Essensfenster</span>
+      <input type="time" value="${S.adhs.medTime}" onchange="setAdhs('medTime',this.value)"></label>
+    <div class="chips" style="margin-bottom:12px">
+      ${windowsFor(DAY).map(w=>`<span class="pill xs">${w.ico} ${m2hm(w.from)}–${m2hm(w.to)}</span>`).join('')}
+    </div>
+    <label class="f"><span>Essensfenster anzeigen</span>
+      <select onchange="setAdhs('useWindows',this.value==='1')">
+        <option value="1" ${S.adhs.useWindows?'selected':''}>ja</option>
+        <option value="0" ${S.adhs.useWindows?'':'selected'}>nein</option>
+      </select></label>
+    <div class="note">Die Fenster liegen bei −20 min, +4 h, +7 h und +10 h ab Einnahme.
+      Hintergrund ist der typische Wirkverlauf von Lisdexamfetamin: Wirkeintritt nach etwa
+      einer Stunde, Spitze nach dreieinhalb bis viereinhalb Stunden, Nachlassen nach zehn bis
+      zwölf Stunden. Der Appetit folgt diesem Verlauf — die Fenster legen das Essen dorthin,
+      wo es sonst ausfällt. Das ist eine Struktur­hilfe, keine medizinische Empfehlung;
+      Fragen zur Medikation gehören zu deiner Ärztin.</div>
+  </div>
+
+  ${S.foods.length?`<div class="card">
+    <h2>Favoriten (${S.foods.length})</h2>
+    ${S.foods.map((f,i)=>`<div class="item"><div class="g"><b>${esc(f.n)}</b>
+      <span>${r0(f.kcal100)} kcal · ${r1(f.p)} P /100 g${f.bc?' · '+f.bc:''}</span></div>
+      <button class="x" onclick="delFav(${i})">✕</button></div>`).join('')}
+  </div>`:''}
+
+  <div class="card">
+    <h2>Daten</h2>
+    <div class="small muted" style="margin-bottom:12px">
+      Alles liegt ausschließlich in diesem Browser. Kein Server, kein Konto, keine Übertragung —
+      nur die Produktabfrage geht an Open Food Facts. Wenn du den Browserspeicher löschst,
+      sind die Daten weg. Deshalb: exportiere regelmäßig.</div>
+    <div class="btnrow">
+      <button class="btn" onclick="expo()">⬇ Export</button>
+      <button class="btn" onclick="document.getElementById('impFile').click()">⬆ Import</button>
+    </div>
+    <input type="file" id="impFile" accept="application/json" style="display:none" onchange="impo(this)">
+    <div class="hr"></div>
+    <div class="row between small">
+      <span class="muted">Einheiten</span><b class="mono">${S.sessions.length}</b></div>
+    <div class="row between small">
+      <span class="muted">Tage mit Ernährung</span><b class="mono">${Object.keys(S.diary).length}</b></div>
+    <div class="row between small">
+      <span class="muted">Tage mit Check</span><b class="mono">${Object.keys(S.well).length}</b></div>
+  </div>
+
+  <div class="card">
+    <h2>Quellen</h2>
+    <div class="small muted" style="line-height:1.65">
+      Nährwerte: <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a> (ODbL).
+      Rechenlogik nach Mifflin-St Jeor 1990, Foster 1998, Hooper &amp; Mackinnon 1995,
+      Saw et al. 2016, Kellmann et al. 2018, Jäger et al. 2017 (ISSN),
+      Thomas/Erdman/Burke 2016 (ACSM), Zourdos et al. 2016, Epley.
+      Vollständige Liste in QUELLEN.md.</div>
+    <div class="note">Diese App ersetzt keine sportmedizinische oder ernährungsmedizinische Beratung.
+      Die Zielwerte sind Schätzungen aus Formeln, keine Messwerte.</div>
+  </div>
+  <div style="height:20px"></div>`;
+}
+window.setAdhs=(k,v)=>{ S.adhs[k]=v; save(); render(); };
+window.setP=(k,v)=>{ S.profile[k]=(k==='sex'||k==='goal')?v:parseFloat(v); save();
+  if(VIEW==='me') render(); };
+window.delFav=i=>{ S.foods.splice(i,1); save(); render(); };
+window.expo=()=>{
+  const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='pivot-backup-'+todayISO()+'.json';
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  S.seen.lastExport=Date.now(); save(); render(); toast('Export erstellt');
+};
+window.impo=inp=>{
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const d=JSON.parse(r.result);
+      if(!d.profile) throw 0;
+      S=deepMerge(structuredClone(DEF),d); save(); render(); toast('Import erfolgreich'); }
+    catch(e){ toast('Datei nicht lesbar'); } };
+  r.readAsText(f); inp.value='';
+};
+
+/* =========================================================================
+   START
+   ========================================================================= */
+if(S.seen.ver && S.seen.ver!==APP_VERSION) S.seen.updated=1;
+if(S.seen.ver!==APP_VERSION){ S.seen.ver=APP_VERSION; save(); }
+render();
+if('serviceWorker' in navigator)
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+document.addEventListener('visibilitychange',()=>{ if(document.hidden){ stopScan(); flush(); } });
+</script>
+</body>
+</html>
