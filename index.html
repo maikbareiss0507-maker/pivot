@@ -26,11 +26,48 @@ body[data-ph="dip"]      {--ph1:#3a2a15; --ph2:#1c2130; --phc:#f5b13d}
 body[data-ph="evening"]  {--ph1:#1b2c40; --ph2:#1a2030; --phc:#63a9f5}
 body[data-ph="winddown"] {--ph1:#26203f; --ph2:#1a1f2e; --phc:#ab8cf7}
 body[data-ph="night"]    {--ph1:#1a1e2b; --ph2:#171b26; --phc:#9aa5b6}
+
+/* ---------- Helle Darstellung ----------
+   Maik: "disign ist unübersichtlich und hellere darstellung".
+   Kontraste sind absichtlich kräftig — die App wird oft draußen und auf dem
+   Weg benutzt, nicht nur abends im Zimmer. */
+body[data-theme="light"]{
+  --bg:#f2f5f9; --surface:#ffffff; --surface2:#eaeff6; --line:#d8e0ea;
+  --text:#111820; --muted:#57657a; --dim:#8391a4;
+  --acc:#0f9d58; --acc-dim:#dcf3e6;
+  --blue:#1d6fd4; --amber:#a96108; --red:#c62f2f; --violet:#6d47c7;
+  color-scheme:light;
+}
+body[data-theme="light"] header.top{background:rgba(255,255,255,.94)}
+body[data-theme="light"] nav.tabs{background:rgba(255,255,255,.97)}
+body[data-theme="light"] .card{box-shadow:0 1px 2px rgba(16,26,40,.05)}
+body[data-theme="light"] .btn.acc{color:#fff}
+body[data-theme="light"] .scale button.on{color:#fff}
+body[data-theme="light"] .scale.warm button.on{background:var(--amber);color:#fff}
+body[data-theme="light"] .seg button.on{color:#fff}
+body[data-theme="light"] .tile .tb,body[data-theme="light"] .tb{color:#fff}
+body[data-theme="light"] .meal:active{color:#fff}
+body[data-theme="light"] .qm:active{color:#fff}
+body[data-theme="light"] .tick.on{color:#fff}
+body[data-theme="light"] .fab{color:#fff}
+body[data-theme="light"] .warn{background:#fdf3e0;border-color:#e6c188;color:#7a4c05}
+body[data-theme="light"] .now{box-shadow:0 3px 14px rgba(16,26,40,.09)}
+body[data-theme="light"] .tag.hb{background:#fdf0d6;color:#8a5a06}
+body[data-theme="light"] .tag.gym{background:#dfeafc;color:#1a4f9c}
+body[data-theme="light"] .tag.other{background:#e9e2fb;color:#5b3aa8}
+body[data-theme="light"][data-ph="morning"]  {--ph1:#fdf1d9; --ph2:#ffffff; --phc:#a96108}
+body[data-theme="light"][data-ph="midday"]   {--ph1:#dcf3e6; --ph2:#ffffff; --phc:#0f9d58}
+body[data-theme="light"][data-ph="dip"]      {--ph1:#fdeed3; --ph2:#ffffff; --phc:#a96108}
+body[data-theme="light"][data-ph="evening"]  {--ph1:#deeafb; --ph2:#ffffff; --phc:#1d6fd4}
+body[data-theme="light"][data-ph="winddown"] {--ph1:#e8e1fb; --ph2:#ffffff; --phc:#6d47c7}
+body[data-theme="light"][data-ph="night"]    {--ph1:#e9edf3; --ph2:#ffffff; --phc:#57657a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
   font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   overscroll-behavior-y:none}
-body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+/* Platz für Leiste UND Schnellzugriff — sonst verdeckt der runde Knopf
+   am Seitenende die letzte Karte dauerhaft. */
+body{padding-bottom:calc(124px + env(safe-area-inset-bottom))}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:none;background:none}
 h1,h2,h3{margin:0;font-weight:650;letter-spacing:-.01em}
@@ -170,6 +207,11 @@ label.f>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;f
   border-radius:var(--r);padding:18px 16px;margin-bottom:12px;cursor:pointer;
   box-shadow:0 6px 22px rgba(0,0,0,.28)}
 .now:active{transform:scale(.99)}
+.now.fix{background:linear-gradient(155deg,var(--f1),var(--f2));
+  border-color:color-mix(in srgb,var(--fc) 55%,transparent)}
+.now.fix .now-t{color:#f4f6fb}
+.now.fix .now-s{color:#c3c9d8}
+.now.fix .now-k{color:var(--fc)}
 .now-k{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--phc,var(--acc));
   font-weight:700;margin-bottom:6px}
 .now-t{font-size:22px;font-weight:680;letter-spacing:-.02em;line-height:1.2}
@@ -248,6 +290,49 @@ label.f>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;f
 .tiles.mini .ti{font-size:18px}
 .tiles.mini .tn{font-size:10px}
 
+/* ---------- Reflexion ---------- */
+.jhead{margin-bottom:18px}
+.jq{font-size:23px;line-height:1.28;letter-spacing:-.02em;text-transform:none;
+  color:var(--text);font-weight:660;margin:0}
+.jq::before{display:none}
+.jlab{font-size:13px;font-weight:650;margin-bottom:8px;color:var(--text)}
+.moodwrap{display:flex;flex-direction:column;align-items:center;gap:14px;margin:26px 0 22px}
+.moodball{width:172px;height:172px;border-radius:50%;
+  background:radial-gradient(circle at 42% 38%,
+    color-mix(in srgb,var(--mc) 42%,var(--surface)),
+    color-mix(in srgb,var(--mc) 72%,var(--surface)));
+  box-shadow:0 0 0 9px color-mix(in srgb,var(--mc) 11%,transparent),
+             0 0 0 19px color-mix(in srgb,var(--mc) 6%,transparent);
+  transition:background .3s,box-shadow .3s}
+.moodname{font-size:21px;font-weight:680;letter-spacing:-.01em}
+.moodrange{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:none}
+.moodrange::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:var(--surface2);
+  border:1px solid var(--line)}
+.moodrange::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  background:var(--surface);border:2.5px solid var(--text);margin-top:-11px}
+.moodrange::-moz-range-track{height:6px;border-radius:99px;background:var(--surface2)}
+.moodrange::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--surface);
+  border:2.5px solid var(--text)}
+.jdots{display:flex;gap:6px;justify-content:center;margin-top:16px}
+.jdots i{width:6px;height:6px;border-radius:50%;background:var(--line)}
+.jdots i.on{background:var(--acc)}
+.mdot{width:13px;height:13px;border-radius:50%;flex:0 0 auto}
+h2.sect{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
+  margin:16px 2px 9px;font-weight:600}
+h2.sect::before{display:none}
+
+/* ---------- Bereichszeile mit Zweck ---------- */
+.arow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  padding:11px 0;border-bottom:1px solid var(--line);background:none}
+.arow:last-of-type{border-bottom:none}
+.arow:active{opacity:.6}
+.arow .ai{font-size:20px;flex:0 0 auto;width:26px;text-align:center}
+.arow .ag{flex:1;min-width:0}
+.arow .ag b{display:block;font-size:14.5px;font-weight:620;margin-bottom:1px}
+.arow .ag span{display:block;font-size:11.5px;color:var(--muted);line-height:1.35}
+.arow .ac{color:var(--dim);font-size:19px;flex:0 0 auto}
+.tb.static{position:static;margin-left:auto}
+
 /* ---------- Evidenzstufe ---------- */
 .ev{display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;
   letter-spacing:.03em;padding:3px 8px;border-radius:7px;border:1px solid;
@@ -313,7 +398,7 @@ label.f>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;f
    ========================================================================= */
 
 const KEY='pivot.v1';
-const APP_VERSION='5.0';
+const APP_VERSION='5.3';
 const DEF={
   profile:{sex:'m',age:25,height:183,weight:84,pal:1.5,protPerKg:1.8,carbPerKg:5,
            goal:'maintain',kcalOverride:null},
@@ -349,7 +434,8 @@ const DEF={
   inbox:[],            // {id,t,ts}
   med:{items:null, taken:{}, week:[], biweek:[], seenSafety:false},
   fin:{limit:40, nightFrom:21, konten:[], wish:[], bills:[], log:[]},
-  journal:{},          // day -> {gut,schwer,morgen,frei}
+  journal:{},          // day -> [{ts,mood,feel[],sens[],doing[],withw[],where[],text}]
+  jOpts:null,          // eigene Begriffe je Liste, vom Nutzer ergänzt
   smoke:{},            // day -> [{ts,tr}]
   drills:{},           // day -> [{k,n,r,ts}]
   beschw:[],           // {id,ort,seit,mech,offen,verlauf:[]}
@@ -770,6 +856,10 @@ const WHY={
     b:'Die häufigsten Handballverletzungen liegen in der unteren Extremität — Oberschenkel, Knie, Sprunggelenk — und in der Schulter. Die meisten entstehen im Wettkampf, nicht im Training.',
     q:'Systematische Übersicht über 27 Studien zu Verletzungshäufigkeit im Handball; über PubMed geprüft.',
     g:'Häufigkeit in einer Population ist keine Vorhersage für dich. Und ausgerechnet für die Schulter fand eine Meta-Analyse über drei Studien keinen gesicherten Präventionseffekt.'},
+  drang:{t:'Warum ablenken statt aushalten',
+    b:'Der Punkt ist nicht, den Drang wegzudenken, sondern sofort etwas anderes zu tun. Ortswechsel und moderate Bewegung sind die beiden Handgriffe mit Substanz: im Labor verlängerte moderate Bewegung die Zeit bis zur nächsten Zigarette von 4 auf 21 Minuten, und zwar über die Belohnungskomponente des Verlangens.',
+    q:'Kurti & Dallery 2014, Addict Behav, DOI 10.1016/j.addbeh.2014.03.004; Garey et al. 2024, Curr Top Behav Neurosci. Beides über PubMed geprüft.',
+    g:'Die Laborstudie hatte 20 Teilnehmende und untersuchte Rauchen. Die Übertragung auf andere Dränge ist plausibel, aber nicht geprüft. Ausdrücklich nicht behauptet wird, dass Achtsamkeit den Drang auflöst — eine Meta-Analyse über 9 RCTs mit 901 Teilnehmenden fand dafür keinen Effekt auf Rückfälle.'},
   streak:{t:'Warum kein Streak',
     b:'Ein Streak setzt die ganze Belohnung auf einen fernen Zeitpunkt und entwertet mit einem einzigen Aussetzer alles Bisherige. Bei ADHS fällt der Wert einer Belohnung mit der Verzögerung steiler ab als sonst — also wirkt genau der falsche Hebel. Gezählt wird deshalb, wie viele der letzten 14 Tage erfasst sind.',
     q:'Lally et al. 2010: Gewohnheitsaufbau dauert im Median 66 Tage, und einzelne ausgelassene Gelegenheiten beeinträchtigten ihn nicht messbar.',
@@ -822,15 +912,18 @@ const ICON={
 const TABS=[['now','Jetzt'],['tag','Tag'],['food','Essen'],['train','Training'],['more','Mehr']];
 const AREA={now:'var(--phc,#4ade80)', tag:'#4ade80', food:'#f5b13d', train:'#63a9f5',
   more:'#ab8cf7', haus:'#f5b13d', fokus:'#ab8cf7', inbox:'#4ade80', tools:'#ab8cf7',
+  notfall:'#ab8cf7', reset:'#f5b13d',
   load:'#63a9f5', beschw:'#f87171', med:'#f87171', journal:'#4ade80', fin:'#f5b13d',
   week:'#63a9f5', evidenz:'#63a9f5', me:'#ab8cf7'};
 const TITLE={now:'Jetzt', tag:'Dein Tag', food:'Essen', train:'Training', more:'Alle Bereiche',
   haus:'Haushalt', fokus:'Fokus', inbox:'Eingang', tools:'Werkzeugkasten',
   load:'Last & Erholung', beschw:'Beschwerden', med:'Medikamente', journal:'Reflexion',
-  fin:'Finanzen', week:'Wochenblick', evidenz:'Evidenz', me:'Profil'};
+  fin:'Finanzen', week:'Wochenblick', evidenz:'Evidenz', me:'Profil', notfall:'Jetzt gerade',
+  reset:'Vier-Wochen-Reset'};
 /* Welcher Tab unten leuchtet, wenn eine Unterseite offen ist */
 const PARENT={haus:'more', fokus:'more', inbox:'more', tools:'more', load:'more',
-  beschw:'more', med:'more', journal:'more', fin:'more', week:'more', evidenz:'more', me:'more'};
+  beschw:'more', med:'more', journal:'more', fin:'more', week:'more', evidenz:'more', me:'more',
+  notfall:'more', reset:'more'};
 let VIEW='now', trainSeg='ses';
 
 function phase(){
@@ -863,7 +956,9 @@ document.getElementById('nav').addEventListener('click',e=>{
 });
 document.getElementById('dateBtn').addEventListener('click',()=>openSheet(dateSheet()));
 document.getElementById('backBtn').addEventListener('click',()=>go('more'));
-window.go=(v,seg)=>{ VIEW=v; if(seg) trainSeg=seg; closeSheet(); render(); window.scrollTo(0,0); };
+window.go=(v,seg)=>{ if(v!=='journal') JD=null;
+  if(v!=='notfall'){ notCur=null; notPool=[]; }
+  VIEW=v; if(seg) trainSeg=seg; closeSheet(); render(); window.scrollTo(0,0); };
 window.setSeg=v=>{ trainSeg=v; render(); };
 
 /* Sheet */
@@ -898,7 +993,8 @@ function render(){
     (DAY===todayISO()?'':human(DAY)+' · ')+DOW[dd.getDay()]+', '+dd.getDate()+'. '+MON[dd.getMonth()];
   const V={now:vNow, tag:vTag, food:vFood, train:vTrain, me:vMe, more:vMore,
     haus:vHaus, fokus:vFokus, inbox:vInbox, tools:vTools, load:vLoad, beschw:vBeschw,
-    med:vMed, journal:vJournal, fin:vFin, week:vWeek, evidenz:vEvidenz};
+    med:vMed, journal:vJournal, fin:vFin, week:vWeek, evidenz:vEvidenz, notfall:vNotfall,
+    reset:vReset};
   document.getElementById('app').innerHTML=(V[VIEW]||vNow)();
   document.getElementById('fab').style.display=(VIEW==='now'||VIEW==='tag')?'flex':'none';
   if((VIEW==='train'&&trainSeg==='load')||VIEW==='load') drawCharts();
@@ -1078,6 +1174,24 @@ function vNow(){
       <span class="small muted">Tages-Check fehlt noch</span>
       <button class="btn sm" onclick="openSheet(wellSheet())">20 Sekunden</button></div></div>`;
 
+  h+=`<div class="btnrow" style="margin-bottom:12px">
+    <button class="btn" onclick="jStart()">Wie geht's dir?</button>
+    <button class="btn" onclick="notStart()" style="color:var(--violet)">🛑 Drang jetzt</button>
+  </div>`;
+
+  /* Maik: "einfacherer zugriff auf rauchen zähler". Ein Tap von der Startseite,
+     ohne erst in den Tag-Reiter zu wechseln. */
+  const zig=(S.smoke[DAY]||[]).length;
+  h+=`<div class="card tight">
+    <div class="row between">
+      <div><b style="font-size:15px">${zig}</b>
+        <span class="small muted"> Zigaretten heute</span></div>
+      <div class="btnrow" style="width:auto">
+        ${zig?`<button class="btn sm ghost" onclick="smokeUndo()">−</button>`:''}
+        <button class="btn sm" onclick="smokeSheet()">+ mit Auslöser</button>
+        <button class="btn sm acc" onclick="smokeAdd('')">+1</button>
+      </div></div></div>`;
+
   const offen=wins.filter(w=>w.status==='open'||w.status==='now').length;
   h+=`<div class="rest">
     <a onclick="go('tag')"><i></i>Tagesplan</a>
@@ -1094,11 +1208,12 @@ function vNow(){
 
   /* Alle Bereiche — nur Name, Symbol und offene Anzahl. Nie Inhalte.
      So bleibt jeder Bereich auffindbar, ohne dass Jetzt zur Liste wird. */
-  h+=`<div class="card">
+  const aktiv=AREAS.filter(a=>areaUsed(a.k)&&a.k!=='me');
+  if(aktiv.length) h+=`<div class="card">
     <div class="row between" style="margin-bottom:9px">
-      <h2 style="margin:0">Alle Bereiche</h2>
-      <button class="btn sm ghost" onclick="go('more')">Öffnen</button></div>
-    ${tiles(AREAS.slice(0,8)).replace('class="tiles"','class="tiles mini"')}</div>`;
+      <h2 style="margin:0">Deine Bereiche</h2>
+      <button class="btn sm ghost" onclick="go('more')">Alle</button></div>
+    ${tiles(aktiv.slice(0,8)).replace('class="tiles"','class="tiles mini"')}</div>`;
   return h;
 }
 
@@ -1114,10 +1229,12 @@ function smokeCard(){
       ${w.map((v,i)=>`<div style="flex:1;height:${Math.max(3,v/mx*34)}px;border-radius:3px;
         background:${i===6?'var(--amber)':'var(--surface2)'}"></div>`).join('')}</div>
     <div class="btnrow">
-      <button class="btn acc" onclick="smokeSheet()">+1 mit Auslöser</button>
-      ${a.length?`<button class="btn sm ghost" onclick="smokeUndo()">Zurück</button>`:''}</div>
-    <div class="note">Nur zählen und den Auslöser festhalten. Keine Bewertung, kein Ziel,
-      keine Serie — der häufigste Auslöser wird im Wochenblick zum Regelvorschlag.</div>
+      <button class="btn acc" onclick="smokeSheet()">Eintragen</button>
+      ${a.length?`<button class="btn sm ghost" onclick="smokeUndo()">Zurück</button>`:''}
+      <button class="btn sm ghost" onclick="go('reset')">Slots</button></div>
+    <div class="note">${impulsCount(DAY)?impulsCount(DAY)+' davon außerhalb eines Slots. ':''}Ziel
+      aus deinem Plan sind fünf Slots pro Tag und keine Impulszigarette. Kein Ziel, keine Serie —
+      der häufigste Auslöser wird im Wochenblick zum Regelvorschlag.</div>
   </div>`;
 }
 function drillCard(){
@@ -1164,8 +1281,11 @@ function vTag(){
       <button class="btn acc" onclick="openSheet(wellSheet())">Check starten</button></div>`;
   }
 
-  h+=routineCard('morning');
-  h+=routineCard('evening');
+  /* Nur die Routine, die gerade dran ist. Beide gleichzeitig aufgeklappt war der
+     Hauptgrund, warum der Tag-Reiter unübersichtlich wirkte. */
+  const rk=FOLD||routineDue(), other=rk==='morning'?'evening':'morning';
+  h+=routineCard(rk);
+  h+=routineFolded(other);
 
   h+=`<div class="card">
     <div class="row between" style="margin-bottom:10px">
@@ -1203,10 +1323,11 @@ function vTag(){
   h+=drillCard();
   h+=smokeCard();
 
+  const jn=jEntries(DAY).length;
   h+=`<div class="card tight">
     <div class="row between">
-      <span class="small muted">Abends drei Fragen, dann Schluss</span>
-      <button class="btn sm" onclick="go('journal')">Reflexion</button></div></div>`;
+      <span class="small muted">${jn?jn+' Einträge heute':'Noch nichts eingetragen'}</span>
+      <button class="btn sm" onclick="jStart()">Wie geht's dir?</button></div></div>`;
 
   if(rep.length && cov.hit>=2){
     h+=`<div class="card"><h2>Nachtragen</h2>
@@ -1257,6 +1378,19 @@ function dayBar(day){
 }
 
 /* ---------- Routinen-Karte ---------- */
+/* Welche Routine steht gerade an? Vor dem Nachmittag die Morgenroutine, danach die Abendroutine. */
+function routineDue(){ const ph=phase();
+  return (ph==='night'||ph==='morning'||ph==='midday')?'morning':'evening'; }
+/* Die andere bleibt erreichbar, aber eingeklappt — eine Zeile statt sechs. */
+function routineFolded(kind){
+  const pr=routineProgress(kind,DAY);
+  const title=kind==='morning'?'Morgenroutine':'Abendroutine';
+  return `<div class="card tight"><div class="row between">
+    <span class="small muted">${title} · ${pr.done}/${pr.all}</span>
+    <button class="btn sm ghost" onclick="foldOpen('${kind}')">Öffnen</button></div></div>`;
+}
+window.foldOpen=k=>{ FOLD=k; render(); };
+let FOLD=null;
 function routineCard(kind){
   const day=DAY, st=routineSteps(kind,day), pr=routineProgress(kind,day);
   const emer=kind==='morning'&&isEmergency(day);
@@ -1546,15 +1680,16 @@ function vFood(){
   </div>
 
   ${S.foods.length?`<div class="card">
-    <h2>Favoriten — 1 Tap</h2>
+    <h2>Zuletzt benutzt — 1 Tap</h2>
     <div class="chips">
-      ${S.foods.map((f,i)=>`<button class="pill" onclick="quickAdd(${i})">${esc(f.n)}
-        <span class="dim">${r0(f.kcal100)}</span></button>`).join('')}
+      ${foodsByUse().slice(0,14).map(f=>`<button class="pill" onclick="quickAdd('${f.__i}')">${esc(f.n)}
+        <span class="dim">${f.lastG?r0(f.lastG)+' g':r0(f.kcal100)+' kcal'}</span></button>`).join('')}
     </div>
-    <div class="note">Langes Halten nicht nötig — Menge fragt die App danach. Favoriten verwalten unter Profil.</div>
-  </div>`:`<div class="card"><h2>Favoriten</h2>
-    <div class="empty">Noch keine. Nach jedem Scan kannst du das Produkt als Favorit sichern —
-    danach ist es ein Tap.</div></div>`}
+    <div class="note">Alles, was du einmal erfasst hast, steht hier — mit deiner letzten Menge
+      vorbelegt. Funktioniert auch ohne Netz. Verwalten unter Profil.</div>
+  </div>`:`<div class="card"><h2>Zuletzt benutzt</h2>
+    <div class="empty">Noch nichts erfasst. Jedes gescannte oder eingetippte Produkt landet
+    ab sofort automatisch hier.</div></div>`}
 
   <div class="card">
     <h2>${human(DAY)}</h2>
@@ -1567,7 +1702,12 @@ function vFood(){
   </div>`;
 }
 window.delFood=i=>{ S.diary[DAY].splice(i,1); save(); render(); };
-window.quickAdd=i=>openSheet(portionSheet(S.foods[i],true));
+window.quickAdd=i=>openSheet(portionSheet(S.foods[+i],true));
+/* Häufig benutzt und kürzlich benutzt zuerst — nicht die Reihenfolge des Anlegens. */
+function foodsByUse(){
+  return S.foods.map((f,i)=>Object.assign({__i:i},f))
+    .sort((a,b)=>((b.used||0)-(a.used||0)) || ((b.ts||0)-(a.ts||0)));
+}
 
 /* ---------- Scanner ---------- */
 let stream=null, scanning=false, detector=null, lastCode=null;
@@ -1597,19 +1737,30 @@ function stopScan(){
   const w=document.getElementById('scanwrap'); if(w) w.classList.remove('on');
   const b=document.getElementById('scanBtn'); if(b) b.textContent='📷 Barcode scannen';
 }
+/* Der Scanner nahm früher den ersten Frame mit irgendeinem Code — auch einen halb
+   erfassten oder den Nachbarartikel im Regal. Jetzt muss derselbe Code dreimal
+   hintereinander gelesen werden, bevor er zählt. Kostet etwa eine Zehntelsekunde. */
+const SCAN_CONFIRM=3;
+let scanSeen='', scanHits=0;
 async function loopScan(v){
   if(!scanning) return;
   try{
     const codes=await detector.detect(v);
     if(codes.length){
       const c=codes[0].rawValue;
-      if(c && c!==lastCode){
-        lastCode=c;
-        if(navigator.vibrate) navigator.vibrate(35);
-        document.getElementById('scanmsg').textContent='Gefunden: '+c;
-        stopScan(); lookup(c); return;
+      if(c){
+        if(c===scanSeen){ scanHits++; } else { scanSeen=c; scanHits=1; }
+        const m=document.getElementById('scanmsg');
+        if(m) m.textContent = scanHits<SCAN_CONFIRM
+          ? 'Ruhig halten… '+'•'.repeat(scanHits)
+          : 'Gefunden: '+c;
+        if(scanHits>=SCAN_CONFIRM && c!==lastCode){
+          lastCode=c; scanSeen=''; scanHits=0;
+          if(navigator.vibrate) navigator.vibrate(35);
+          stopScan(); lookup(c); return;
+        }
       }
-    }
+    } else { scanHits=Math.max(0,scanHits-1); }
   }catch(e){/* Einzelframe-Fehler ignorieren */}
   requestAnimationFrame(()=>loopScan(v));
 }
@@ -1657,7 +1808,9 @@ let PENDING=null;
 function portionSheet(f,isFav){
   PENDING=f;
   const warn=plausible(f);
-  const def=f.serv||100;
+  /* Zuletzt benutzte Menge schlägt Portionsangabe schlägt 100 g — bei einem Produkt,
+     das Maik schon einmal erfasst hat, stimmt seine eigene Menge fast immer. */
+  const def=f.lastG||f.serv||100;
   return `<h2>${esc(f.n)}</h2>
   <div class="small muted" style="margin-bottom:12px">
     Pro 100 g: ${r0(f.kcal100)} kcal · ${r1(f.p)} P · ${r1(f.c)} KH · ${r1(f.f)} F
@@ -1672,22 +1825,32 @@ function portionSheet(f,isFav){
     ${[30,50,100,150,200,250,330,500].map(g=>
       `<button class="pill" onclick="setInput('pGram',${g})">${g} g</button>`).join('')}
   </div>
-  <div class="btnrow">
-    <button class="btn acc" onclick="addPortion(false)">Eintragen</button>
-    ${isFav?'':`<button class="btn sm" onclick="addPortion(true)">+ ⭐</button>`}
-  </div>
-  ${isFav?'':'<div class="note">⭐ speichert das Produkt als Favorit — danach ein Tap statt Scan.</div>'}`;
+  <button class="btn acc" onclick="addPortion()">Eintragen</button>
+  <div class="note">Wird automatisch gemerkt. Beim nächsten Mal steht es oben unter
+    „Zuletzt benutzt" — ein Tap statt Scan, und auch ohne Netz.</div>`;
 }
-window.addPortion=(fav)=>{
+window.addPortion=()=>{
   const f=PENDING; if(!f) return;
   const g=parseFloat(document.getElementById('pGram').value)||0;
   if(g<=0){ toast('Menge fehlt'); return; }
   const k=g/100;
   (S.diary[DAY]=S.diary[DAY]||[]).push({
     n:f.n, g, kcal:f.kcal100*k, p:f.p*k, c:f.c*k, f:f.f*k, bc:f.bc||null, ts:Date.now()});
-  if(fav && !S.foods.some(x=>x.bc&&x.bc===f.bc)) S.foods.push(f);
+  /* Jedes erfasste Produkt wird gemerkt — ohne Extraknopf. Vorher speicherte nur der
+     kleine Stern, und der Hauptknopf nicht; gescannte Produkte waren danach weg. */
+  rememberFood(f, g);
   save(); closeSheet(); VIEW='food'; render(); toast(r0(f.kcal100*k)+' kcal eingetragen');
 };
+/* Merkt ein Produkt und die zuletzt benutzte Menge. Gleicher Barcode oder gleicher Name
+   aktualisiert den vorhandenen Eintrag, statt eine zweite Karteileiche anzulegen. */
+function rememberFood(f,g){
+  const key=x=>(x.bc&&f.bc)?(x.bc===f.bc):(x.n===f.n);
+  const ex=S.foods.find(key);
+  if(ex){ ex.kcal100=f.kcal100; ex.p=f.p; ex.c=f.c; ex.f=f.f;
+          if(g) ex.lastG=g; ex.used=(ex.used||0)+1; ex.ts=Date.now(); return; }
+  S.foods.unshift({n:f.n, kcal100:f.kcal100, p:f.p, c:f.c, f:f.f, bc:f.bc||null,
+                   serv:f.serv||null, lastG:g||null, used:1, ts:Date.now()});
+}
 
 function manualSheet(bc,unknown){
   return `${unknown?'':'<h2>Manuell eintragen</h2>'}
@@ -2129,20 +2292,59 @@ function vEvidenz(){
 /* =========================================================================
    MEHR — stabiles vollständiges Verzeichnis. Jede Kachel eine eigene Seite.
    ========================================================================= */
+/* Jeder Bereich sagt in einer Zeile, wofür er da ist. Maiks Frage
+   "was macht der werkzeug kasten?" war berechtigt — ein Symbol erklärt nichts. */
 const AREAS=[
-  {k:'haus',   n:'Haushalt',       ico:'🧹', c:'#f5b13d'},
-  {k:'fokus',  n:'Fokus',          ico:'⏱️', c:'#ab8cf7'},
-  {k:'inbox',  n:'Eingang',        ico:'📥', c:'#4ade80'},
-  {k:'tools',  n:'Werkzeugkasten', ico:'🧰', c:'#ab8cf7'},
-  {k:'load',   n:'Last & Erholung',ico:'📈', c:'#63a9f5'},
-  {k:'beschw', n:'Beschwerden',    ico:'🩹', c:'#f87171'},
-  {k:'med',    n:'Medikamente',    ico:'💊', c:'#f87171'},
-  {k:'journal',n:'Reflexion',      ico:'📓', c:'#4ade80'},
-  {k:'fin',    n:'Finanzen',       ico:'💶', c:'#f5b13d'},
-  {k:'week',   n:'Wochenblick',    ico:'🗓️', c:'#63a9f5'},
-  {k:'evidenz',n:'Evidenz',        ico:'🔬', c:'#63a9f5'},
-  {k:'me',     n:'Profil & Daten', ico:'⚙️', c:'#9aa5b6'}
+  {k:'inbox',  n:'Eingang',        ico:'📥', c:'#4ade80',
+   z:'Gedanken festhalten, bevor sie weg sind'},
+  {k:'fokus',  n:'Fokus',          ico:'⏱️', c:'#ab8cf7',
+   z:'Timer und Ablenkungsparkplatz zum Anfangen'},
+  {k:'tools',  n:'Wenn es klemmt', ico:'🧰', c:'#ab8cf7',
+   z:'Sechs Situationen, je drei Handgriffe'},
+  {k:'notfall',n:'Drang jetzt',     ico:'🛑', c:'#ab8cf7',
+   z:'Eine Idee, sofort. Nichts wird gespeichert'},
+  {k:'reset',  n:'Vier-Wochen-Reset',ico:'🎯', c:'#f5b13d',
+   z:'Rauchslots, Wenn-dann, Rückfallplan, Sätze für Evi'},
+  {k:'load',   n:'Last & Erholung',ico:'📈', c:'#63a9f5',
+   z:'Wochenlast, Monotonie, Bereitschaft'},
+  {k:'med',    n:'Medikamente',    ico:'💊', c:'#f87171',
+   z:'Bestand, Einnahme, Rückblick fürs Arztgespräch'},
+  {k:'week',   n:'Wochenblick',    ico:'🗓️', c:'#63a9f5',
+   z:'Sieben Tage auf einen Blick, Bericht für Claude'},
+  {k:'journal',n:'Reflexion',      ico:'📓', c:'#4ade80',
+   z:'Drei Fragen abends, dann Schluss'},
+  {k:'haus',   n:'Haushalt',       ico:'🧹', c:'#f5b13d',
+   z:'Immer genau ein nächster Schritt'},
+  {k:'beschw', n:'Beschwerden',    ico:'🩹', c:'#f87171',
+   z:'Schmerz erfassen, bevor Training ausfällt'},
+  {k:'fin',    n:'Finanzen',       ico:'💶', c:'#f5b13d',
+   z:'Kurz prüfen vor dem Kauf, 24 Stunden warten'},
+  {k:'evidenz',n:'Evidenz',        ico:'🔬', c:'#63a9f5',
+   z:'Woher jede Zahl kommt und wie sicher sie ist'},
+  {k:'me',     n:'Profil & Daten', ico:'⚙️', c:'#9aa5b6',
+   z:'Zielwerte, Export, Darstellung'}
 ];
+/* Ein Bereich gilt als benutzt, sobald Daten drin sind. Dadurch sortiert sich die
+   Übersicht von selbst: was Maik anfasst, wandert nach oben — ohne dass er
+   irgendwo etwas einstellen muss. Gelöscht wird nie etwas. */
+function areaUsed(k){
+  switch(k){
+    case 'inbox':   return S.inbox.length>0;
+    case 'fokus':   return S.fokus.log.length>0 || S.fokus.park.length>0;
+    case 'load':    return S.sessions.length>0;
+    case 'med':     return Object.keys(S.med.taken).length>0 || S.med.week.length>0;
+    case 'week':    return Object.keys(S.week).length>0;
+    case 'journal': return Object.keys(S.journal).length>0;
+    case 'haus':    return Object.keys(S.haus.done).length>0 || !!S.haus.reset.fertig;
+    case 'beschw':  return S.beschw.length>0;
+    case 'fin':     return S.fin.konten.length>0 || S.fin.wish.length>0
+                        || S.fin.bills.length>0 || S.fin.log.length>0;
+    case 'notfall': return true;   /* muss immer oben stehen — sonst nützt er nichts */
+    case 'reset':   return true;
+    case 'me':      return true;
+    default:        return false;
+  }
+}
 function areaBadge(k){
   switch(k){
     case 'inbox': return S.inbox.length||0;
@@ -2163,14 +2365,35 @@ function tiles(list){
       <span class="ti">${a.ico}</span><span class="tn">${a.n}</span>
       ${b?`<span class="tb">${b}</span>`:''}</button>`;}).join('')}</div>`;
 }
+/* Als Liste mit Zweckzeile statt als Symbolwand — das war Maiks Kritik
+   "design ist unübersichtlich". Ein Symbol ohne Text erklärt nichts. */
+function areaRows(list){
+  return list.map(a=>{const b=areaBadge(a.k);
+    return `<button class="arow" onclick="go('${a.k}')" style="--tc:${a.c}">
+      <span class="ai">${a.ico}</span>
+      <span class="ag"><b>${a.n}</b><span>${a.z}</span></span>
+      ${b?`<span class="tb static">${b}</span>`:''}
+      <span class="ac">›</span></button>`;}).join('');
+}
 function vMore(){
+  const aktiv=AREAS.filter(a=>areaUsed(a.k));
+  const ruht =AREAS.filter(a=>!areaUsed(a.k));
   return `<div class="card tight">
     <button class="btn acc" onclick="quick()">＋ Schnell etwas festhalten</button></div>
-    ${tiles(AREAS)}
-    <div class="card tight" style="margin-top:12px">
-      <div class="small muted">Jede Kachel öffnet eine eigene Seite mit nur diesem Thema.
-        Kein Bereich versteckt sich hinter einem anderen, und keine Seite wird zur Sammelliste.</div></div>
-    <div style="height:20px"></div>`;
+  <div class="card">
+    <h2>In Benutzung</h2>
+    ${areaRows(aktiv)}
+  </div>
+  ${ruht.length?`<div class="card">
+    <div class="row between" style="margin-bottom:${S.seen.showRest?'10px':'0'}">
+      <h2 style="margin:0">Noch nicht benutzt (${ruht.length})</h2>
+      <button class="btn sm ghost" onclick="S.seen.showRest=!S.seen.showRest;save();render()">
+        ${S.seen.showRest?'Einklappen':'Zeigen'}</button></div>
+    ${S.seen.showRest?areaRows(ruht):''}
+    ${S.seen.showRest?`<div class="note">Nichts davon ist gelöscht. Sobald du einen Bereich
+      benutzt, wandert er nach oben — dafür musst du nichts einstellen.</div>`:''}
+  </div>`:''}
+  <div style="height:20px"></div>`;
 }
 
 /* Kontextbezogene Bereiche für die Jetzt-Seite: höchstens drei.
@@ -2442,7 +2665,7 @@ function vHaus(){
 
   if(nx){
     const line=styleLine(nx.s.v);
-    h+=`<div class="now" style="--ph1:#2a2418;--ph2:#1a1d24;--phc:#f5b13d">
+    h+=`<div class="now fix" style="--f1:#2f2717;--f2:#1a1d24;--fc:#f8c168">
       <div class="now-k">${esc(nx.quelle)} · ca. ${nx.s.min} min</div>
       <div class="now-t">${esc(nx.s.t)}</div>
       ${line?`<div class="now-s">${esc(line)}</div>`:''}
@@ -2579,11 +2802,16 @@ window.quick=()=>{ openSheet(`<h2>Schnell rein</h2>
   <label class="f"><input type="text" id="qIn" placeholder="Was ist dir eingefallen?" autofocus></label>
   <button class="btn acc" onclick="addInbox()">Merken</button>
   <div class="spacer"></div>
-  <button class="btn ghost sm" onclick="go('inbox')">Eingang öffnen (${S.inbox.length})</button>`);
+  <button class="btn ghost sm" onclick="go('inbox')">Eingang öffnen (<span id="qCount">${S.inbox.length}</span>)</button>
+  <div class="note">Bleibt offen. Tipp den nächsten Gedanken direkt hinterher.</div>`);
   setTimeout(()=>{const e=document.getElementById('qIn'); if(e) e.focus();},250); };
-window.addInbox=()=>{ const v=document.getElementById('qIn').value.trim();
-  if(!v) return closeSheet();
-  S.inbox.unshift({id:uid(), t:v, ts:Date.now()}); save(); closeSheet(); render(); toast('Gemerkt'); };
+window.addInbox=()=>{ const e=document.getElementById('qIn'); if(!e) return;
+  const v=e.value.trim(); if(!v) return closeSheet();
+  S.inbox.unshift({id:uid(), t:v, ts:Date.now()}); save();
+  /* Feld leeren und offen lassen — Maik schreibt selten nur einen Gedanken. */
+  e.value=''; e.focus();
+  const c=document.getElementById('qCount'); if(c) c.textContent=S.inbox.length;
+  toast('Gemerkt'); };
 window.inboxDel=id=>{ S.inbox=S.inbox.filter(x=>x.id!==id); save(); render(); };
 window.inboxToTask=id=>{ const it=S.inbox.find(x=>x.id===id); if(!it) return;
   const t=S.adhs.tasks[DAY]=S.adhs.tasks[DAY]||[];
@@ -2637,10 +2865,7 @@ function focusSheet(){
     <input type="text" id="fPark" placeholder="Waschmittel kaufen…"
       onkeydown="if(event.key==='Enter')park()"></label>
   <button class="btn" onclick="park()">Parken</button>
-  ${S.fokus.park.length?`<div class="card tight" style="margin-top:12px">
-    <div class="xs muted" style="margin-bottom:6px">Geparkt (${S.fokus.park.length})</div>
-    ${S.fokus.park.map(p=>`<div class="small" style="padding:3px 0">· ${esc(p.t)}</div>`).join('')}
-  </div>`:''}
+  <div class="card tight" id="fParked" style="margin-top:12px">${parkedList()}</div>
   <div class="spacer"></div>
   <div id="fEnd" style="display:none">
     <div class="btnrow">
@@ -2652,9 +2877,21 @@ function focusSheet(){
   <div class="spacer"></div>
   <button class="btn ghost sm" onclick="stopFocus()">Abbrechen</button>`;
 }
-window.park=()=>{ const e=document.getElementById('fPark'); const v=e.value.trim();
-  if(!v) return; S.fokus.park.push({t:v, ts:Date.now()}); save(); e.value='';
-  document.getElementById('sheetBody').innerHTML=focusSheet(); tickFocus(); toast('Geparkt'); };
+/* Vorher wurde der ganze Sheet-Inhalt neu geschrieben — dabei verschwand das
+   Eingabefeld und mit ihm die Tastatur. Jetzt bleibt das Feld stehen und nur die
+   Liste darunter wächst. Mehrere Gedanken hintereinander ohne Unterbrechung. */
+window.park=()=>{ const e=document.getElementById('fPark'); if(!e) return;
+  const v=e.value.trim(); if(!v) return;
+  S.fokus.park.push({t:v, ts:Date.now()}); save();
+  e.value=''; e.focus();
+  const box=document.getElementById('fParked');
+  if(box) box.innerHTML=parkedList();
+  toast('Geparkt'); };
+function parkedList(){
+  if(!S.fokus.park.length) return '';
+  return `<div class="xs muted" style="margin-bottom:6px">Geparkt (${S.fokus.park.length})</div>
+    ${S.fokus.park.slice(-6).map(p=>`<div class="small" style="padding:3px 0">· ${esc(p.t)}</div>`).join('')}`;
+}
 window.stopFocus=()=>{ clearInterval(TIMER); TIMER=null; closeSheet(); render(); };
 window.endFocus=st=>{ clearInterval(TIMER); TIMER=null;
   S.fokus.log.push({d:DAY, lab:TLAB, st, ts:Date.now()}); save(); closeSheet(); render();
@@ -3112,51 +3349,587 @@ function vFin(){
 }
 
 /* =========================================================================
-   TAGESREFLEXION — drei Fragen, dann Schluss
+   REFLEXION — Aufbau nach Liven: Stimmung, Gefühle, Körperempfindungen,
+   Kontext, Freitext. Eine Frage pro Schritt, überall Mehrfachauswahl,
+   und jede Liste um eigene Begriffe erweiterbar.
+
+   Die alte Fassung (drei feste Fragen) hat Maik nichts gebracht — sie fragte
+   nach einer Bewertung des Tages, statt beim Erfassen des Moments zu helfen.
    ========================================================================= */
-const jToday=()=>S.journal[DAY]||{};
-window.jSet=(k,v)=>{ const j=S.journal[DAY]=S.journal[DAY]||{}; j[k]=v; save(); };
-function vJournal(){
-  const j=jToday();
-  const letzte=Object.keys(S.journal).sort().reverse().slice(0,14);
+
+const MOODS=[
+  {v:-2, n:'Furchtbar', c:'#e05252'},
+  {v:-1, n:'Nicht gut', c:'#e0894f'},
+  {v: 0, n:'Neutral',   c:'#8b93b5'},
+  {v: 1, n:'Gut',       c:'#54b57a'},
+  {v: 2, n:'Großartig', c:'#3fa9d8'}
+];
+const moodOf=v=>MOODS.find(m=>m.v===v)||MOODS[2];
+
+/* Gefühlslisten nach Valenz — sonst muss Maik bei „gut" durch fünfzehn
+   negative Begriffe scrollen, und genau das bricht die Zehn-Sekunden-Regel. */
+const FEEL={
+  '-2':['Überfordert','Wütend','Ängstlich','Verzweifelt','Einsam','Beschämt','Schuldig',
+        'Gereizt','Erschöpft','Hilflos','Traurig','Leer'],
+  '-1':['Unruhig','Genervt','Unzufrieden','Angespannt','Unkonzentriert','Enttäuscht',
+        'Unsicher','Müde','Gestresst','Unmotiviert','Nervös','Frustriert'],
+  '0' :['Beschäftigt','Entspannt','Friedvoll','Gelangweilt','Gleichgültig','Müde',
+        'Ruhig','Taub','Traurig','Unmotiviert','Verloren','Zufrieden'],
+  '1' :['Zufrieden','Motiviert','Wach','Konzentriert','Gelassen','Dankbar','Verbunden',
+        'Stolz','Erleichtert','Klar','Zuversichtlich','Ausgeglichen'],
+  '2' :['Euphorisch','Stark','Voller Energie','Begeistert','Frei','Verliebt','Stolz',
+        'Unbesiegbar','Dankbar','Ausgelassen','Selbstsicher','Im Flow']
+};
+const SENS=['Anspannung','Kopfschmerzen','Wärme','Schmerz','Erschöpfung','Offenheit',
+  'Kribbeln','Müdigkeit','Enge in der Brust','Verkrampftheit','Unruhe in den Beinen',
+  'Magendrücken','Kloß im Hals','Leichtigkeit','Schwere','Herzklopfen','Nichts Besonderes'];
+const DOING=['Selbstgespräch','Studium','Aufgaben','Hobbys','Pendeln','Auf dem Balkon',
+  'Trainieren','Handball','Im Bett liegen','Handy','Essen','Haushalt','Zocken','Serie',
+  'Autofahren','Nichts'];
+const WITHW=['Allein','Evi','Familie','Freunde','Mannschaft','Kollegen','Haustier','Fremde'];
+const WHERE=['Zu Hause','Zimmer','Draußen','Gym','Halle','Uni','Unterwegs','Bei Evi','Auto'];
+
+/* Eigene Begriffe. Maik hat in Liven genau das benutzt („Auf dem balkon sitzen",
+   „starke anspannung/ druc") — ohne diese Möglichkeit passt die Liste nie. */
+function jOpts(){ if(!S.jOpts) S.jOpts={feel:[],sens:[],doing:[],withw:[],where:[]};
+  return S.jOpts; }
+function optList(k,mood){
+  const base = k==='feel' ? FEEL[String(mood)] : k==='sens' ? SENS
+             : k==='doing'? DOING : k==='withw'? WITHW : WHERE;
+  return [...base, ...(jOpts()[k]||[])];
+}
+window.jAddOpt=k=>{ const v=prompt('Eigener Eintrag:'); if(!v||!v.trim()) return;
+  jOpts()[k].push(v.trim()); save(); jPick(k,v.trim()); };
+
+/* ---- Ablauf: fünf Schritte, einer pro Bildschirm ---- */
+let JD=null, JSTEP=0;
+window.jStart=()=>{ JD={ts:Date.now(), mood:0, feel:[], sens:[], doing:[], withw:[], where:[], text:''};
+  JSTEP=0; VIEW='journal'; render(); window.scrollTo(0,0); };
+window.jCancel=()=>{ JD=null; JSTEP=0; render(); };
+window.jMood=v=>{ JD.mood=v; render(); };
+window.jPick=(k,v)=>{ const a=JD[k], i=a.indexOf(v);
+  if(i<0) a.push(v); else a.splice(i,1); render(); };
+window.jNext=()=>{ if(JSTEP===4){ jSave(); return; }
+  if(JSTEP===4-1){ /* Freitext kommt als Letztes */ }
+  JSTEP++; render(); window.scrollTo(0,0); };
+window.jBack=()=>{ if(JSTEP===0){ jCancel(); return; } JSTEP--; render(); window.scrollTo(0,0); };
+window.jText=v=>{ if(JD) JD.text=v; };
+function jSave(){
+  const t=document.getElementById('jTxt'); if(t) JD.text=t.value;
+  const d=S.journal[DAY];
+  /* Ältere Fassung speicherte ein Objekt mit drei Feldern. Nicht verlieren. */
+  const list = Array.isArray(d) ? d : (d && (d.gut||d.schwer||d.morgen||d.frei))
+    ? [{ts:0, mood:0, feel:[], sens:[], doing:[], withw:[], where:[],
+        text:[d.gut,d.schwer,d.morgen,d.frei].filter(Boolean).join('\n')}]
+    : [];
+  list.push(JD); S.journal[DAY]=list; save();
+  JD=null; JSTEP=0; render(); toast('Eingetragen');
+}
+function jEntries(d){ const x=S.journal[d];
+  if(Array.isArray(x)) return x;
+  if(x && (x.gut||x.schwer||x.morgen||x.frei)) return [{ts:0, mood:0, feel:[], sens:[],
+    doing:[], withw:[], where:[], text:[x.gut,x.schwer,x.morgen,x.frei].filter(Boolean).join('\n')}];
+  return [];
+}
+
+function chipBlock(k,mood,label){
+  const list=optList(k,mood);
+  return `${label?`<div class="jlab">${label}</div>`:''}
+    <div class="chips" style="margin-bottom:14px">
+      <button class="pill" onclick="jAddOpt('${k}')" style="font-weight:700">+</button>
+      ${list.map(v=>`<button class="pill ${JD[k].includes(v)?'on':''}"
+        onclick="jPick('${k}','${esc(v).replace(/'/g,'')}')">${esc(v)}</button>`).join('')}
+    </div>`;
+}
+
+function jWizard(){
+  const m=moodOf(JD.mood);
+  const kopf=(t,s)=>`<div class="jhead"><h2 class="jq">${t}</h2>
+    ${s?`<div class="small muted" style="margin-top:4px">${s}</div>`:''}</div>`;
+  let h='';
+  if(JSTEP===0){
+    h+=kopf('Wie fühlst du dich gerade?');
+    h+=`<div class="moodwrap">
+      <div class="moodball" style="--mc:${m.c}"></div>
+      <div class="moodname" style="color:${m.c}">${m.n}</div></div>
+    <div class="row between xs muted" style="margin:0 2px 6px">
+      <span>Furchtbar</span><span>Neutral</span><span>Großartig</span></div>
+    <input type="range" min="-2" max="2" step="1" value="${JD.mood}" class="moodrange"
+      oninput="jMood(+this.value)">`;
+  }
+  else if(JSTEP===1){
+    h+=kopf(`Welche Gefühle haben dich <b style="color:${m.c}">${m.n.toLowerCase()}</b> fühlen lassen?`,
+            'Wähle alles, was zutrifft. Auch nichts ist eine Antwort.');
+    h+=chipBlock('feel',JD.mood);
+  }
+  else if(JSTEP===2){
+    h+=kopf('Welche Empfindungen gehen damit einher?','Im Körper, nicht im Kopf.');
+    h+=chipBlock('sens',JD.mood);
+  }
+  else if(JSTEP===3){
+    h+=kopf(`Ich fühle mich <b style="color:${m.c}">${m.n.toLowerCase()}</b>`,
+            'Erforsche, was dich beeinflusst.');
+    h+=chipBlock('doing',JD.mood,'Was machst du gerade?');
+    h+=chipBlock('withw',JD.mood,'Mit wem bist du?');
+    h+=chipBlock('where',JD.mood,'Wo bist du?');
+  }
+  else {
+    h+=kopf('Was hast du auf dem Herzen?','Freiwillig. Ein Satz reicht, keiner auch.');
+    h+=`<textarea id="jTxt" rows="7" placeholder="Beginne zu schreiben …"
+      style="font-size:16px;line-height:1.6">${esc(JD.text||'')}</textarea>`;
+  }
+  h+=`<div class="spacer"></div>
+  <button class="btn acc" onclick="jNext()">${JSTEP===4?'Eintragen':'Weiter'}</button>
+  <div class="spacer"></div>
+  <button class="btn ghost sm" onclick="jBack()">${JSTEP===0?'Abbrechen':'Zurück'}</button>
+  <div class="jdots">${[0,1,2,3,4].map(i=>`<i class="${i<=JSTEP?'on':''}"></i>`).join('')}</div>`;
+  return h;
+}
+
+function entryCard(e,d){
+  const m=moodOf(e.mood||0);
+  const alle=[...(e.feel||[]),...(e.sens||[])];
+  const kontext=[...(e.doing||[]),...(e.withw||[]),...(e.where||[])];
+  const zeit=e.ts?new Date(e.ts).toTimeString().slice(0,5):'';
   return `<div class="card">
-    <h2>${human(DAY)}</h2>
-    <label class="f"><span>Was lief?</span>
-      <textarea rows="2" onchange="jSet('gut',this.value)">${esc(j.gut||'')}</textarea></label>
-    <label class="f"><span>Was war schwer?</span>
-      <textarea rows="2" onchange="jSet('schwer',this.value)">${esc(j.schwer||'')}</textarea></label>
-    <label class="f"><span>Eine Sache für morgen</span>
-      <textarea rows="2" onchange="jSet('morgen',this.value)">${esc(j.morgen||'')}</textarea></label>
-    <div class="hr"></div>
-    <label class="f" style="margin:0"><span>Freier Text — nur wenn du willst</span>
-      <textarea rows="4" onchange="jSet('frei',this.value)">${esc(j.frei||'')}</textarea></label>
-    <div class="note">Drei Fragen sind das Ziel, nicht das Minimum. Eine beantwortete Frage ist ein
-      vollständiger Eintrag.</div>
+    <div class="row between" style="margin-bottom:8px">
+      <div class="row" style="gap:9px">
+        <span class="mdot" style="background:${m.c}"></span>
+        <b style="font-size:15px">${m.n}</b></div>
+      <span class="xs muted mono">${d?human(d)+' · ':''}${zeit}</span></div>
+    ${alle.length?`<div class="chips" style="margin-bottom:${kontext.length||e.text?'9px':'0'}">
+      ${alle.map(x=>`<span class="pill xs">${esc(x)}</span>`).join('')}</div>`:''}
+    ${kontext.length?`<div class="xs muted" style="margin-bottom:${e.text?'9px':'0'}">
+      ${kontext.map(esc).join(' · ')}</div>`:''}
+    ${e.text?`<div class="small" style="white-space:pre-wrap;line-height:1.6">${esc(e.text)}</div>`:''}
+  </div>`;
+}
+
+/* Muster über 14 Tage — aber erst, wenn genug Einträge da sind.
+   Vorher wäre jede „Erkenntnis" geraten. */
+function jPattern(){
+  const tage=Object.keys(S.journal).sort().slice(-14);
+  const alle=tage.flatMap(d=>jEntries(d));
+  if(alle.length<8) return {n:alle.length, genug:false};
+  const zaehl=(k)=>{ const c={};
+    alle.forEach(e=>(e[k]||[]).forEach(v=>c[v]=(c[v]||0)+1));
+    return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,4); };
+  const tief=alle.filter(e=>(e.mood||0)<0);
+  const kontextTief={};
+  tief.forEach(e=>[...(e.doing||[]),...(e.where||[])].forEach(v=>kontextTief[v]=(kontextTief[v]||0)+1));
+  return {n:alle.length, genug:true,
+    schnitt: alle.reduce((a,e)=>a+(e.mood||0),0)/alle.length,
+    feel: zaehl('feel'), sens: zaehl('sens'),
+    tief: Object.entries(kontextTief).sort((a,b)=>b[1]-a[1]).slice(0,3),
+    tiefN: tief.length};
+}
+
+function vJournal(){
+  if(JD) return jWizard();
+  const heute=jEntries(DAY);
+  const p=jPattern();
+  const letzte=Object.keys(S.journal).sort().reverse().filter(d=>d!==DAY).slice(0,5);
+  let h=`<div class="card tight">
+    <button class="btn acc" onclick="jStart()">Wie fühlst du dich gerade?</button>
+    <div class="note">Fünf kurze Schritte, jederzeit abbrechbar. Mehrmals am Tag ist normal —
+      es geht um den Moment, nicht um eine Tagesbilanz.</div></div>`;
+
+  if(heute.length){ h+=`<h2 class="sect">Heute · ${heute.length}</h2>`;
+    h+=heute.slice().reverse().map(e=>entryCard(e)).join(''); }
+
+  if(p.genug){
+    const ms=moodOf(Math.round(p.schnitt));
+    h+=`<div class="card">
+      <h2>Muster der letzten 14 Tage</h2>
+      <div class="row" style="gap:10px;margin-bottom:11px">
+        <span class="mdot" style="background:${ms.c}"></span>
+        <div><b>Im Schnitt ${ms.n.toLowerCase()}</b>
+          <div class="xs muted">${p.n} Einträge, davon ${p.tiefN} im Minus</div></div></div>
+      ${p.feel.length?`<div class="xs muted" style="margin-bottom:4px">Häufigste Gefühle</div>
+        <div class="chips" style="margin-bottom:11px">
+        ${p.feel.map(([v,n])=>`<span class="pill xs">${esc(v)} <span class="dim">${n}</span></span>`).join('')}</div>`:''}
+      ${p.sens.length?`<div class="xs muted" style="margin-bottom:4px">Häufigste Körperempfindungen</div>
+        <div class="chips" style="margin-bottom:11px">
+        ${p.sens.map(([v,n])=>`<span class="pill xs">${esc(v)} <span class="dim">${n}</span></span>`).join('')}</div>`:''}
+      ${p.tief.length?`<div class="xs muted" style="margin-bottom:4px">Wobei es dir schlechter ging</div>
+        <div class="chips">${p.tief.map(([v,n])=>`<span class="pill xs">${esc(v)} <span class="dim">${n}×</span></span>`).join('')}</div>`:''}
+      <div class="note">Das sind Häufigkeiten, keine Ursachen. Was oft zusammen auftritt, muss
+        einander nicht auslösen — aber es ist der Ort, an dem du nachsehen kannst.</div>
+    </div>`;
+  } else if(p.n>0){
+    h+=`<div class="card tight"><div class="small muted">Noch ${8-p.n} Einträge, dann zeigt die
+      App Muster über die letzten vierzehn Tage. Vorher wäre jede Aussage geraten.</div></div>`;
+  }
+
+  if(letzte.length){ h+=`<h2 class="sect">Früher</h2>`;
+    letzte.forEach(d=>{ jEntries(d).slice().reverse().forEach(e=>{ h+=entryCard(e,d); }); }); }
+  h+='<div style="height:20px"></div>';
+  return h;
+}
+
+/* =========================================================================
+   NOTFALLKNOPF — sofortige Verhaltensunterbrechung, keine Achtsamkeitsübung.
+
+   Maiks Vorgabe: kein Zähler, keine Serie, kein Protokoll. Ein Druck, EINE
+   Option, und beim nächsten Mal eine andere. Es geht nicht um Moral, sondern
+   darum, in dem Moment auf andere Gedanken zu kommen.
+
+   Grundlage ist Abschnitt 5.2 seines Vier-Wochen-Resets („ADHS-Notfallliste
+   für schnelles Dopamin"), erweitert. Leitsatz von dort:
+   „Der Punkt ist nicht perfekte Achtsamkeit, sondern sofortige
+   Verhaltensunterbrechung."
+   ========================================================================= */
+const NOT_FIX=[
+  /* aus seiner eigenen Liste */
+  {t:'Fünf Minuten zügig gehen', s:'Raus, um den Block. Tempo, bei dem du nicht mehr singen könntest.', g:'bewegen'},
+  {t:'Zwanzig Kniebeugen', s:'Sofort, wo du stehst. Zählen laut mitsprechen.', g:'bewegen'},
+  {t:'Push-ups bis es unangenehm wird', s:'Nicht bis zum Maximum. Bis es anstrengend ist.', g:'bewegen'},
+  {t:'Kaltes Wasser ins Gesicht', s:'Und über die Unterarme. Dreißig Sekunden.', g:'reiz'},
+  {t:'Kopfhörer auf, einmal durch die Wohnung', s:'Etwas Lautes. Nicht sitzen bleiben.', g:'reiz'},
+  {t:'Zehn Minuten leicht Rad fahren', s:'Locker, nicht als Training.', g:'bewegen'},
+  {t:'Kaugummi oder starker Mint', s:'Etwas Scharfes im Mund verändert den Zustand schneller als ein Gedanke.', g:'reiz'},
+  {t:'Voice-Nachricht an einen Freund', s:'Irgendwas. Der Inhalt ist egal, das Sprechen ist der Punkt.', g:'sozial'},
+
+  /* Bewegung und Körper */
+  {t:'Treppenhaus, zweimal hoch und runter', s:'Ohne Handy. Das Handy bleibt oben.', g:'bewegen'},
+  {t:'Kalt duschen, nur dreißig Sekunden', s:'Nicht die ganze Dusche. Nur der Schock.', g:'reiz'},
+  {t:'Nullschritt-Drill machen', s:'Band, Schulter, Außenrotation. Zwanzig Wiederholungen.', g:'bewegen'},
+  {t:'Dehnblock: Waden, hintere Kette, Hüftbeuger', s:'Der aus deiner Morgenroutine. Drei Minuten.', g:'bewegen'},
+  {t:'Zwei Minuten Seilspringen oder auf der Stelle', s:'Bis der Puls oben ist.', g:'bewegen'},
+
+  /* Raus aus der Situation */
+  {t:'In einen anderen Raum wechseln', s:'Küche, Balkon, Flur. Handy bleibt liegen.', g:'raus'},
+  {t:'Vor die Tür, ohne Ziel', s:'Schuhe an, Tür zu. Zehn Minuten, dann entscheidest du neu.', g:'raus'},
+  {t:'Auf den Balkon, ohne Handy', s:'Hinsetzen und in die Gegend schauen. Zählt auch.', g:'raus'},
+  {t:'Ins Auto und irgendwohin fahren', s:'Tanken, Getränke holen, eine Runde. Bewegung nach draußen.', g:'raus'},
+
+  /* Kopf besetzen */
+  {t:'Podcast oder Hörbuch an, im Gehen', s:'Etwas, das Aufmerksamkeit braucht. Nicht Musik im Hintergrund.', g:'kopf'},
+  {t:'Serie weiterschauen — bewusst', s:'Steht auf deiner Liste. Am Bildschirm, nicht im Bett.', g:'kopf'},
+  {t:'Etwas nachschlagen, das dich interessiert', s:'Eine Frage, die du dir schon länger stellst. Nicht scrollen.', g:'kopf'},
+  {t:'Fünf Minuten für die Uni lesen', s:'Nur fünf. Weiter geht von selbst oder eben nicht.', g:'kopf'},
+
+  /* Sozial */
+  {t:'Evi schreiben oder anrufen', s:'Kein Anlass nötig.', g:'sozial'},
+  {t:'Jemanden aus der Mannschaft anschreiben', s:'Training, Spiel, irgendwas.', g:'sozial'},
+  {t:'Mit dem Hund raus', s:'Zwei Fliegen. Er will sowieso.', g:'sozial'},
+
+  /* Kleiner Nutzen */
+  {t:'Geschirr wegräumen', s:'Nur das, was da steht. Nicht die ganze Küche.', g:'nutzen'},
+  {t:'Müll rausbringen', s:'Beutel zu, Schuhe an, Tonne. Vier Minuten.', g:'nutzen'},
+  {t:'Eine Sache aus dem Eingang erledigen', s:'Die kürzeste. Dann ist eine weg.', g:'nutzen'},
+  {t:'Etwas essen', s:'Du isst nach eigener Aussage zu wenig. Jetzt wäre ein guter Moment.', g:'nutzen'}
+];
+
+/* Optionen aus seinen echten Daten — das ist der Teil, den keine feste Liste kann. */
+function notDynamic(){
+  const out=[];
+  const t=tasksFor(DAY).find(x=>!x.done);
+  if(t) out.push({t:'Deine Aufgabe: '+t.t, g:'nutzen',
+    s:t.first?('Kleinster Start: '+t.first):'Nur anfangen, nicht fertig machen.'});
+  const hx=(typeof hausNext==='function')?hausNext():null;
+  if(hx) out.push({t:'Haushalt: '+hx.s.t, s:`${hx.quelle} · etwa ${hx.s.min} Minuten.`, g:'nutzen'});
+  const w=windowsFor(DAY).find(x=>x.status==='now');
+  if(w) out.push({t:w.n+' — jetzt wäre das Fenster', s:`Ziel ${w.kcal} kcal, ${w.prot} g Protein.`, g:'nutzen'});
+  const inb=S.inbox.filter(x=>!/^app\s*:/i.test(x.t));
+  if(inb.length) out.push({t:'Aus dem Eingang: '+inb[0].t, s:'Lag da und wartet.', g:'nutzen'});
+  if(!sessionsOn(DAY).length) out.push({t:'Ins Gym', s:'Heute noch keine Einheit erfasst.', g:'bewegen'});
+  return out;
+}
+
+let notPool=[], notCur=null;
+window.notStart=()=>{
+  notPool=[...NOT_FIX, ...notDynamic()];
+  notCur=null; notNextIdea(); VIEW='notfall'; render(); window.scrollTo(0,0);
+};
+window.notNextIdea=()=>{
+  if(!notPool.length) notPool=[...NOT_FIX, ...notDynamic()];
+  const i=Math.floor(Math.random()*notPool.length);
+  notCur=notPool.splice(i,1)[0];
+};
+window.notAnother=()=>{ notNextIdea(); render(); window.scrollTo(0,0); };
+window.notDone=()=>{ notCur='fertig'; render(); window.scrollTo(0,0); };
+window.notEnd=()=>{ notCur=null; notPool=[]; VIEW='now'; render(); };
+
+function vNotfall(){
+  if(!notCur) notStartSilent();
+  if(notCur==='fertig'){
+    return `<div class="card" style="border-color:var(--acc)">
+      <h2 style="color:var(--acc)">Gut</h2>
+      <div class="small" style="line-height:1.7;margin-bottom:12px">
+        Es ist nichts gespeichert worden. Kein Zähler, keine Serie, kein Eintrag — es gibt
+        nichts, was du gerade gehalten oder gebrochen hättest.</div>
+      <button class="btn acc" onclick="notEnd()">Zurück</button>
+      <div class="spacer"></div>
+      <button class="btn ghost sm" onclick="notAnother()">Noch eine Idee</button></div>
+    <div class="card tight">
+      <div class="small muted" style="line-height:1.65">Falls es trotzdem passiert ist: Das ist
+        kein Kettenrückfall wert. Der zerstörerische Gedanke ist nicht „ich bin gescheitert",
+        sondern „jetzt kann ich auch komplett drauf pfeifen". Es zählt der nächste saubere Block,
+        nicht die perfekte Biografie.</div></div>
+    <div style="height:20px"></div>`;
+  }
+  return `<div class="now fix" style="--f1:#2c1f36;--f2:#1a1a26;--fc:#c0a6ff">
+    <div class="now-k">Mach das jetzt</div>
+    <div class="now-t">${esc(notCur.t)}</div>
+    ${notCur.s?`<div class="now-s" style="font-size:15px;margin-top:9px">${esc(notCur.s)}</div>`:''}
   </div>
-  ${letzte.length>1?`<div class="card"><h2>Letzte Einträge</h2>
-    ${letzte.filter(d=>d!==DAY).slice(0,7).map(d=>{const e=S.journal[d];
-      return `<div class="item"><div class="g"><b style="font-weight:550">${human(d)}</b>
-        <span style="white-space:normal">${esc((e.gut||e.frei||e.schwer||'').slice(0,90))}</span></div>
-        <button class="btn sm ghost" onclick="setDay('${d}')">Öffnen</button></div>`;}).join('')}
-  </div>`:''}
+  <button class="btn acc" onclick="notDone()">Mach ich</button>
+  <div class="spacer"></div>
+  <div class="btnrow">
+    <button class="btn" onclick="notAnother()">Andere Idee</button>
+    <button class="btn ghost" onclick="notEnd()">Abbrechen</button>
+  </div>
+  <div class="card tight" style="margin-top:16px">
+    <div class="small muted" style="line-height:1.65">Es geht nicht darum, den Drang wegzudenken,
+      sondern jetzt etwas anderes zu machen. Sofortige Verhaltensunterbrechung wirkt bei ADHS
+      besser als langes Nachdenken. ${Q('drang')}</div></div>
+  <div style="height:20px"></div>`;
+}
+function notStartSilent(){ notPool=[...NOT_FIX, ...notDynamic()]; notNextIdea(); }
+
+/* =========================================================================
+   RAUCHEN — Slots statt bloßem Zählen.
+   Aus Abschnitt 6 seines Resets: „Zigarette nur im Slot, nie im Impuls."
+   Gezählt wird weiter, aber die entscheidende Zahl ist die Impulsquote.
+   ========================================================================= */
+const RSLOT=[
+  {k:'A', n:'Slot A · Morgen', w:'45–60 min nach dem Aufstehen, nach dem Frühstück',
+   z:'Morgenentzug abfangen, erste Zigarette verzögern'},
+  {k:'B', n:'Slot B · Mittag', w:'Mittags', z:'Planbarer Tagesanker'},
+  {k:'C', n:'Slot C · Feierabend', w:'Nach der Arbeit', z:'Stärkster Feierabend-Trigger'},
+  {k:'D', n:'Slot D · Nach dem Essen', w:'Nach dem Abendessen', z:'Klassischer Essens-Trigger'},
+  {k:'E', n:'Flex-Slot', w:'Ein starker Trigger am Tag',
+   z:'Nach Sex ODER Feier ODER nach sehr langer Konzentration — nur eines davon'}
+];
+function slotsUsed(d){ const a=S.smoke[d]||[]; const m={};
+  a.forEach(x=>{ if(x.slot) m[x.slot]=(m[x.slot]||0)+1; }); return m; }
+function impulsCount(d){ return (S.smoke[d]||[]).filter(x=>!x.slot).length; }
+window.smokeSlot=k=>{ smokePickSlot=k;
+  document.getElementById('slotChips').innerHTML=slotChips();
+  smokeBtn(); };
+let smokePickSlot=null;
+function slotChips(){ const u=slotsUsed(DAY);
+  return RSLOT.map(s=>`<button class="pill ${smokePickSlot===s.k?'on':''}"
+    onclick="smokeSlot('${s.k}')">${s.n.split(' · ')[1]||s.k}${u[s.k]?' <span class="dim">✓</span>':''}</button>`).join('')
+   + `<button class="pill ${smokePickSlot===null?'on':''}" onclick="smokeSlot(null)"
+      style="border-color:var(--amber)">Impuls</button>`;
+}
+
+/* =========================================================================
+   WENN-DANN-PLÄNE UND SITUATIONEN aus seinem Reset (Abschnitte 5.1 und 5.3)
+   ========================================================================= */
+const RESET_RULES=[
+  {wenn:'ich Reddit öffnen will', dann:'schließe ich die App, lege das Handy außer Reichweite und mache zehn Minuten etwas Körperliches'},
+  {wenn:'ich abends im Bett Druck bekomme', dann:'stehe ich auf, setze mich woanders hin und lese oder höre zehn Minuten etwas Ruhiges'},
+  {wenn:'ich nach der Arbeit allein bin', dann:'gehe ich zwanzig Minuten in den Übergangsmodus und betrete weder Bett noch NSFW-Seiten'},
+  {wenn:'ich nach Sex rauchen will', dann:'trinke ich erst Wasser, bleibe fünf Minuten liegen oder gehe duschen und entscheide danach'},
+  {wenn:'ich denke „nur einmal ist egal"', dann:'behandle ich diesen Satz als Rückfallsignal und nicht als Erlaubnis'},
+  {wenn:'ich nach langer Konzentration aufstehe', dann:'bewege ich mich erst drei Minuten und entscheide dann neu über eine Zigarette'}
+];
+window.seedRules=()=>{
+  let n=0;
+  RESET_RULES.forEach(r=>{
+    if(S.adhs.rules.some(x=>x.wenn===r.wenn)) return;
+    S.adhs.rules.push({id:uid(), wenn:r.wenn, dann:r.dann, trigger:'frei'}); n++;
+  });
+  save(); render(); toast(n?n+' Regeln übernommen':'Alle schon da');
+};
+
+const SIT=[
+  {t:'Morgens', tu:'Aufstehen, Wasser, Bad, Elvanse wie verordnet, kurz Licht, duschen, anziehen, frühstücken',
+   regel:'Kein Handy-Scrollen im Bett. Keine Zigarette direkt nach dem Aufstehen — frühestens 45 bis 60 Minuten danach und nach dem Frühstück.'},
+  {t:'Im Arbeits- oder Lernblock', tu:'Alle 60 bis 90 Minuten drei Minuten aufstehen, Wasser trinken, kurz gehen',
+   regel:'Nach langer Konzentration erst bewegen, dann neu entscheiden. Nicht automatisch rauchen.'},
+  {t:'Nach der Arbeit', tu:'Zwanzig Minuten Übergang: duschen oder umziehen, Wasser und Protein, zehn Minuten gehen oder kurz aufs Rad',
+   regel:'In den ersten zwanzig Minuten nicht aufs Bett oder Sofa mit dem Handy. Kein Reddit in dieser Phase.'},
+  {t:'Vor dem Schlafen', tu:'Sechzig Minuten runterfahren: Handy raus aus dem Schlafzimmer, Licht runter, Buch oder ruhige Musik, Drei-Minuten-Notiz für morgen',
+   regel:'Kein Handy im Bett. Möglichst kein Nikotin in den letzten ein bis zwei Stunden.'},
+  {t:'Am Wochenende', tu:'Den ersten Block des Tages vorher festlegen: rausgehen, Gym, Cardio, eine Erledigung oder ein Treffen',
+   regel:'Kein leerer Vormittag im Bett mit dem Handy.'},
+  {t:'Nach Stress', tu:'Zehn-Minuten-Regel: aufstehen, Wasser, Gesicht kalt abspülen oder zwanzig Kniebeugen',
+   regel:'Erst nach zehn Minuten neu bewerten. Nicht sofort handeln.'}
+];
+
+/* Rückfallplan aus Abschnitt 8.2 — der Teil, der am meisten trägt */
+const RUECK=[
+  {e:'Porno geschaut', sofort:'Sofort schließen, Handy weg. Nicht „jetzt auch noch masturbieren".',
+   morgen:'Blocker prüfen, Auslöser notieren, normal weitermachen.'},
+  {e:'Masturbiert', sofort:'Kein zweites Mal, kein Binge. Duschen oder rausgehen.',
+   morgen:'Tag wieder normal aufnehmen, nicht alles als kaputt werten.'},
+  {e:'Mehr als fünf Zigaretten', sofort:'Zählung ehrlich beenden, keine Trotz-Zigarette hinterher.',
+   morgen:'Slot-Struktur enger machen, Flex-Slot neu planen.'},
+  {e:'Dauerhaft gevapet', sofort:'Gerät weglegen, aus dem Raum schaffen.',
+   morgen:'Rescue-Regel verschärfen oder Nikotinersatz neu überlegen.'},
+  {e:'Gedanke „ist eh egal"', sofort:'Diesen Satz als Alarmsignal benennen, nicht als Erlaubnis.',
+   morgen:'Am Plan festhalten, nicht von vorn dramatisieren.'}
+];
+
+/* Sätze für Evi aus Abschnitt 7.4 */
+const SAETZE=[
+  {k:'Bevor du von der Pause erzählst', s:[
+    'Ich mache diese vier Wochen nicht gegen dich, sondern für uns und für mich. Ich will Druck rausnehmen, wieder mehr spüren und aus einem automatischen Muster rauskommen.',
+    'Das ist kein Test, ob ich dich genug will. Im Gegenteil: Ich will, dass Sex sich wieder freier und echter anfühlt.']},
+  {k:'Wenn die Erektion weggeht', s:[
+    'Das gerade ist eher Stress plus Kopf als fehlende Lust. Bleib kurz bei mir, ich bin trotzdem da.',
+    'Wir müssen jetzt nichts beweisen. Lass uns einfach wechseln und weitermachen, ohne Druck.']},
+  {k:'Wenn du Angst bekommst, dass es wieder passiert', s:[
+    'Ich will heute nicht performen. Ich will dich spüren.',
+    'Wenn es schwankt, ist das okay. Ich gehe nicht in Testmodus.']},
+  {k:'Wenn sie fragt, ob es an ihr liegt', s:[
+    'Nein. Das passt viel eher zu Stress, Rauchen, Medikamenten und meinem Kopf als zu dir.',
+    'Du bist nicht das Problem. Ich versuche gerade, meinen Körper aus einem ungesunden Muster rauszuholen.']},
+  {k:'Wenn du nach Sex rauchen willst', s:[
+    'Mein Kopf will gerade die Belohnungszigarette. Ich entscheide erst nach Wasser, Dusche oder fünf Minuten Kuscheln.',
+    'Ich will die Gewohnheit gerade nicht wieder an Sex koppeln.']}
+];
+
+/* Arzt-Checkliste aus Abschnitt 8.3 */
+const ARZT=[
+  'Ich habe wiederkehrende Probleme, die Erektion beim Sex zu halten, besonders öfter in den ersten ein bis vier Stunden nach Elvanse.',
+  'Ich nehme Elvanse und Escitalopram; bitte Sexualnebenwirkungen und Timing mitdenken.',
+  'Bitte Blutdruck und Puls kontrollieren und meine Medikation insgesamt prüfen.',
+  'Ich möchte eine Basisabklärung mit Glukose oder HbA1c, Lipiden und Gesamttestosteron; falls sinnvoll weitere Diagnostik.',
+  'Ich reduziere mein Rauchen deutlich; ich möchte, dass das in der Medikation mitgedacht wird.',
+  'Wenn die Probleme bleiben: Ist ein PDE5-Hemmer für mich sinnvoll oder sollte zuerst an Medikamenten, Timing und Stress gearbeitet werden?',
+  'Bitte auch Schlaf, Stress und Leistungsdruck mit einordnen.'
+];
+
+function vReset(){
+  const u=slotsUsed(DAY), imp=impulsCount(DAY), ges=(S.smoke[DAY]||[]).length;
+  return `<div class="card tight">
+    <div class="small muted">Alles auf dieser Seite stammt aus deinem eigenen Vier-Wochen-Reset.
+      Die App macht daraus Knöpfe — sie erfindet nichts dazu und bewertet nichts.</div></div>
+
+  <div class="card">
+    <h2>Rauchen heute · ${ges} von 5</h2>
+    <div class="row" style="gap:5px;margin-bottom:12px">
+      ${RSLOT.map(s=>`<div style="flex:1;text-align:center">
+        <div style="height:32px;border-radius:7px;border:1px solid var(--line);
+          background:${u[s.k]?'var(--acc)':'var(--surface2)'};display:flex;
+          align-items:center;justify-content:center;font-weight:700;font-size:13px;
+          color:${u[s.k]?'#06210f':'var(--dim)'}">${s.k}</div></div>`).join('')}
+    </div>
+    ${imp?`<div class="warn">${imp} ${imp===1?'Zigarette':'Zigaretten'} außerhalb der Slots.
+      Das ist die Zahl, um die es geht — nicht die Gesamtzahl. „Zigarette nur im Slot,
+      nie im Impuls."</div><div class="spacer"></div>`
+     :ges?`<div class="small" style="color:var(--acc);margin-bottom:11px">Alle im Slot. Genau darum geht es.</div>`:''}
+    <button class="btn acc" onclick="smokeSheet()">Zigarette eintragen</button>
+    <div class="hr"></div>
+    ${RSLOT.map(s=>`<div class="item"><div class="g">
+      <b style="font-weight:560;font-size:14px">${esc(s.n)}</b>
+      <span style="white-space:normal">${esc(s.w)} — ${esc(s.z)}</span></div>
+      ${u[s.k]?'<span class="tag" style="background:var(--acc-dim);color:var(--acc)">genutzt</span>':''}</div>`).join('')}
+    <div class="note">Was zuerst gestrichen wird, sind die zufälligen Zigaretten: direkt beim
+      Aufstehen, aus Langeweile, beim Scrollen, „einfach so" zwischen zwei Dingen.</div>
+  </div>
+
+  <div class="card">
+    <h2>Deine Wenn-dann-Pläne</h2>
+    <div class="small muted" style="margin-bottom:11px">Sechs Stück aus dem Plan. Sie landen in
+      deiner normalen Regelliste im Tag-Reiter und sind dort änderbar.</div>
+    ${RESET_RULES.map(r=>`<div class="item"><div class="g">
+      <b style="font-weight:500;white-space:normal;font-size:13.5px">Wenn ${esc(r.wenn)},
+      dann ${esc(r.dann)}.</b></div></div>`).join('')}
+    <div class="hr"></div>
+    <button class="btn" onclick="seedRules()">In meine Regeln übernehmen</button>
+  </div>
+
+  <div class="card">
+    <h2>Situationen</h2>
+    ${SIT.map(s=>`<div style="margin-bottom:14px">
+      <b style="font-size:14.5px;display:block;margin-bottom:4px">${esc(s.t)}</b>
+      <div class="small muted" style="line-height:1.6;margin-bottom:5px">${esc(s.tu)}</div>
+      <div class="xs" style="color:var(--amber);line-height:1.55">${esc(s.regel)}</div></div>`).join('')}
+  </div>
+
+  <div class="card">
+    <h2>Wenn etwas passiert ist</h2>
+    <div class="small muted" style="margin-bottom:12px">Kein Kettenrückfall aus Kränkung.
+      Es zählt der nächste saubere Block, nicht die perfekte Biografie.</div>
+    ${RUECK.map(r=>`<div style="margin-bottom:13px">
+      <b style="font-size:14px;display:block;margin-bottom:4px">${esc(r.e)}</b>
+      <div class="small" style="line-height:1.6"><b style="color:var(--muted)">Sofort:</b> ${esc(r.sofort)}</div>
+      <div class="small muted" style="line-height:1.6"><b>Nächster Morgen:</b> ${esc(r.morgen)}</div>
+    </div>`).join('')}
+  </div>
+
+  <div class="card">
+    <h2>Sätze für Evi</h2>
+    <div class="small muted" style="margin-bottom:12px">Vorformuliert, damit du sie im Moment
+      nicht suchen musst. Antippen kopiert den Satz.</div>
+    ${SAETZE.map(g=>`<div style="margin-bottom:13px">
+      <div class="xs muted" style="margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">${esc(g.k)}</div>
+      ${g.s.map(s=>`<button class="btn ghost sm" style="width:100%;text-align:left;
+        justify-content:flex-start;white-space:normal;line-height:1.5;margin-bottom:6px;
+        font-weight:400;font-size:13px" onclick="copyTxt(this)" data-t="${esc(s)}">„${esc(s)}"</button>`).join('')}
+    </div>`).join('')}
+  </div>
+
+  <div class="card">
+    <h2>Checkliste fürs Arztgespräch</h2>
+    ${ARZT.map(a=>`<div class="item"><div class="g">
+      <b style="font-weight:450;white-space:normal;font-size:13.5px">${esc(a)}</b></div></div>`).join('')}
+    <div class="hr"></div>
+    <button class="btn sm" onclick="copyTxt(this)" data-t="${esc(ARZT.map(a=>'- '+a).join('\n'))}">Alles kopieren</button>
+    <div class="note">Elvanse, Escitalopram, wiederkehrende Erektionsprobleme und Potenzmittel
+      gehören nicht in Selbstexperimente. Diese App ändert nichts an deiner Medikation und
+      empfiehlt keine.</div>
+  </div>
+
+  <div class="card tight">${evTag('B')}
+    <div class="small muted" style="margin-top:8px">Der Plan selbst ordnet seine Aussagen sauber
+      ein: Medikamente und Lebensstil sind gut belegt, der Zusammenhang zwischen Pornokonsum und
+      Erektionsproblemen ist schwach bis gemischt, und das enge Solo-Skript ist plausibel, aber
+      nicht hart bewiesen. Die vier Wochen sind ein Selbstversuch, kein Heiltest.</div></div>
   <div style="height:20px"></div>`;
 }
 
 /* =========================================================================
    ZIGARETTEN — zählen und Auslöser sammeln, nicht bewerten
    ========================================================================= */
-const SMOKE_TR=['Pause','Nach dem Essen','Stress','Langeweile','Mit anderen','Auto','Nach dem Training','Abends'];
-window.smokeAdd=tr=>{ const a=S.smoke[DAY]=S.smoke[DAY]||[];
-  a.push({ts:Date.now(), tr:tr||''}); save(); closeSheet(); render(); };
+const SMOKE_TR=['Pause','Nach dem Essen','Kaffee','Stress','Langeweile','Unruhe',
+  'Mit anderen','Beim Warten','Auto','Weg zur Uni','Nach dem Training','Handy','Feiern',
+  'Alkohol','Abends','Aufstehen','Konzentration','Frust'];
+/* Der Zähler zählt und hält den Auslöser fest. Kein Ziel, kein Limit, keine Serie —
+   Maik hat nicht gesagt, dass er aufhören will, sondern dass er wissen will, wann. */
+window.smokeAdd=(tr,slot)=>{ const a=S.smoke[DAY]=S.smoke[DAY]||[];
+  a.push({ts:Date.now(), tr:tr||'', slot:slot||null}); save(); closeSheet(); render();
+  toast(slot?('Slot '+slot+' · '+a.length+' heute'):('Impuls · '+a.length+' heute')); };
 window.smokeUndo=()=>{ const a=S.smoke[DAY]||[]; a.pop(); save(); render(); };
-window.smokeSheet=()=>openSheet(`<h2>Wobei?</h2>
-  <div class="chips" style="margin-bottom:14px">
-    ${SMOKE_TR.map(t=>`<button class="pill" onclick="smokeAdd('${t}')">${t}</button>`).join('')}</div>
-  <button class="btn ghost" onclick="smokeAdd('')">Ohne Angabe</button>`);
+/* Mehrfachauswahl: mehrere Auslöser treffen fast immer gleichzeitig zu
+   (Pause UND Langeweile UND Kaffee). Einer davon zu erzwingen macht die Daten falsch. */
+let smokePick=[];
+window.smokeToggle=t=>{ const i=smokePick.indexOf(t);
+  if(i<0) smokePick.push(t); else smokePick.splice(i,1);
+  document.getElementById('smokeChips').innerHTML=smokeChips();
+  smokeBtn(); };
+/* Ein Knopf, zwei Angaben — vorher überschrieb die zweite die erste. */
+function smokeBtn(){ const b=document.getElementById('smokeGo'); if(!b) return;
+  const wo = smokePickSlot ? 'Slot '+smokePickSlot : 'Impuls';
+  b.textContent = smokePick.length ? `${wo} · ${smokePick.length} eintragen` : `Als ${wo} eintragen`;
+}
+function smokeChips(){
+  return SMOKE_TR.map(t=>`<button class="pill ${smokePick.includes(t)?'on':''}"
+    onclick="smokeToggle('${t}')">${t}</button>`).join('');
+}
+window.smokeSave=()=>{ smokeAdd(smokePick.join(' + '), smokePickSlot); smokePick=[]; smokePickSlot=null; };
+window.smokeSheet=()=>{ smokePick=[]; smokePickSlot=null;
+  openSheet(`<h2>Zigarette</h2>
+  <div class="jlab">In welchem Slot?</div>
+  <div class="chips" id="slotChips" style="margin-bottom:16px">${slotChips()}</div>
+  <div class="jlab">Wobei? (mehrere möglich)</div>
+  <div class="chips" id="smokeChips" style="margin-bottom:16px">${smokeChips()}</div>
+  <button class="btn acc" id="smokeGo" onclick="smokeSave()">Als Impuls eintragen</button>
+  <script>setTimeout(smokeBtn,0)<\/script>
+  <div class="note">Die entscheidende Zahl ist nicht, wie viele — sondern wie viele außerhalb
+    eines Slots. Zigarette nur im Slot, nie im Impuls.</div>`); };
 function smokeWeek(){ const out=[];
   for(let i=6;i>=0;i--){ const d=addDays(DAY,-i); out.push((S.smoke[d]||[]).length); } return out; }
 function smokeTop(){ const c={};
-  Object.values(S.smoke).flat().forEach(x=>{ if(x.tr) c[x.tr]=(c[x.tr]||0)+1; });
+  Object.values(S.smoke).flat().forEach(x=>{ if(!x.tr) return;
+    /* "Pause + Langeweile" zählt für beide, sonst zerfällt die Statistik in Einzelfälle */
+    String(x.tr).split(' + ').forEach(t=>{ t=t.trim(); if(t) c[t]=(c[t]||0)+1; }); });
   return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,3); }
 
 /* =========================================================================
@@ -3339,6 +4112,16 @@ window.claudeBericht=()=>{
   const top=smokeTop(); if(top.length) L.push('Häufigster Auslöser: '+top[0][0]+' ('+top[0][1]+'×)');
   if(S.week.lief) L.push('Lief: '+S.week.lief);
   if(S.week.vergessen) L.push('Untergegangen: '+S.week.vergessen);
+  /* Bekannte Lücke aus V5: Eingang und Parkplatz fehlten im Bericht, obwohl genau
+     dort steht, was Maik über die App und über sich notiert hat. */
+  const appNotes=S.inbox.filter(x=>/^app\s*:/i.test(x.t));
+  const rest=S.inbox.filter(x=>!/^app\s*:/i.test(x.t));
+  if(appNotes.length){ L.push('', 'Zur App ('+appNotes.length+'):');
+    appNotes.forEach(x=>L.push('  - '+x.t.replace(/^app\s*:\s*/i,''))); }
+  if(rest.length){ L.push('', 'Eingang ('+rest.length+'):');
+    rest.forEach(x=>L.push('  - '+x.t)); }
+  if(S.fokus.park.length){ L.push('', 'Ablenkungsparkplatz ('+S.fokus.park.length+'):');
+    S.fokus.park.forEach(x=>L.push('  - '+x.t)); }
   const txt=L.join('\n');
   openSheet(`<h2>Bericht</h2>
     <textarea rows="14" readonly style="font-size:12.5px;line-height:1.6">${esc(txt)}</textarea>
@@ -3451,6 +4234,16 @@ function vMe(){
   </div>
 
   <div class="card">
+    <h2>Darstellung</h2>
+    <div class="chips">
+      <button class="pill ${S.seen.theme==='light'?'':'on'}" onclick="setTheme('dark')">Dunkel</button>
+      <button class="pill ${S.seen.theme==='light'?'on':''}" onclick="setTheme('light')">Hell</button>
+    </div>
+    <div class="note">Die Startseite färbt sich weiter nach Tageszeit, nur eben heller.
+      Die Einstellung liegt wie alles andere nur auf diesem Gerät.</div>
+  </div>
+
+  <div class="card">
     <h2>Was diese App nicht kann</h2>
     <div class="small muted" style="line-height:1.7">
       Als Web-App im Browser hat Pivot <b>keinen Zugriff</b> auf Android-Alarme, Vollbild-Hinweise,
@@ -3478,6 +4271,17 @@ function vMe(){
   <div style="height:20px"></div>`;
 }
 window.setAdhs=(k,v)=>{ S.adhs[k]=v; save(); render(); };
+window.setTheme=t=>{ S.seen.theme=t; save(); applyTheme(); render(); };
+function applyTheme(){
+  const hell = S.seen.theme==='light';
+  if(hell) document.body.dataset.theme='light';
+  else document.body.removeAttribute('data-theme');
+  /* Die Palette liegt auf <body>, der Bereich unter der Seite gehört aber <html> —
+     ohne das bleibt am Seitenende ein dunkles Band stehen. */
+  document.documentElement.style.background = hell ? '#f2f5f9' : '';
+  const m=document.querySelector('meta[name="theme-color"]');
+  if(m) m.setAttribute('content', hell?'#f2f5f9':'#0b0d10');
+}
 window.setP=(k,v)=>{ S.profile[k]=(k==='sex'||k==='goal')?v:parseFloat(v); save();
   if(VIEW==='me') render(); };
 window.delFav=i=>{ S.foods.splice(i,1); save(); render(); };
@@ -3501,6 +4305,7 @@ window.impo=inp=>{
 /* =========================================================================
    START
    ========================================================================= */
+applyTheme();
 if(S.seen.ver && S.seen.ver!==APP_VERSION) S.seen.updated=1;
 if(S.seen.ver!==APP_VERSION){ S.seen.ver=APP_VERSION; save(); }
 render();

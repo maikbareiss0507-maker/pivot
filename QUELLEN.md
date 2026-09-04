@@ -468,3 +468,146 @@ dafür eine native App verlangt.
 Pivot baut deshalb auf Kontextankern (nach dem Essen, beim Heimkommen, vor dem Aussteigen) und
 auf dem Google Calendar, in dem Maik ohnehin lebt. Änderbar wäre das nur über einen
 Capacitor-Wrapper mit Android Studio und Signaturschlüssel — ein eigenes Projekt.
+
+---
+
+## 10. Reflexion und Notfallknopf (ab V5.2)
+
+### 10.1 Aufbau der Reflexion — Stufe C
+
+Der Ablauf (Stimmung, Gefühle, Körperempfindungen, Kontext, Freitext) ist von Liven übernommen,
+weil Maik damit arbeiten konnte und mit der vorherigen Drei-Fragen-Fassung nicht. Das ist eine
+Produktentscheidung nach Gebrauchstauglichkeit, kein Wirksamkeitsbeleg — und wird in der App
+auch nicht als solcher dargestellt.
+
+Was dahintersteht: Stimmungsmonitoring kann nützen, erzeugt aber auch Belastung; die vorhandene
+systematische Übersicht dazu untersuchte bipolare Störung, nicht ADHS oder Depression direkt.
+Deshalb bleibt die Reflexion freiwillig, mehrmals täglich möglich und ohne Pflichtcharakter.
+
+**Die Musterkarte erscheint erst ab acht Einträgen** und benennt ausdrücklich, dass Häufigkeiten
+keine Ursachen sind. Was oft gemeinsam auftritt, muss einander nicht auslösen.
+
+### 10.2 Notfallknopf bei Drang — Stufe C
+
+**Wichtiger Befund vorab.** Die Konsensusarbeit der International Society for Sexual Medicine
+zu Compulsive Sexual Behavior Disorder benennt als eigenständiges Problem unter anderem:
+Selbstetikettierung, lustfeindliche Haltungen, das Vermischen normativer Einstellungen mit
+klinischem Leidensdruck und ausdrücklich „the belief that masturbation and pornography use
+represent 'unhealthy' sexual behavior".
+
+Briken P, Bőthe B, Carvalho J, et al. (2024). *Assessment and treatment of compulsive sexual
+behavior disorder: a sexual medicine perspective.* Sex Med Rev 12(3):355–370.
+DOI [10.1093/sxmrev/qeae014](https://doi.org/10.1093/sxmrev/qeae014) (PMID 38529667).
+Über PubMed geprüft.
+
+Daraus folgt für die App: **kein Zähler, keine Serie, kein Protokoll, keine Zielvorgabe.** Der
+Knopf speichert nichts — das ist im Testlauf byteweise geprüft. Er endet ausdrücklich damit,
+dass es kein Scheitern gibt, wenn es trotzdem passiert. Und er ist bewusst für *jeden* Drang
+gebaut, nicht für ein einzelnes Verhalten: die Handgriffe sind dieselben, und ein Werkzeug, das
+nur für ein Verhalten existiert, wird selbst zum Etikett.
+
+Zur Behandlungslage insgesamt: Antons S, Engel J, Briken P, et al. (2022), *Treatments and
+interventions for compulsive sexual behavior disorder with a focus on problematic pornography
+use: a preregistered systematic review.* J Behav Addict 11(3):643–666.
+DOI [10.1556/2006.2022.00061](https://doi.org/10.1556/2006.2022.00061) (PMID 36083776).
+24 Studien, davon **nur 4 randomisiert kontrolliert**; die beste Evidenz besteht für kognitive
+Verhaltenstherapie. *Grenze:* die Autoren mahnen ausdrücklich zur Zurückhaltung bei Aussagen
+über die Spezifität der Behandlungen.
+
+**Schritt 1 — Reizkontrolle (Ort wechseln).** Grundbestandteil verhaltenstherapeutischer
+Rückfallprävention. Kein eigener Wirksamkeitsbeleg für diesen konkreten Handgriff; als Prinzip
+in der CBT-Literatur zu Suchtverhalten durchgehend enthalten.
+
+**Schritt 2 — 90 Sekunden moderate Bewegung.** Der am konkretesten belegte Handgriff:
+Kurti AN, Dallery J (2014). *Effects of exercise on craving and cigarette smoking in the human
+laboratory.* Addict Behav 39(6):1131–7.
+DOI [10.1016/j.addbeh.2014.03.004](https://doi.org/10.1016/j.addbeh.2014.03.004) (PMID 24656643).
+Über PubMed geprüft. Nach moderater Bewegung verlängerte sich die Zeit bis zum nächsten
+selbstgewählten Rauchen von im Mittel **4 auf 21 Minuten**; der Effekt lief über die
+Belohnungskomponente des Verlangens, nicht über die Entzugskomponente.
+*Grenze:* Laborstudie mit 20 beziehungsweise 21 Teilnehmenden, Rauchen als Zielverhalten.
+Die Übertragung auf andere Dränge ist plausibel, aber nicht geprüft.
+
+Garey L, Thai JM, Zvolensky MJ, Smits JAJ (2024). *Exercise and Smoking Cessation.*
+Curr Top Behav Neurosci 67:177–198.
+DOI [10.1007/7854_2024_497](https://doi.org/10.1007/7854_2024_497) (PMID 39090290).
+Robuste Evidenz für die Reduktion von Verlangen, Entzugssymptomen und negativem Affekt;
+kurzfristige Abstinenz verbessert, langfristige eher nicht.
+
+**Schritt 3 — neu entscheiden.** Kein Wirksamkeitsbeleg für die Formulierung. Was hier
+ausdrücklich *nicht* behauptet wird: dass Achtsamkeit den Drang zuverlässig auflöst.
+Grant S, Colaiaco B, Motala A, et al. (2017), *Mindfulness-based Relapse Prevention for
+Substance Use Disorders.* J Addict Med 11(5):386–396.
+DOI [10.1097/ADM.0000000000000338](https://doi.org/10.1097/ADM.0000000000000338) (PMID 28727663).
+9 RCTs, 901 Teilnehmende: **kein signifikanter Unterschied beim Rückfall** (OR 0,72;
+95 %-KI 0,46–1,13), nur kleine signifikante Effekte auf Verlangen und Entzug
+(SMD −0,13; KI −0,19 bis −0,08) und auf negative Folgen (SMD −0,23). Evidenzqualität niedrig.
+
+Das heißt konkret: „Den Drang aushalten" ist keine belegte Methode, um die Handlung zu
+verhindern. Die Ortsveränderung und die Bewegung sind die Teile mit Substanz.
+
+### 10.3 Was die App hier nicht tut
+
+Sie stellt keine Diagnose, sie bewertet kein Sexualverhalten als gesund oder ungesund, und sie
+zählt nichts mit. Wenn Leidensdruck bestehen bleibt, ist die belegte Adresse
+Verhaltenstherapie — nicht eine App und nicht ein Ratgeber aus einem Forum.
+
+---
+
+## 11. Vier-Wochen-Reset in der App (ab V5.3)
+
+Alle Inhalte dieses Bereichs stammen aus Maiks eigenem Dokument „Vier Wochen Reset für
+Sexualität und Rauchen" (Stand 14.06.2026). Die App macht daraus bedienbare Knöpfe und
+erfindet nichts dazu. Die Evidenzeinordnung des Dokuments wird übernommen, nicht überschrieben:
+
+- **Gut belegt:** Sexualnebenwirkungen von Lisdexamfetamin und Escitalopram; Rauchen,
+  Bewegungsmangel, Schlafprobleme und Depression/Angst als ED-Risikofaktoren (EAU-Leitlinie);
+  Leistungsdruck und kognitive Selbstbeobachtung als Störfaktoren.
+- **Schwach bis gemischt:** der Zusammenhang „Pornos verursachen ED". Für bloße Nutzungsfrequenz
+  findet sich meist keine konsistente kausale Verbindung; problematisch erlebte Nutzung ist
+  häufiger querschnittlich assoziiert.
+- **Plausibel, nicht hart bewiesen:** dass das enge Solo-Erregungsmuster schlechter zu
+  Partnersex passt. Die klinische Literatur zu idiosynkratischem Masturbationsstil beschreibt
+  das vor allem bei verzögerter Ejakulation.
+- **ADHS ist kein direkter ED-Auslöser**, erhöht aber die Relevanz von Reizkontrolle, Routinen
+  und externen Hilfen.
+
+### 11.1 Notfallknopf — Abschnitt 5.2 des Plans
+
+Der Knopf zeigt **eine** Option, beim nächsten Druck eine andere. Grundlage ist Maiks eigene
+„ADHS-Notfallliste für schnelles Dopamin", erweitert um Optionen aus seinen echten App-Daten
+(offene Aufgabe, nächster Haushaltsschritt, laufendes Essensfenster, Eintrag aus dem Eingang).
+
+Leitsatz aus dem Plan, der die Gestaltung bestimmt: *„Der Punkt ist nicht perfekte Achtsamkeit,
+sondern sofortige Verhaltensunterbrechung. Das ist bei ADHS meist wirksamer als langes
+Nachdenken."*
+
+Deshalb: **kein Zähler, keine Serie, kein Protokoll.** Im Testlauf wird byteweise geprüft, dass
+der Zustand vor und nach einem Durchlauf identisch ist. Belegt sind von den angebotenen
+Handgriffen vor allem Ortswechsel (Reizkontrolle, CBT-Standard) und moderate Bewegung
+(Kurti & Dallery 2014: Verlängerung von 4 auf 21 Minuten bis zum nächsten selbstgewählten
+Rauchen, siehe Abschnitt 10.2). Für die übrigen Optionen gilt: plausibel, nicht einzeln geprüft.
+
+### 11.2 Rauchslots — Abschnitt 6 des Plans
+
+Fünf feste Slots (A Morgen nach dem Frühstück, B Mittag, C Feierabend, D nach dem Abendessen,
+E Flex für genau einen starken Trigger). Die App zählt weiter, aber die Kennzahl, die sie
+hervorhebt, ist die **Zahl der Zigaretten außerhalb eines Slots** — entsprechend dem Leitsatz
+„Zigarette nur im Slot, nie im Impuls".
+
+Hintergrund aus dem Plan: Die erste Zigarette kurz nach dem Aufstehen ist ein starker Marker
+für Nikotinabhängigkeit; deshalb Slot A frühestens 45–60 Minuten nach dem Aufstehen und nach
+dem Frühstück. NICE betont ausdrücklich, dass jedes Rauchen schadet — die Reduktion auf fünf
+ist ein Zwischenschritt zur Kontrolle, kein gesundheitlich unbedenkliches Ziel.
+
+### 11.3 Wenn-dann-Pläne, Situationen, Rückfallplan — Abschnitte 5.1, 5.3, 8.2
+
+Übernommen wie im Dokument. Der Rückfallplan trägt die wichtigste Regel daraus:
+**kein Kettenrückfall aus Kränkung.** Der zerstörerische Gedanke ist nicht „ich bin
+gescheitert", sondern „jetzt kann ich auch komplett drauf pfeifen".
+
+### 11.4 Arzt-Checkliste — Abschnitt 8.3
+
+Wörtlich übernommen. Die App ändert keine Dosis, empfiehlt kein Präparat und rät nicht zum
+Absetzen. Elvanse, Escitalopram, wiederkehrende Erektionsprobleme und Potenzmittel gehören
+nach dem Plan selbst ausdrücklich nicht in Selbstexperimente.

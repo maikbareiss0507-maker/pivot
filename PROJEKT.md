@@ -16,6 +16,8 @@ Samsung Galaxy S23+ in Chrome. Alle Daten bleiben lokal auf dem Gerät.
 | 02.09. | ~~Netlify bleibt der Host~~ — **überholt**, die App liegt auf GitHub Pages | Netlify erlaubt auf dem freien Plan nur etwa zwanzig Veröffentlichungen im Monat und pausiert die Seite danach. Preis des Wechsels: der Browserspeicher hing an der alten Domain. Ab jetzt gilt die GitHub-Pages-Adresse als feste Origin und darf nicht mehr wechseln. |
 | 02.09. | Navigation bleibt Jetzt · Tag · Essen · Training · Mehr | Masterplan V8 schlägt Heute · Ernährung · Planung · Haushalt · Mehr vor. Das würde Training eine Ebene tiefer schieben, obwohl bessere Handballleistung das oberste Ziel ist. Haushalt sitzt als erste Kachel in Mehr — eine Berührung entfernt. |
 | 02.09. | Keine eskalierende Erinnerungsleiter | Nicht "später", sondern in dieser Architektur unmöglich: Exact Alarms, Full-screen intents und geplante Vibration sind native Android-APIs. Halbgar vorgetäuscht wäre schlimmer als weggelassen. Siehe QUELLEN.md 9.8. |
+| 04.09. | Ungenutzte Bereiche werden eingeklappt, nicht gelöscht | Nach drei Tagen ist „nie geöffnet" ein schwaches Signal — es kann an der Sache liegen oder daran, dass die Gelegenheit fehlte. Einklappen ist reversibel, Löschen nicht. |
+| 04.09. | Kein Ausbau einzelner Bereiche in die Tiefe, obwohl Maik das gefordert hat | Seine Daten widersprechen der Forderung: der tiefste Bereich (Haushalt, 34 Schritte, 14 Anleitungen) hat null Taps, der flachste (Textfeld + Knopf) 25 Einträge. Tiefe ist nicht das Problem, fehlende Passung auf ihn ist es. Tiefe kommt pro Bereich und mit seinen Angaben, nicht geraten. |
 | 02.09. | Nie erfasster Medikamentenbestand löst keine Warnung aus | Eine Warnung, die falsch losgeht, wird als erste ignoriert und nimmt allen echten Warnungen die Wirkung. |
 | 02.09. | Evidenz an der Zahl statt in der Dokumentation | Wer nicht weiß, warum eine Zahl da steht, handelt nicht danach. Jede Kennzahl trägt Bedeutung, Quelle und Grenze bei sich. |
 | 02.09. | Einnahmezeit bestätigt: 8:15 | Von Maik bestätigt, Kalendertermine passen. |
@@ -90,6 +92,64 @@ Samsung Galaxy S23+ in Chrome. Alle Daten bleiben lokal auf dem Gerät.
   Frage, woran Maik nach zwei bis sechs Wochen merkt, ob es ihm hilft. Dazu sechs bekannte
   Widersprüche der Studienlage — statt dass die App sich eine Seite aussucht.
 - Profilseite benennt ausdrücklich, was eine Web-App nicht kann.
+
+**Fertig (04.09., sechste Sitzung — V5.1, nach Maiks Testlauf)**
+
+Grundlage war sein Export vom 04.09., nicht sein Eindruck. Befund: fünf von zwölf Bereichen
+in drei Tagen nie geöffnet (Haushalt, Finanzen, Reflexion, Drills, Beschwerden) — darunter
+ausgerechnet der tiefste. Am meisten benutzt: Eingang und Ablenkungsparkplatz, 25 Einträge,
+also das Flachste in der App. Konsequenz: nichts hinzugebaut, sondern aufgeräumt.
+
+Vier bestätigte Fehler behoben:
+- **Favoriten wurden nie gespeichert.** „Eintragen" legte keinen Favoriten an, nur der kleine
+  Sternknopf daneben. Maik hat fünf Produkte gescannt und immer den grünen Hauptknopf gedrückt —
+  `S.foods` blieb leer, jedes Produkt musste neu gescannt werden. Jetzt merkt sich die App jedes
+  erfasste Produkt automatisch samt zuletzt benutzter Menge; der Sternknopf ist weg.
+- **Scanner nahm den ersten Frame** mit irgendeinem Code, auch einen halb erfassten oder den
+  Nachbarartikel. Jetzt muss derselbe Code dreimal hintereinander gelesen werden.
+- **Tastatur ging beim Parken jedes Mal zu**, weil der ganze Sheet-Inhalt neu geschrieben wurde.
+  Gleiches Problem im Eingang. Beide bleiben jetzt offen und fokussiert.
+- **Beide Routinen immer aufgeklappt** im Tag-Reiter. Jetzt nur die fällige, die andere
+  einzeilig und aufklappbar.
+
+Weiter:
+- Zigarettenzähler auf die Jetzt-Seite (ein Tap), 18 statt 8 Auslöser, **Mehrfachauswahl** —
+  mehrere Auslöser treffen fast immer gleichzeitig zu. Zusammengesetzte Einträge werden in der
+  Statistik einzeln gezählt.
+- „Mehr" ist keine Symbolwand mehr, sondern eine Liste mit **Zweckzeile pro Bereich** (Maiks
+  Frage „was macht der werkzeug kasten?" war berechtigt). Werkzeugkasten heißt jetzt
+  „Wenn es klemmt".
+- Bereiche sortieren sich selbst in „In Benutzung" und „Noch nicht benutzt". Nichts wird
+  gelöscht; sobald Daten drin sind, wandert ein Bereich nach oben.
+- **Helle Darstellung** als Umschalter im Profil, inklusive heller Tagesphasen-Farben.
+- Der Bericht für Claude enthält jetzt Eingang und Ablenkungsparkplatz (bekannte Lücke aus V5).
+
+**Fertig (04.09., siebte Sitzung — V5.1 bis V5.3)**
+
+V5.1 behob vier bestätigte Fehler aus Maiks Testlauf (Favoriten wurden nie gespeichert, Scanner
+nahm den ersten Frame, Tastatur schloss beim Parken, beide Routinen immer aufgeklappt), holte
+den Zigarettenzähler auf die Jetzt-Seite, machte „Mehr" zur Liste mit Zweckzeile und brachte
+die helle Darstellung.
+
+V5.2 ersetzte die Drei-Fragen-Reflexion durch Livens Aufbau: Stimmung am Schieber, Gefühle,
+Körperempfindungen, Kontext, Freitext — Mehrfachauswahl überall, eigene Begriffe ergänzbar,
+mehrere Einträge pro Tag, Musterkarte erst ab acht Einträgen.
+
+V5.3 baut Maiks eigenen Vier-Wochen-Reset ein:
+- **Notfallknopf umgebaut** nach seiner Vorgabe: nicht drei feste Schritte, sondern **eine**
+  Option aus rund dreißig, beim nächsten Druck eine andere. Vier davon kommen aus seinen echten
+  Daten (offene Aufgabe, nächster Haushaltsschritt, laufendes Essensfenster, Eingangseintrag).
+  Weiterhin kein Zähler, keine Serie, kein Protokoll — im Test byteweise geprüft.
+- **Rauchslots A–E** statt reinem Zählen. Hervorgehobene Kennzahl ist die Zahl außerhalb eines
+  Slots, nicht die Gesamtzahl.
+- Sechs **Wenn-dann-Pläne** zum Übernehmen in die normale Regelliste, sechs **Situationen**,
+  der **Rückfallplan** und die **Sätze für Evi** zum Antippen und Kopieren.
+- **Arzt-Checkliste** für Elvanse, Escitalopram und Erektionsprobleme.
+
+**Noch offen aus Maiks Kritik**
+- Regenerationsbereich mit Vorschlägen und Quellen (er hat ihn ausdrücklich angefragt)
+- Morgen- und Abendroutine: einzelne Schritte in Unterschritte zerlegen
+- Ernährungsausbau — braucht von ihm Wochenbudget, Allergien, Kochmöglichkeiten
 
 **Als Nächstes**
 1. Wissenschaftliche Datenschicht — MET-Tabelle, Offline-Nährwerttabelle (USDA), Testbatterie
