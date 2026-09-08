@@ -675,10 +675,47 @@ ruhig ist, greift die Präventionsseite; wird es akut, gilt die Gegenaussage.
 - **Zusätzliches Koffein neben Lisdexamfetamin.** Dazu existiert keine verwertbare Literatur.
   Die Karenzzeit von 8,8 Stunden für 107 mg [44] gilt unabhängig davon für den Schlaf.
 
-### 12.6 Feste Termine über den Kalender
+### 12.6 Umbau in V5.5 — warum die erste Fassung unbrauchbar war
+
+Die erste Fassung stand als eigener Bereich unter „Mehr" und schrieb Effektgrößen, GRADE-Stufen
+und Fachbegriffe direkt auf die Karten. Maiks Rückmeldung: unübersichtlich, zu viele Fachbegriffe,
+und nirgends steht einfach, was zu tun ist. Das war zutreffend.
+
+**Regel für diesen Bereich seitdem:** An der Oberfläche steht, WAS zu tun ist, in normalen Worten.
+Zahlen, Effektgrößen, Studiendesigns und Fachbegriffe stehen ausschließlich hinter dem
+Fragezeichen. Ein automatischer Test durchsucht die Oberfläche auf die Begriffe SMD, GRADE, MTSS,
+PNF, Casein, Immersion, Homöostase, Hedges, neuromuskulär, Mobility und metaanalytisch — findet er
+einen davon, schlägt der Test fehl.
+
+Beispiele für die Übersetzung:
+
+| Vorher | Jetzt an der Oberfläche |
+|---|---|
+| Casein 30–40 g vor dem Schlafen | Quark-Shake vor dem Schlafen — ungefähr 250 g Magerquark mit einem Löffel Proteinpulver |
+| Neuromuskuläres Training | Balance und Landungen üben — einbeinig stehen, von der Bank springen und weich landen |
+| Mobility Wade und Sprunggelenk | Waden und Sprunggelenk dehnen — Wade am Türrahmen, Knie über die Zehen schieben |
+| Kaltwasserimmersion | Kalt baden |
+| Dynamisches Aufwärmen | Aufwärmen in Bewegung — locker einlaufen, Arme kreisen, nichts lange halten |
+| Mahlzeit mit 20–32 g Protein | Iss was Richtiges — Hähnchen mit Reis, Linsen mit Brot, Nudeln mit Quark |
+
+**Struktur:** Regeneration ist keine eigene Kachel mehr, sondern eine Nebeneinheit im
+Training-Reiter neben „Einheiten" und „Last". Die Seite zeigt in dieser Reihenfolge:
+Pflicht, Heute nicht, Optional. Wochenplan, Ausstattung und Kalenderexport sind eingeklappt,
+damit die Seite oben aufhört.
+
+Schlafrhythmus, Quark-Shake und Koffeinkarenz gelten an **jedem** Tag — auch an Trainertagen und
+am Tag nach dem Spiel. In der ersten Fassung fielen sie dort stillschweigend weg.
+
+### 12.7 Feste Termine über den Kalender
 
 Die App erzeugt eine `.ics`-Datei mit den festen Wochenblöcken für vier Wochen (Mobility und
 neuromuskuläres Training Dienstag und Donnerstag, warmes Bad Montag und Mittwoch abends). Das
 ist der einzige Weg, wie eine Web-App verlässlich erinnern kann — siehe Abschnitt 9.8.
 Vier Wochen deshalb, damit der Kalender nicht mit einem Rhythmus zugestellt wird, der sich
 ändert.
+
+Jeder Termin enthält **nur den Inhalt dieses Tages** als kurze Handlungsschritte, kein Verweis
+auf ein anderes Dokument und keine Fachbegriffe — zum Beispiel „Wade am Türrahmen dehnen, 3 mal
+30 Sekunden pro Seite". Dehnen und Balance sind getrennte Termine mit eigener Kategorie, damit
+sie im Kalender unterschiedlich eingefärbt werden können. Ein Test prüft das Format der Datei
+und dass keiner der gesperrten Fachbegriffe darin vorkommt.

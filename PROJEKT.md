@@ -165,6 +165,27 @@ zwei Prüfrunden, BESTANDEN). Der Bericht liegt als REGENERATION.md im Ordner.
 - Sauna mit ausdrücklichem ärztlichen Vorbehalt und Haken „geklärt".
 - **Kalenderdatei** für die festen Wochenblöcke, vier Wochen im Voraus.
 
+**Fertig (08.09., neunte Sitzung — V5.5, nach Maiks Rückmeldung)**
+
+Seine Kritik an V5.4 war berechtigt: zu viele Fachbegriffe, keine einfachen Handlungsanweisungen,
+unübersichtlich. Umgebaut:
+
+- Regeneration ist **keine eigene Kachel mehr**, sondern eine Nebeneinheit im Training-Reiter
+  neben „Einheiten" und „Last" — von Maik so festgelegt, nicht zur Diskussion gestellt.
+- Der gesamte Text neu geschrieben: **an der Oberfläche steht, was zu tun ist**, in normalen
+  Worten. Zahlen und Fachbegriffe nur noch hinter dem Fragezeichen. Ein Test durchsucht die
+  Oberfläche auf elf gesperrte Begriffe und schlägt fehl, wenn einer auftaucht.
+- Klarer Aufbau: **Pflicht** (große Karten) → **Heute nicht** → **Optional** (kleiner).
+  Wochenplan, Ausstattung und Kalender eingeklappt.
+- Kalendertermine enthalten jetzt **den Inhalt des jeweiligen Tages** als kurze Schritte,
+  nicht den ganzen Plan und keinen Dokumentverweis. Dehnen und Balance getrennt mit eigener
+  Kategorie, damit sie im Kalender unterschiedlich eingefärbt werden können.
+- Fehler behoben: Schlafrhythmus, Quark-Shake und Koffeinkarenz fielen an Trainertagen und am
+  Tag nach dem Spiel stillschweigend weg.
+
+**Regel daraus, die bleibt:** Fachlich sauber heißt nicht, dass die Fachsprache auf dem
+Bildschirm steht. Die Evidenz gehört hinter das Fragezeichen, die Handlung davor.
+
 **Noch offen aus Maiks Kritik**
 - Morgen- und Abendroutine: einzelne Schritte in Unterschritte zerlegen
 - Ernährungsausbau — braucht von ihm Wochenbudget, Allergien, Kochmöglichkeiten
