@@ -611,3 +611,74 @@ gescheitert", sondern „jetzt kann ich auch komplett drauf pfeifen".
 Wörtlich übernommen. Die App ändert keine Dosis, empfiehlt kein Präparat und rät nicht zum
 Absetzen. Elvanse, Escitalopram, wiederkehrende Erektionsprobleme und Potenzmittel gehören
 nach dem Plan selbst ausdrücklich nicht in Selbstexperimente.
+
+---
+
+## 12. Regeneration (ab V5.4)
+
+Der gesamte Regenerationsbereich stammt aus Maiks geprüftem Abschlussbericht
+**„Evidenzbasierte Regeneration für Handballspieler"** (04.–05.09.2026, 114 Quellen, zwei
+unabhängige Prüfrunden, Urteil BESTANDEN). Der vollständige Bericht liegt als `REGENERATION.md`
+im selben Ordner; die Verweise in eckigen Klammern zeigen auf dessen Quellenliste.
+
+Die App übernimmt die Vier-Gruppen-Einordnung aus Abschnitt 19b unverändert und weicht sie
+nirgends auf.
+
+### 12.1 Die Aussage, die den Aufbau bestimmt
+
+> Das Wirksame sieht nicht nach Regeneration aus. Schlaf, Essen, Trinken und vernünftige
+> Belastungssteuerung haben über alle gemessenen Endpunkte die mit Abstand breiteste Evidenz.
+> Eisbad, Sauna, Faszienrolle, Massage und Wechselbäder haben kleine, oft nur subjektive und
+> teils gegensätzliche Effekte.
+
+Deshalb stehen Trinken, Mahlzeit, Casein, Koffeinkarenz und Schlafrhythmus als **fest** in der
+App — und Rolle, Massage, Wechselbäder als **optional** weiter unten. Nicht umgekehrt.
+
+### 12.2 Kälte ist kontextabhängig, nicht gut oder schlecht
+
+- **Nach dem Spiel vertretbar:** senkt das Muskelkatergefühl (g ≈ −0,40 bis −0,66) und CK [1, 3, 15].
+- **Nach dem Krafttraining nicht:** dämpft die langfristige Kraftanpassung
+  (SMD −0,60 bzw. ES −0,23 in zwei Metaanalysen) [2, 4, 6, 93].
+- **Nicht direkt vor Sprung- oder Sprintbelastung:** Sprungkraft danach schlechter
+  (g ≈ −0,68 bis −0,94) [2, 17].
+
+**Umsetzung:** Kaltwasser erscheint ausschließlich an Spieltagen. An Krafttagen erscheint
+stattdessen ein eigener Block „Heute ausdrücklich nicht" mit der Begründung und der Effektgröße.
+Dieser Negativblock ist der Teil, den ein Regenerationsplan sonst nie enthält.
+
+### 12.3 Das warme Bad, nicht das kalte
+
+Die bestbelegte Anwendung der Badewanne ist ein **warmes Bad, 40–42,5 °C, mindestens 10 Minuten,
+ein bis zwei Stunden vor dem Schlafengehen** — metaanalytisch bessere Schlafqualität [24].
+Es steht an Team- und Spieltagen sowie an freien Tagen als fester Punkt.
+
+### 12.4 Für Maik fest gesetzt
+
+Nach seinen Angaben vom 08.09.2026: Sprunggelenk eingeschränkt, Schienbein gerade ruhig.
+
+- **Mobilityblock Wade und Sprunggelenk** als eigene Einheit, nicht als Anhängsel [32, 112].
+- **Neuromuskuläres Training** — der einzige Punkt im gesamten Bericht mit GRADE **hoch**:
+  senkt das MTSS-Risiko, 12 RCTs, 8197 Teilnehmende [99]. Das ist **Vorbeugung, nicht
+  Behandlung**.
+
+**Offener Widerspruch, den die App nicht glättet:** Für die *Behandlung* eines bestehenden
+Schienbeinkantensyndroms stehen Dehnen und Kräftigen ausdrücklich auf der Negativliste [98, 100].
+Das kollidiert mit dem, was für die Sprunggelenksmobilität sinnvoll wäre. Solange das Schienbein
+ruhig ist, greift die Präventionsseite; wird es akut, gilt die Gegenaussage.
+
+### 12.5 Zwei Fragen, die die App nicht beantwortet
+
+- **Sauna unter Elvanse und Escitalopram.** Die gesamte akute Evidenz zur klassischen Sauna nach
+  dem Training beruht auf **einer einzigen Studie mit negativem Ergebnis** [21]. Zusammen mit der
+  ungeklärten Medikationsfrage gibt es keine Grundlage für eine Empfehlung — weder dafür noch
+  dagegen. Die App zeigt beides und einen Haken „mit der Ärztin geklärt".
+- **Zusätzliches Koffein neben Lisdexamfetamin.** Dazu existiert keine verwertbare Literatur.
+  Die Karenzzeit von 8,8 Stunden für 107 mg [44] gilt unabhängig davon für den Schlaf.
+
+### 12.6 Feste Termine über den Kalender
+
+Die App erzeugt eine `.ics`-Datei mit den festen Wochenblöcken für vier Wochen (Mobility und
+neuromuskuläres Training Dienstag und Donnerstag, warmes Bad Montag und Mittwoch abends). Das
+ist der einzige Weg, wie eine Web-App verlässlich erinnern kann — siehe Abschnitt 9.8.
+Vier Wochen deshalb, damit der Kalender nicht mit einem Rhythmus zugestellt wird, der sich
+ändert.

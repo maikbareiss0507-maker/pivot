@@ -146,10 +146,29 @@ V5.3 baut Maiks eigenen Vier-Wochen-Reset ein:
   der **Rückfallplan** und die **Sätze für Evi** zum Antippen und Kopieren.
 - **Arzt-Checkliste** für Elvanse, Escitalopram und Erektionsprobleme.
 
+**Fertig (08.09., achte Sitzung — V5.4)**
+
+Regenerationsbereich gebaut, vollständig aus Maiks geprüftem Abschlussbericht (114 Quellen,
+zwei Prüfrunden, BESTANDEN). Der Bericht liegt als REGENERATION.md im Ordner.
+
+- Der Plan richtet sich nach der **Tagesart**: erfasste Einheiten schlagen den Wochenrhythmus.
+  Spiel, Krafttraining, Mannschaftstraining, Trainer-Tag, frei.
+- **Fest / Optional / Zwischendurch** getrennt, wie von Maik gewünscht. Fest sind die Punkte
+  mit breiter Evidenz (Trinken, Mahlzeit, Casein, Koffeinkarenz, Schlafrhythmus) — nicht
+  Rolle und Sauna.
+- Eigener Block **„Heute ausdrücklich nicht"**: an Krafttagen keine Kälte (SMD −0,60), keine
+  Rolle vor Maximalkraft, kein langes statisches Dehnen davor.
+- Für ihn fest gesetzt nach seinen Angaben: Mobility Sprunggelenk (eingeschränkt) und
+  neuromuskuläres Training (Schienbein ruhig, Prävention hat GRADE hoch).
+- Spieltag **Samstag/Sonntag/kein Spiel** in einem Tap umschaltbar, weil er wechselt.
+- Ausstattung abwählbar — was er nicht hat, verschwindet aus dem Plan.
+- Sauna mit ausdrücklichem ärztlichen Vorbehalt und Haken „geklärt".
+- **Kalenderdatei** für die festen Wochenblöcke, vier Wochen im Voraus.
+
 **Noch offen aus Maiks Kritik**
-- Regenerationsbereich mit Vorschlägen und Quellen (er hat ihn ausdrücklich angefragt)
 - Morgen- und Abendroutine: einzelne Schritte in Unterschritte zerlegen
 - Ernährungsausbau — braucht von ihm Wochenbudget, Allergien, Kochmöglichkeiten
+- Trainingszeiten sind noch angenommen, nicht bestätigt (siehe unten)
 
 **Als Nächstes**
 1. Wissenschaftliche Datenschicht — MET-Tabelle, Offline-Nährwerttabelle (USDA), Testbatterie
