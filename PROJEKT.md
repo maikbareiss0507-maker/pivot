@@ -211,6 +211,52 @@ Bildschirm steht. Die Evidenz gehört hinter das Fragezeichen, die Handlung davo
 - Zweiwegesync mit Google Calendar: technisch machbar, braucht aber ein eigenes
   Google-Cloud-Projekt mit OAuth-Client und stündliche Token-Erneuerung.
 
+## V5.7 — Zimmerplan und ein kritischer Speicherfehler (10.09.2026)
+
+**KRITISCH, vor Auslieferung gefunden:** Die Sicherheitsrunde V5.6 hatte `const GIFT` unter
+`let S = load()` gesetzt. `deepMerge` (hochgezogen) rief `GIFT` (temporale Totzone) → Fehler →
+`load()` fiel stumm auf die Standardwerte → **jedes echte Neuladen löschte alle Eingaben.**
+Nur in den noch nicht veröffentlichten V5.6-Dateien; die live genutzte V5.5 ist nicht betroffen.
+Behoben (Reihenfolge korrigiert), Dauertest ergänzt. Lehre: Was `load()` beim Start braucht, muss
+oberhalb stehen — hochgezogene Funktionen täuschen, ihre const-Abhängigkeiten sind es nicht.
+
+**Zimmerplan** aus der Übergabe-Spezifikation vom 09.09.2026 gebaut: 35 Schritte, zehn Bereiche
+A–J, fest sortiert, immer nur ein Schritt sichtbar, kurze Fassung zählt, Tief-Fenster und
+Abendrunde zeitgesteuert, keine Serie. Als Nebeneinheit im Haushalt; der generische Haushalt
+klappt ein, solange der Plan läuft, gegen Überfrachtung.
+
+**Drei Alltagsfixes aus Eingang und Export:** Android-Zurück wirft nicht mehr aus der App
+(eigener Verlauf); Essensfenster verankern sich an der tatsächlichen Einnahmezeit statt an 08:15;
+Venenengel als ehrlich eingeordnete Regenerationskarte (kein belegter Nutzen, PubMed leer).
+
+Tests 81 → 93, alle grün. Rückfallpunkt `/tmp/build/index.v56.bak`.
+
+**Noch offen (unverändert):** Morgen-/Abendroutine in Unterschritte; Ernährungsausbau
+(Wochenbudget, Allergien, Kochmöglichkeiten); drei Zeitangaben (Trainingsende Mo/Mi, Schlafenszeit,
+Koffein). Aus dem Eingang neu und offen: Trainingsplan mit Regeneration + Gym + Spiel; zwei
+Claude-Videokurse; „Gedanken parken" schließt noch die Tastatur.
+
+## V5.6 — Prüfung durch das App Engineering Studio (10.09.2026)
+
+Vier Prüfagenten über den Ist-Zustand von V5.5. Zwei Sperrvermerke:
+
+- **Sicherheit und Datenschutz: BLOCK.** Nutzertext lief an acht Stellen als Code
+  (`onclick` mit `esc()` — reicht nicht, siehe QUELLEN 13.1). Reproduziert, behoben,
+  gegen die alte Fassung gegengeprüft. Dazu `deepMerge` gegen `__proto__` gesichert,
+  Import auf bekannte Felder begrenzt, CSP eingezogen.
+- **Recht: PRÜFUNG ANGERATEN.** Nicht wegen der App — wegen des öffentlichen Repos.
+  Offen, Maiks Entscheidung.
+
+Funktional dazu: Medikamentenwarnung erlosch ausgerechnet bei Bestand null. Bereitschaft war
+rot eingefärbt und las sich wie ein Befund. Haushaltskachel zeigte die Rückstandszahl.
+Zoom war gesperrt, Tap-Ziele unter 24 px, Hilfstexte unter 4,5:1 Kontrast.
+
+Alles Behobene ist durch acht neue Dauertests abgedeckt — Testzahl 73 → 81, alle grün.
+Rückfallpunkt `/tmp/build/index.v55.bak`.
+
+**Bewusst offen gelassen, weil unumkehrbar oder Maiks Entscheidung:** Repo-Sichtbarkeit,
+Entfernen persönlicher Passagen, Umschreiben der Git-Historie.
+
 ## Gelernt
 
 Zwei Blöcke waren im Quelltext doppelt vorhanden — identisch, deshalb im Betrieb unauffällig,

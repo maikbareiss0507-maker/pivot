@@ -719,3 +719,184 @@ auf ein anderes Dokument und keine Fachbegriffe — zum Beispiel „Wade am Tür
 30 Sekunden pro Seite". Dehnen und Balance sind getrennte Termine mit eigener Kategorie, damit
 sie im Kalender unterschiedlich eingefärbt werden können. Ein Test prüft das Format der Datei
 und dass keiner der gesperrten Fachbegriffe darin vorkommt.
+
+---
+
+# 13 · V5.6 — Prüfung durch das App Engineering Studio
+
+Vier unabhängige Prüfagenten haben den Ist-Zustand von V5.5 durchgesehen: Produkt und
+Anforderungen, Design und Bedienbarkeit, Sicherheit und Datenschutz, Recht. Die Befunde
+wurden reproduziert, bevor sie behoben wurden. Was hier steht, ist geprüft — nicht behauptet.
+
+## 13.1 Nutzertext in `onclick` war ausführbarer Code
+
+**Der Befund.** An acht Stellen wurde Text, den Maik selbst eingetippt hat — Aufgabentitel,
+Wunschtitel, Einkaufsposten, eigene Begriffe in der Reflexion, Trainingsauslöser — direkt in
+ein `onclick`-Attribut geschrieben. Abgesichert war das mit `esc()` und einem
+`.replace(/'/g,'')`. Beides genügt nicht.
+
+**Warum es nicht genügt.** Der HTML-Parser dekodiert Zeichenreferenzen im Attributwert,
+**bevor** der Browser den Inhalt als JavaScript liest. Aus dem `&#39;`, das `esc()` erzeugt,
+wird also wieder ein echtes Apostroph — und zwar genau rechtzeitig, um den String zu schließen.
+Die Reihenfolge ist in der HTML-Spezifikation festgelegt (WHATWG HTML, *Attribute value
+(single-quoted) state* → *Character reference state*), das ist kein Browserfehler.
+
+**Der Nachweis.** Ein Eintrag mit dem Titel
+
+    x'); window.__pwn=(window.__pwn||0)+1; //
+
+setzt in V5.5 den Zähler `window.__pwn` — der Code läuft. Gegen V5.6 läuft er nicht.
+Beide Fassungen wurden im selben Durchlauf auf zwei Ports gegeneinander gehalten
+(`/tmp/build/xss.js`, `/tmp/build/xss-alt.js`): V5.5 „AUSNUTZBAR" auf allen drei Vektoren,
+V5.6 „dicht" auf allen drei.
+
+**Was das praktisch bedeutete.** Die App liegt auf `github.io`. Alles, was in ihrem
+Zusammenhang läuft, kann `localStorage` lesen — also Diagnosen, Medikation, Reflexionen,
+Finanzen. Der Angriffsweg ist schmal, weil nur Maik selbst eintippt; er ist nicht null, weil
+Backup-Dateien importiert werden können und ein `.json` aus fremder Hand denselben Weg nimmt.
+
+**Die Behebung.** Nutzerdaten werden gar nicht mehr in Attribute geschrieben. Stattdessen legt
+`A(wert)` den Wert in eine Liste und gibt einen Zahlenindex zurück; im Attribut steht nur noch
+`$a(3)`. Zahlen können nicht ausbrechen. Die Liste wird bei jedem `render()` geleert.
+
+## 13.2 Import und `deepMerge` waren nicht abgedichtet
+
+`deepMerge` lief über `for(const k in b)` ohne Prüfung. Ein Backup mit dem Schlüssel
+`__proto__` konnte damit Eigenschaften auf `Object.prototype` setzen, die dann an jedem
+Objekt der App hängen. Zusätzlich übernahm `impo()` jedes Feld einer Backup-Datei,
+auch unbekannte.
+
+Behoben: `__proto__`, `constructor` und `prototype` werden übersprungen, geerbte Schlüssel
+ebenfalls, und der Import lässt nur noch Felder durch, die in `DEF` vorkommen.
+
+## 13.3 Inhaltssicherheitsregel (CSP)
+
+Neu ist eine `Content-Security-Policy` im Kopf der Seite. Sie erlaubt Netzverbindungen nur
+noch zu `world.openfoodfacts.org` — der einzigen Fremdadresse, die die App braucht. `object-src
+'none'` und `base-uri 'none'` schließen zwei ältere Umleitungswege.
+
+Geprüft mit `/tmp/build/csp.js`: eine untergeschobene Anfrage an `https://fremd.example` wird
+blockiert, der Barcode-Abruf läuft weiter. `'unsafe-inline'` bleibt für Skript und Stil nötig,
+weil die App bewusst aus einer einzigen Datei besteht; die CSP ist damit kein Ersatz für 13.1,
+sondern die zweite Reihe dahinter.
+
+## 13.4 Medikamentenwarnung erlosch bei Bestand null
+
+    warn: s>0 && s<=(it.puffer||7)     // vorher
+    warn: s<=(it.puffer||7)            // jetzt, plus eigene Meldung „Bestand ist leer"
+
+Bei Bestand 0 war `s>0` falsch, also verschwand die Nachbestellwarnung — in dem Moment, in dem
+sie am nötigsten ist. Ein Test prüft jetzt die Bestände 0, 1, 7, 8 und den nie erfassten Fall.
+
+## 13.5 Bereitschaftswert war rot eingefärbt
+
+Ein roter Wert liest sich wie ein Befund. Die Bereitschaft ist aber nur ein Vergleich mit dem
+eigenen 14-Tage-Schnitt und kein Gesundheitswert — genau das, wovor Impellizzeri 2020 bei
+abgeleiteten Belastungskennzahlen warnt. Rot ist jetzt Blau, und unter dem Wert steht die
+Einordnung im Klartext.
+
+## 13.6 Haushaltskachel zeigte den Rückstand
+
+Die Kachel meldete bis zu zehn offene Aufgaben. Eine zweistellige Rückstandszahl auf der
+Startseite ist genau die Wand, die die App vermeiden soll (Abschnitt 12.2). Sie zeigt jetzt
+höchstens eine — die nächste.
+
+## 13.7 Zugänglichkeit
+
+- `maximum-scale=1` entfernt. Es unterband das Zoomen und verstößt gegen WCAG 2.2, 1.4.4.
+- Antippbare Flächen auf mindestens 24 × 24 px vergrößert (WCAG 2.2 AA, 2.5.8): `.qm` 17 → 26,
+  `.rq` 22 → 30, `.tick` 28 → 32, `.rtick` 26 → 30, `.x` und die kleinen Knöpfe entsprechend.
+  **Nicht** über eine unsichtbare Vergrößerung gelöst — das hätte Tipper von den umliegenden
+  Karten weggefangen, weil `.qm` in `.rcard` sitzt und `.rcard` selbst ein Knopf ist.
+- Kontrast der Hilfstexte angehoben: dunkel `#6b7789` → `#8996a8`, hell `#8391a4` → `#5f6c7e`.
+  Damit über 4,5:1 (WCAG 2.2 AA, 1.4.3).
+- Reiter tragen `aria-current="page"` und einen Namen, Kacheln einen Zweck, Zierzeichen
+  `aria-hidden`.
+- Der laufende Fokus-Zeitalarm ließ sich nicht mehr durch einen Tipp daneben abbrechen.
+
+## 13.8 Was bewusst nicht geändert wurde
+
+Repo-Sichtbarkeit, das Entfernen von Namen oder persönlichen Passagen aus den Dateien und ein
+Umschreiben der Git-Historie sind Entscheidungen von Maik, nicht von mir. Sie sind unumkehrbar
+oder haben einen Preis (das Hosting), und ich habe dafür auch keinen Zugang.
+
+---
+
+# 14 · V5.7 — Zimmerplan, ein kritischer Speicherfehler, drei Alltagsfixes
+
+## 14.1 KRITISCH: Neuladen löschte in V5.6 alle Eingaben
+
+**Der Fehler.** In der Sicherheitsrunde V5.6 kamen `const GIFT` und die abgesicherte
+`deepMerge`-Funktion in den Code — aber **unterhalb** der Zeile `let S = load()`. `deepMerge`
+ist als Funktion hochgezogen und damit früh aufrufbar, `GIFT` als `const` jedoch nicht: bis zu
+seiner eigenen Zeile liegt es in der temporalen Totzone. `load()` rief `deepMerge` also auf,
+`deepMerge` griff auf `GIFT` zu, das warf einen `ReferenceError`, und der `try/catch` in `load()`
+fing ihn stumm ab und gab die **Standardwerte** zurück. Ergebnis: bei jedem echten Neuladen der
+Seite wurde der gespeicherte Zustand durch die Defaults ersetzt und diese anschließend
+zurückgeschrieben.
+
+**Warum es niemandem auffiel.** Der Import einer Sicherungsdatei ruft dieselbe `deepMerge`, läuft
+aber später — `GIFT` ist dann längst initialisiert. Import funktionierte also, und eine PWA lädt
+im Alltag selten wirklich neu (sie bleibt im Speicher). Der Fehler schlug nur beim harten
+Neuladen zu.
+
+**Reichweite.** Der Fehler existierte ausschließlich in den V5.6-Dateien, die noch **nicht**
+veröffentlicht waren. Die live genutzte Fassung ist V5.5 und kennt `GIFT` nicht — sie ist nicht
+betroffen. Der Fehler wurde vor jeder Auslieferung gefunden.
+
+**Behebung.** `GIFT` und `deepMerge` stehen jetzt **vor** `let S = load()`. Ein Dauertest
+schreibt Gewicht, Rauchprotokoll und einen Modulzustand, lädt die Seite neu und prüft, dass alles
+noch da ist. Regel daraus: Was `load()` beim Start braucht, muss oberhalb von `load()` definiert
+sein — hochgezogene Funktionen täuschen hier, weil ihre `const`-Abhängigkeiten es nicht sind.
+
+## 14.2 Zimmerplan als Nebeneinheit im Haushalt
+
+Aus der Übergabe-Spezifikation vom 09.09.2026 (25 Fotos, Obsidian, belegte Recherche): 35
+Schritte für genau Maiks Zimmer, zehn Bereiche A–J in fester Reihenfolge, Strom und Kabel zuerst
+(einziger Punkt mit echtem Risiko), Reinigen zuletzt. Umsetzung nach den ADHS-Regeln der App:
+
+- Immer nur **ein** nächster Schritt sichtbar, nie die 35er-Liste zuerst.
+- „Fertig" zählt auch bei nicht voll gesetzten Haken (Perfektionismusfalle vermeiden); teilweise
+  wird als teilweise gespeichert.
+- Die kurze Fassung zählt genauso wie die lange.
+- 15–17 Uhr zeigt die App nur die kurze Fassung mit Hinweis aufs Tief.
+- Ab 22:30 tritt die Abendrunde an die Stelle des nächsten großen Schritts.
+- Wochenrunde Donnerstag nach dem Lernblock, Ersatz Sonntag.
+- **Keine Serie, kein Zähler in Folge** — nur „zuletzt vor X Tagen". Ein ausgelassener Tag ist
+  ausgelassen, nicht verloren.
+- „Wohin damit?" schlägt die 21 festen Orte nach. „Alle Bereiche" erlaubt, einen Bereich
+  vorzuziehen; die Reihenfolge innerhalb eines Bereichs bleibt fest.
+- Medikamente werden nie zum Wegwerfen vorgeschlagen, das private Fach heißt neutral „Privates".
+
+Läuft der Zimmerplan, klappt der generische Haushalt (Zonen, Grundreset, Rhythmen, feste Orte,
+Tipps) hinter „Sonstiger Haushalt" ein — sonst liefe die Seite über, dieselbe Überfrachtung, die
+bei der Regeneration bemängelt wurde.
+
+Belege der Spezifikation (Implementation Intentions Gollwitzer & Sheeran 2006; Elektrosicherheit
+VDE; Sturzunfälle DGUV 2023; Gewohnheitsbildung Lally 2010; kein Timer-Zwang nach Ergün 2025;
+ausdrücklich nicht verwendet die Fehlzitation McMains & Kastner 2011) sind in der Spezifikation
+selbst dokumentiert und werden hier nicht doppelt geführt.
+
+## 14.3 Android-Zurück warf aus der App
+
+Maik: „zurück knopf auf dem handy schmeißt mich aus der app". Eine PWA ohne eigene
+Verlaufseinträge hat nichts, wohin sie zurückgehen könnte — Android schließt sie. Jeder Wechsel
+in einen Bereich oder ein Fenster legt jetzt einen Verlaufseintrag an. Zurück schließt erst ein
+offenes Fenster, geht dann zum Elternreiter, dann zur Startseite, und erst von dort hinaus. Zwei
+Tests decken das ab.
+
+## 14.4 Tagesrhythmus hing fest an 08:15
+
+Maik: „wenn ich später aufstehe als vorgesehen, passt der tagesrythmus nicht mehr in der app".
+Sein Export zeigt Einnahmen um 08:47, 11:42 und 13:10 — die Essensfenster hingen aber starr an
+der geplanten Zeit 08:15. Jetzt gilt: ist für den Tag eine Einnahme eingetragen, verankern sich
+alle Fenster und Phasen an der tatsächlichen Uhrzeit. Ohne Eintrag bleibt der Plan. Die Leiste
+schreibt dann sichtbar „Einnahme 11:42 — Fenster verschoben".
+
+## 14.5 Venenengel in die Regeneration aufgenommen
+
+Aus dem Eingang: „für recovery wichtig ich habe einen venen engel zuhause." Als optionale Karte
+aufgenommen, ehrlich eingeordnet: angenehm und unschädlich, aber ohne belegten Erholungsnutzen.
+Eine PubMed-Suche am 10.09.2026 zu Beinhochlagerung und Erholung nach Belastung bei Sportlern
+findet keinen passenden Treffer — das steht so auf der Karte. (Laut PubMed keine einschlägige
+Studie; Suche dokumentiert, keine Quelle behauptet.)
