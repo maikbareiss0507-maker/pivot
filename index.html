@@ -193,6 +193,12 @@ body[data-theme="dark"] .seg button.on{box-shadow:inset 0 0 0 1px var(--line-str
 .now .btn.acc{background:var(--ink-acc);color:#062012;margin-top:14px}
 .now .btn{margin-top:14px}
 .now .btn:not(.acc){background:rgba(255,255,255,.12);color:var(--ink-text)}
+/* Zwei gleichwertige Knöpfe im Hero (Einheit starten · Kurzversion) */
+.now .btnrow{margin-top:14px}
+.now .btnrow .btn{margin-top:0;flex:1 1 0;background:var(--ink-acc);color:#062012}
+.setrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.setrow .pill{min-width:44px;justify-content:center;font-variant-numeric:tabular-nums}
+.setrow .pill.on::before{display:none}
 .phase-h{font-size:14px;color:var(--muted);margin:-2px 0 12px;line-height:1.45}
 .rest{display:flex;gap:8px;overflow-x:auto;padding:0 58px 2px 0;margin-bottom:12px}
 .rest::-webkit-scrollbar{display:none}
@@ -434,7 +440,7 @@ body[data-theme="dark"] .seg button.on{box-shadow:inset 0 0 0 1px var(--line-str
    ========================================================================= */
 
 const KEY='pivot.v1';
-const APP_VERSION='6.0';
+const APP_VERSION='6.1';
 const DEF={
   profile:{sex:'m',age:25,height:183,weight:84,pal:1.5,protPerKg:1.8,carbPerKg:5,
            goal:'maintain',kcalOverride:null},
@@ -470,6 +476,8 @@ const DEF={
             bereich:null, kurz:false, auf:false, aufTag:false, aufOffen:false, aufGen:false}
   },
   fokus:{park:[], log:[], bd:'still'},
+  /* V6.1 Zyklus 1 — nur Getanes; der Plan selbst steht als Konstante im Code */
+  zyk:{ z1:{ done:{}, kurz:{A:0,B:0,C:0}, spr:{}, check:{}, test:{}, live:null } },
   inbox:[],            // {id,t,ts}
   med:{items:null, taken:{}, week:[], biweek:[], seenSafety:false},
   fin:{limit:40, nightFrom:21, konten:[], wish:[], bills:[], log:[]},
@@ -1125,7 +1133,9 @@ function render(){
   document.getElementById('backBtn').style.display=PARENT[VIEW]?'inline-flex':'none';
   const dd=parseISO(DAY);
   document.getElementById('hSub').textContent=
-    (DAY===todayISO()?'':human(DAY)+' · ')+DOW[dd.getDay()]+', '+dd.getDate()+'. '+MON[dd.getMonth()];
+    (()=>{ const f=DOW[dd.getDay()]+', '+dd.getDate()+'. '+MON[dd.getMonth()]; const hu=human(DAY);
+      /* „Gestern · Mo, 21. Sep" — aber nicht „Di, 22. Sep · Di, 22. Sep" */
+      return (DAY===todayISO()||hu===f)?f:hu+' · '+f; })();
   const V={now:vNow, tag:vTag, food:vFood, train:vTrain, me:vMe, more:vMore,
     haus:vHaus, fokus:vFokus, inbox:vInbox, tools:vTools, load:vLoad, beschw:vBeschw,
     med:vMed, journal:vJournal, fin:vFin, week:vWeek, evidenz:vEvidenz, notfall:vNotfall,
@@ -1696,7 +1706,9 @@ function sesRow(s){
     <div class="v">${r0(srpe(s))}</div>
     <button class="x" onclick="delSession('${s.id}')" aria-label="Einheit löschen">✕</button></div>`;
 }
-window.delSession=id=>{ S.sessions=S.sessions.filter(x=>x.id!==id); save(); render(); toast('Einheit gelöscht'); };
+window.delSession=id=>{ S.sessions=S.sessions.filter(x=>x.id!==id);
+  if(S.zyk&&S.zyk.z1) for(const d of Object.keys(S.zyk.z1.done)) if(S.zyk.z1.done[d].sid===id) delete S.zyk.z1.done[d];
+  save(); render(); toast('Einheit gelöscht'); };
 
 /* Wellness-Sheet */
 function wellSheet(){
@@ -2002,6 +2014,459 @@ window.manualNext=bc=>{
 const RPE_TXT=['','sehr leicht','leicht','moderat','etwas fordernd','fordernd',
   'fordernd+','hart','sehr hart','sehr sehr hart','maximal'];
 
+/* =========================================================================
+   ZYKLUS 1 — Kraft- und Regenerationsplan 14.09.–25.10.2026
+   Quelle: Kraftplan-Zyklus-1.md (zweimal unabhängig geprüft). Der Plan liegt
+   als Konstante im Code; in S steht nur, was getan wurde.
+
+   Regeln, die diesem Modul seine Form geben:
+   - Was heute dran ist, folgt allein aus dem Datum. Es gibt keinen Rückstand.
+   - Kurzversion ist eine vollwertige Einheit und wird als normale Einheit gespeichert.
+   - Muskelkater und ein hartes Montagstraining ändern die Einheit, nie ob sie stattfindet.
+   - Keine Ampel, keine Planerfüllung, keine Wertung.
+   ========================================================================= */
+const KH_STUFEN=[4,6,8,10,12,14,16,18,20,22,24,26,28,30,32.5,35];   /* Annahme: 2-kg-Schritte, wie im Plan */
+const CYC1={
+  id:'z1', start:'2026-09-14', end:'2026-10-25', wochen:6, deload:4,
+  A:{ tag:2, name:'Schwere Beine', ort:'Studio', dauer:'50–70 min', typ:'gym',
+      ex:[
+        {n:'Aufwärmen: Rad 5 min, dann 2 leichte Kniebeugesätze', k:'zeit', min:8},
+        {n:'Kniebeuge',                       k:'kraft', s:4, r:3, p:180, w:[90,100,107.5,85,112.5,117.5], bein:true},
+        {n:'Rumänisches Kreuzheben',          k:'kraft', s:3, r:6, p:120, w:[70,80,85,65,87.5,90], bein:true},
+        {n:'Bulgarian Split Squat, je Bein',  k:'kraft', s:2, r:6, p:120, w:[12,14,16,10,16,18], je:'KH', bein:true},
+        {n:'Bankdrücken',                     k:'kraft', s:3, r:5, p:120, w:[65,70,72.5,60,75,77.5]},
+        {n:'Klimmzug',                        k:'kraft', s:3, r:5, p:120, w:[0,5,10,0,12.5,15], zusatz:true}
+      ],
+      deload:{1:-1,2:-1,4:-1,5:-1},
+      kurz:[{ref:1,s:3,r:3},{ref:2,s:2,r:5}],
+      alt:[{ref:4},{ref:5},{n:'10 min lockere Bewegung ohne Widerstand — gehen oder Rad', k:'zeit', min:10}] },
+  B:{ tag:4, name:'Schnellkraft und Landungen', ort:'Studio, danach Sauna', dauer:'50–70 min', typ:'gym',
+      ex:[
+        {n:'Aufwärmen: Rad 5 min, Hüfte und Sprunggelenk lockern', k:'zeit', min:8},
+        {n:'Hang Clean, maximal schnell',     k:'kraft', s:4, r:2, p:120, w:[40,45,50,40,52.5,55], bein:true},
+        {n:'Sprungkniebeuge',                 k:'kg0',   s:4, r:3, p:120, w:[null,null,30,null,35,40], sprung:true},
+        {n:'Landungen',                       k:'zahl',  p:90, sprung:true,
+           wo:['Von der Box steigen, beidbeinig landen, stehen bleiben · 3 × 5',
+               'Von der Box steigen, beidbeinig landen · 3 × 6',
+               'Beidbeinig abspringen, einbeinig landen, stehen bleiben · 3 × 4 je Bein',
+               'Beidbeinige Landungen · 2 × 5',
+               'Seitlich über eine Linie, beidbeinig 3 × 6 — dazu einbeinig landen 2 × 4 je Bein',
+               'Seitlich über eine Linie, beidbeinig 3 × 6 — dazu einbeinig landen 2 × 4 je Bein'],
+           anz:[15,18,24,10,34,34], rpe:[4,5,6,3,6,7], einheit:'Kontakte'},
+        {n:'Nordic Hamstring',                k:'kg0',   p:120, sr:[[1,3],[2,4],[3,5],[1,3],[3,5],[3,5]], bein:true},
+        {n:'Chin-Up',                         k:'kraft', s:3, r:6, p:120, w:[10,15,20,0,20,22.5], zusatz:true}
+      ],
+      deload:{1:-1,5:-1},
+      kurz:[{ref:2,s:3,r:3},{ref:5,s:3,r:6}],
+      alt:[{ref:5},{n:'Bankdrücken', k:'kraft', s:3, r:5, p:120, w:[65,70,72.5,60,75,77.5]},
+           {n:'10 min lockere Bewegung ohne Widerstand — gehen oder Rad', k:'zeit', min:10}] },
+  C:{ tag:5, name:'Antritt in der Halle', ort:'Halle, mit Evi', dauer:'60 min', typ:'other', pflicht:false,
+      ex:[
+        {n:'Aufwärmen: Springseil, Lauf-ABC, lockeres Hüpfen', k:'zeit', min:10},
+        {n:'Antritte aus dem Stand, 10 m',   k:'zahl', anz:6, p:90,  rpe:9, einheit:'Läufe'},
+        {n:'Antritte aus dem Stand, 20 m',   k:'zahl', anz:4, p:120, rpe:9, einheit:'Läufe'},
+        {n:'Richtungswechsel',               k:'zahl', p:90, einheit:'Läufe',
+           wo:['Zwei Hütchen, 5 m — hinlaufen, wenden, zurück. Du weißt vorher, wohin. 4 je Standbein',
+               'Zwei Hütchen, 5 m — hinlaufen, wenden, zurück. Du weißt vorher, wohin. 4 je Standbein',
+               'Zwei Hütchen, 5 m — hinlaufen, wenden, zurück. Du weißt vorher, wohin. 4 je Standbein',
+               'Zwei Hütchen, 5 m — nur 4 Läufe, locker',
+               'Evi steht am Wendepunkt und zeigt kurz vorher die Richtung',
+               'Evi steht am Wendepunkt und zeigt kurz vorher die Richtung'],
+           anz:[8,8,8,4,6,6], rpe:[8,8,8,6,8,8]},
+        {n:'Locker auslaufen', k:'zeit', min:5}
+      ],
+      kurz:[{ref:0,min:5},{ref:1}],
+      /* Stufe 3 in der Halle: der Plan nennt dafür nichts — „Oberkörper voll" gibt es dort nicht.
+         Annahme nach Planlogik: nur die lockere Bewegung, mit Evi. Von Maik zu bestätigen. */
+      alt:[{n:'10 min lockere Bewegung ohne Widerstand — gehen, mit Evi', k:'zeit', min:10}],
+      sonder:{1:'entfaellt',2:'test1',4:'test2',5:'entfaellt'} },
+  spr:{ tage:[2,4,0], min:10, stufen:[
+    {ab:1, u:[['Einbeinstand, fester Boden, Augen offen','3 × 30 s je Bein'],
+              ['Fersenheben beidbeinig','3 × 15'],
+              ['Fuß nach außen gegen das Miniband','3 × 15 je Seite']]},
+    {ab:3, u:[['Einbeinstand, Augen geschlossen — dann mit Kopfdrehung','3 × 20 s je Bein'],
+              ['Fersenheben einbeinig','3 × 12 je Bein'],
+              ['Miniband stärker','3 × 15']]},
+    {ab:5, u:[['Einbeinstand auf der Matte, dabei einen Ball hin und her werfen','3 × 30 s je Bein'],
+              ['Fersenheben einbeinig mit 10 kg Kurzhantel','3 × 10'],
+              ['Auf einem Bein stehen, mit dem anderen in drei Richtungen weit antippen','3 × 5 je Richtung']]} ] },
+  tests:{t1:'2026-09-25', t2:'2026-10-09', schwelle:0.04}
+};
+
+/* ---------- Zustand ---------- */
+const zk=()=>S.zyk.z1;
+function zykWoche(day){ const d=Math.floor((parseISO(day)-parseISO(CYC1.start))/864e5);
+  if(d<0) return null; const w=Math.floor(d/7)+1; return w>CYC1.wochen?null:w; }
+function zykHeute(day){
+  const w=zykWoche(day); if(!w) return null;
+  const dow=parseISO(day).getDay();
+  const o={woche:w, unit:null, test:null, spr:CYC1.spr.tage.includes(dow), check:dow===1, entfaellt:false};
+  if(dow===2) o.unit='A';
+  else if(dow===4) o.unit='B';
+  else if(dow===5){ const s=CYC1.C.sonder[w];
+    if(s==='entfaellt') o.entfaellt=true;
+    else if(s==='test1'){ o.test='t1'; o.unit='C'; }
+    else if(s==='test2'){ o.test='t2'; }
+    else o.unit='C'; }
+  return o;
+}
+function zykNext(day){ for(let i=1;i<=14;i++){ const d=addDays(day,i); const h=zykHeute(d);
+  if(h&&(h.unit||h.test)) return {day:d, ...h}; } return null; }
+function zykVor(){ return DAY<CYC1.start && DAY>=addDays(CYC1.start,-14); }
+
+/* Gewicht auf das runden, was im Studio wirklich liegt */
+function zykRund(w,ex){ if(w==null) return null;
+  if(ex.je==='KH') return KH_STUFEN.reduce((a,b)=>Math.abs(b-w)<Math.abs(a-w)?b:a);
+  return Math.round(w/2.5)*2.5; }
+
+/* ---------- Die Einheit, fertig gerechnet ----------
+   variante: 'voll' | 'kurz' | 'alt'   kater: 1|2|3   montag: null|'locker'|'hart'|'brutal'
+   Liefert {ex:[…], label, grund} — label ist 'voll', 'kurz', 'alt' oder 'angepasst'. */
+function zykPlan(unit, woche, o){
+  const U=CYC1[unit], wi=woche-1, deload=woche===CYC1.deload;
+  let variante=o.variante||'voll', kater=o.kater||1, montag=o.montag||null;
+  const grund=[];
+  if(kater===3){ variante='alt'; grund.push(unit==='C'?'Muskelkater in Ruhe → nur lockere Bewegung, keine Antritte, keine Wenden':'Muskelkater in Ruhe → Oberkörper, keine Beine, keine Sprünge'); }
+  else if(montag==='brutal'){ variante='kurz'; grund.push('Montag brutal → Kurzversion, Kniebeuge mit leichtem Gewicht'); }
+  /* Guard: eine fehlende Fassung darf nie werfen — dann die nächstkleinere */
+  const src = variante==='alt' ? (U.alt||U.kurz) : variante==='kurz' ? (U.kurz||U.ex.map((_,i)=>({ref:i}))) : null;
+  let list;
+  if(variante==='voll') list=U.ex.map((e,i)=>({...e, _i:i}));
+  else list=src.map(a=>a.ref!=null?{...U.ex[a.ref], _i:a.ref, ...(a.s?{s:a.s}:{}), ...(a.r?{r:a.r}:{}), ...(a.min?{min:a.min}:{})}:{...a, _i:-1});
+
+  const out=list.map(e=>{
+    const r={...e};
+    if(e.wo) r.wo=e.wo[wi];
+    if(Array.isArray(e.anz)) r.anz=e.anz[wi];
+    if(Array.isArray(e.rpe)) r.rpe=e.rpe[wi];
+    if(e.sr){ r.s=e.sr[wi][0]; r.r=e.sr[wi][1]; }
+    if(Array.isArray(e.w)) r.w=e.w[wi];
+    /* Deload gilt für die volle und die Oberkörper-Fassung; Kurz ist schon reduziert */
+    if(deload && variante!=='kurz' && e._i>=0){ const d=U.deload&&U.deload[e._i];
+      if(d && r.s) r.s=Math.max(1,r.s+d); }
+    /* Montag brutal: „Kniebeuge 3 × 3 mit leichtem Gewicht" — der Plan nennt keine Zahl, die App erfindet keine */
+    if(montag==='brutal' && r.n==='Kniebeuge'){ r.w=null; r.frei=true; }
+    return r;
+  });
+
+  /* Muskelkater 2: Gewicht × 0,8, ein Satz weniger, Sprünge weg.
+     Zusatzgewicht (Klimmzug, Chin-Up) bleibt — dort nur ein Satz weniger. */
+  let res=out;
+  if(kater===2 && variante!=='alt'){
+    const trifft = res.some(e=>e.sprung || e.k==='kraft' || e.k==='kg0');
+    if(trifft) grund.push('Muskelkater → 20 % weniger, ein Satz weniger, keine Sprünge');
+    else grund.push('Muskelkater → Einheit C hat kein Gewicht und keine Sprünge; ob Wenden dann laufen sollen, steht nicht im Plan');
+    res=res.filter(e=>!e.sprung).map(e=>{ const r={...e};
+      if(r.k==='kraft'||r.k==='kg0'){ if(!r.zusatz && !r.frei && r.w!=null) r.w=zykRund(r.w*0.8,r); if(r.s) r.s=Math.max(1,r.s-1); }
+      return r; });
+  }
+  /* Montag hart: Kniebeuge 2 Sätze, −10 %. Zusammen mit Muskelkater 2 gilt die
+     stärkere Reduktion (× 0,8), nicht das Produkt — Maiks Entscheidung. */
+  if(unit==='A' && montag==='hart' && variante==='voll'){
+    grund.push('Montag hart → Kniebeuge 2 Sätze, 10 % weniger');
+    res=res.map(e=>{ if(e.n!=='Kniebeuge') return e; const r={...e}; r.s=Math.min(r.s,2);
+      if(kater!==2) r.w=zykRund(r.w*0.9,r); return r; });
+  }
+  const label = variante==='alt' ? (unit==='C'?'locker':'Oberkörper') : variante==='kurz' ? 'Kurzversion' : (grund.length?'angepasst':'wie geplant');
+  return {ex:res, variante, label, grund, deload:deload&&variante!=='kurz'};
+}
+
+/* ---------- Anzeige-Helfer ---------- */
+const zykPause=p=>p%60===0?(p/60)+' min':p+' s';
+function zykZiel(e){
+  if(e.k==='zeit') return `${e.min} min`;
+  if(e.k==='zahl') return `${e.anz} ${e.einheit||''} · Anstrengung ${e.rpe}`;
+  const w = e.frei ? 'leichtes Gewicht — du wählst' : e.w==null ? (e.k==='kg0'?'ohne Gewicht':'Körpergewicht')
+          : e.zusatz ? (e.w?`+${e.w} kg`:'Körpergewicht')
+          : e.je==='KH' ? `2 × ${e.w} kg` : `${e.w} kg`;
+  return `${e.s} × ${e.r} · ${w}`;
+}
+function zykKurzSatz(unit,woche){ const P=zykPlan(unit,woche,{variante:'voll'});
+  return P.ex.filter(e=>e.k!=='zeit').map(e=>e.n.replace(/, (je Bein|maximal schnell)$/,'').replace(/^Antritte aus dem Stand, /,'Antritte ')).join(' · '); }
+
+/* ---------- Hero im Einheiten-Segment ---------- */
+function zykHero(){
+  const z=zk(), d=DAY;
+  if(z.live){ const v=zykLiveView(); if(v) return v; }
+  if(d>CYC1.end || d<addDays(CYC1.start,-14)) return '';
+  if(zykVor()){
+    return `<div class="now">
+      <div class="now-k">Zyklus 1 · startet Dienstag, 15. September</div>
+      <div class="now-t">Einheit A — ${CYC1.A.name}</div>
+      <div class="now-s">${zykKurzSatz('A',1)} · ${CYC1.A.ort}, ${CYC1.A.dauer}</div>
+      <div class="btnrow"><button class="btn" onclick="zykVorschau('A',1)">Einheit ansehen</button></div></div>`;
+  }
+  const h=zykHeute(d); if(!h) return '';
+  const done=z.done[d];
+  if(done){
+    return `<div class="card">
+      <h2>Einheit ${done.unit} · Woche ${done.woche} — erledigt</h2>
+      <div class="small muted">${done.variante==='kurz'?'Kurzversion. Zählt voll.':done.variante==='alt'?(done.unit==='C'?'Lockere Bewegung.':'Oberkörper-Einheit.'):(done.kater===2||done.montag==='hart')?'Angepasst gemacht.':'Wie geplant.'}
+        ${zykNext(d)?` Als Nächstes: Einheit ${zykNext(d).unit||'—'} am ${human(zykNext(d).day)}.`:''}</div></div>`;
+  }
+  if(h.test && !h.unit){
+    return `<div class="now">
+      <div class="now-k">Zyklus 1 · Woche ${h.woche} · Messtermin ${h.test==='t1'?'1':'2'}</div>
+      <div class="now-t">5-Meter-Sprint und Wendetest</div>
+      <div class="now-s">Handyvideo, 120 oder 240 Bilder pro Sekunde. Sprint zwei Versuche, Wende zwei je Seite — die bessere Zeit zählt. Danach nichts mehr.</div>
+      <div class="btnrow"><button class="btn" onclick="openSheet(zykTestSheet('${h.test}'))">Werte eintragen</button></div></div>`;
+  }
+  if(!h.unit){
+    const nx=zykNext(d);
+    return `<div class="card">
+      <h2>${h.entfaellt?'Heute keine Einheit — Vortag eines Spiels':'Heute keine Einheit'}</h2>
+      <div class="small muted">${nx?`Als Nächstes: Einheit ${nx.unit||'Messtermin'} · ${human(nx.day)}`:'Zyklus 1 ist durch.'}</div></div>`;
+  }
+  const U=CYC1[h.unit];
+  return `${h.test?`<div class="card tight"><div class="row between"><span class="small"><b>Messtermin 1</b> vor der Einheit</span>
+      <button class="btn sm" onclick="openSheet(zykTestSheet('t1'))">Werte eintragen</button></div></div>`:''}
+    <div class="now">
+      <div class="now-k">Zyklus 1 · Woche ${h.woche} von 6${h.woche===CYC1.deload?' · Deload':''}</div>
+      <div class="now-t">Einheit ${h.unit} — ${U.name}</div>
+      <div class="now-s">${zykKurzSatz(h.unit,h.woche)} · ${U.ort}, ${U.dauer}</div>
+      <div class="btnrow">
+        <button class="btn" onclick="zykStart('voll')">Einheit starten</button>
+        <button class="btn" onclick="zykStart('kurz')">Kurzversion</button></div></div>`;
+}
+window.zykVorschau=(unit,woche)=>{ const P=zykPlan(unit,woche,{variante:'voll'});
+  openSheet(`<h2>Einheit ${unit} · Woche ${woche}</h2>
+    ${P.ex.map(e=>`<div class="item"><div class="g"><b>${esc(e.n)}</b><span>${esc(zykZiel(e))}${e.wo?' · '+esc(e.wo):''}${e.p?' · Pause '+zykPause(e.p):''}</span></div></div>`).join('')}
+    <div class="note">Nie bis zum Muskelversagen. Immer zwei Wiederholungen in Reserve.</div>
+    <div class="spacer"></div><button class="btn" onclick="closeSheet()">Zurück</button>`); };
+
+/* ---------- Start: Montag-Frage (nur Dienstag), dann Muskelkater-Frage ---------- */
+let ZYK_START=null;
+window.zykStart=variante=>{ const h=zykHeute(DAY); if(!h||!h.unit) return;
+  ZYK_START={variante, unit:h.unit, woche:h.woche, montag:null, kater:null};
+  if(h.unit==='A') openSheet(zykMontagSheet()); else openSheet(zykKaterSheet()); };
+function zykFrage(titel, sub, opts, fn){
+  return `<h2>${titel}</h2><div class="small muted" style="margin-bottom:14px">${sub}</div>
+    ${opts.map(([v,l,s])=>`<button class="btn" style="margin-bottom:8px;min-height:56px;justify-content:flex-start;text-align:left"
+      onclick="${fn}('${v}')"><span><b>${l}</b>${s?`<br><span class="small muted" style="font-weight:400">${s}</span>`:''}</span></button>`).join('')}`;
+}
+function zykMontagSheet(){ return zykFrage('Wie war Montag?','Das Mannschaftstraining entscheidet, wie Einheit A heute aussieht — nicht, ob.',
+  [['locker','Locker — ich stehe normal auf','Einheit wie geplant'],
+   ['hart','Hart — Beine schwer, aber ich funktioniere','Kniebeuge 2 Sätze, 10 % weniger'],
+   ['brutal','Brutal — morgens komplett platt','Kurzversion, 15 Minuten']],'zykMontag'); }
+window.zykMontag=v=>{ ZYK_START.montag=v; openSheet(zykKaterSheet()); };
+function zykKaterSheet(){ return zykFrage('Muskelkater?','Eine Frage, dann geht es los. Muskelkater ist nie ein Grund, nicht hinzugehen — nur ein Grund, anders zu trainieren.',
+  [['1','Merke ich, gehe aber normal die Treppe runter','Einheit unverändert'],
+   ['2','Treppe runter ist unangenehm','20 % weniger, ein Satz weniger, keine Sprünge'],
+   ['3','Tut auch in Ruhe weh','Oberkörper voll, 10 Minuten lockere Bewegung']],'zykKater')
+  +`<div class="note">Länger als vier bis fünf Tage, mit Schwellung, dunklem Urin oder halber Kraft: Das ist kein Muskelkater mehr. Dann zum Arzt, nicht ins Studio.</div>`; }
+window.zykKater=v=>{ ZYK_START.kater=+v;
+  zk().live={...ZYK_START, day:DAY, sets:{}, ts:Date.now()}; ZYK_START=null; save(); closeSheet(); render(); window.scrollTo(0,0); };
+
+/* ---------- Laufende Einheit ---------- */
+function zykLiveView(){
+  const L=zk().live;
+  if(!L || !CYC1[L.unit] || !L.woche){ zk().live=null; save(); return ''; }
+  const P=zykPlan(L.unit,L.woche,L);
+  let h=`<div class="row between xs muted" style="margin:0 4px 4px">
+    <span>Einheit ${L.unit} · Woche ${L.woche} · ${P.label}</span>
+    <button class="btn sm ghost" style="min-height:28px;padding:0 8px" onclick="zykAbbruch()">Abbrechen</button></div>
+  ${P.grund.length?`<div class="xs muted" style="margin:0 4px 10px">${P.grund.join(' · ')}</div>`:'<div style="height:6px"></div>'}`;
+  P.ex.forEach((e,i)=>{
+    const got=L.sets[i]||[];
+    if(e.k==='zeit'){
+      h+=`<div class="card tight"><div class="row between"><div class="g"><b style="font-size:16px;font-weight:600">${esc(e.n)}</b>
+        <div class="small muted">${e.min} min</div></div>
+        <button class="tick ${got[0]?'on':''}" onclick="zykZeit(${i})" aria-label="${got[0]?'erledigt':'offen'}">${got[0]?'&#10003;':''}</button></div></div>`;
+      return;
+    }
+    if(e.k==='zahl'){
+      const g=got[0];
+      h+=`<div class="card">
+        <div class="row between"><h2 style="margin:0">${esc(e.n)}</h2>${e.p?`<span class="small muted">Pause ${e.p>=60?(e.p/60)+' min':e.p+' s'}</span>`:''}</div>
+        <div class="small muted">${esc(zykZiel(e))}${e.wo?`<br>${esc(e.wo)}`:''}</div>
+        <div class="setrow">
+          <button class="pill ${g?'on':''}" onclick="zykZahl(${i})">${g?`✓ ${g.anz} · Anstrengung ${g.rpe}`:`${e.anz} ${e.einheit||''} eintragen`}</button>
+          ${g?`<button class="pill" onclick="zykZahlEdit(${i})">Ändern</button>`:''}</div></div>`;
+      return;
+    }
+    h+=`<div class="card">
+      <div class="row between"><h2 style="margin:0">${esc(e.n)}</h2><span class="small muted">Pause ${e.p>=60?(e.p/60)+' min':e.p+' s'}</span></div>
+      <div class="small muted">${esc(zykZiel(e))}</div>
+      <div class="setrow">${Array.from({length:e.s},(_,j)=>{ const st=got[j];
+        return `<button class="pill ${st?'on':''}" onclick="${st?`zykSatzEdit(${i},${j})`:`zykSatz(${i},${j})`}"
+          aria-label="Satz ${j+1}${st?' erledigt':''}">${st?`✓ ${st.r}×${st.w!=null?st.w:'–'}`:j+1}</button>`;}).join('')}</div>
+    </div>`;
+  });
+  h+=`<button class="btn acc" onclick="openSheet(zykEndeSheet())">Einheit abschließen</button>
+  <div class="note" style="text-align:center">Auch wenn nicht alle Sätze stehen. Zwei Wiederholungen in Reserve, immer.</div>
+  <div style="height:8px"></div>`;
+  return h;
+}
+function zykSetsOf(i){ const L=zk().live; return L.sets[i]=L.sets[i]||[]; }
+window.zykZeit=i=>{ const a=zykSetsOf(i); a[0]=!a[0]; save(); render(); };
+window.zykSatz=(i,j)=>{ const L=zk().live, e=zykPlan(L.unit,L.woche,L).ex[i];
+  zykSetsOf(i)[j]={w:e.w, r:e.r, rir:2}; save(); render(); };
+window.zykSatzEdit=(i,j)=>{ const L=zk().live, e=zykPlan(L.unit,L.woche,L).ex[i], st=zykSetsOf(i)[j];
+  openSheet(`<h2>${esc(e.n)} · Satz ${j+1}</h2>
+    <div class="inline">
+      <label class="f"><span>Gewicht (kg)</span><input type="number" step="0.5" inputmode="decimal" id="zW" value="${st.w!=null?st.w:''}" placeholder="ohne"></label>
+      <label class="f"><span>Wiederholungen</span><input type="number" inputmode="numeric" id="zR" value="${st.r}"></label>
+      <label class="f"><span>In Reserve</span><input type="number" inputmode="numeric" id="zRIR" value="${st.rir}"></label>
+    </div>
+    <div class="btnrow">
+      <button class="btn acc" onclick="zykSatzSave(${i},${j})">Speichern</button>
+      <button class="btn ghost" onclick="zykSatzDel(${i},${j})">Satz löschen</button></div>`); };
+window.zykSatzSave=(i,j)=>{ const w=document.getElementById('zW').value;
+  zykSetsOf(i)[j]={w:w===''?null:parseFloat(w), r:parseInt(document.getElementById('zR').value)||0,
+    rir:parseInt(document.getElementById('zRIR').value)||0}; save(); closeSheet(); render(); };
+window.zykSatzDel=(i,j)=>{ zykSetsOf(i)[j]=null; save(); closeSheet(); render(); };
+window.zykZahl=i=>{ const L=zk().live, e=zykPlan(L.unit,L.woche,L).ex[i];
+  zykSetsOf(i)[0]={anz:e.anz, rpe:e.rpe}; save(); render(); };
+window.zykZahlEdit=i=>{ const L=zk().live, e=zykPlan(L.unit,L.woche,L).ex[i], g=zykSetsOf(i)[0]||{anz:e.anz,rpe:e.rpe};
+  openSheet(`<h2>${esc(e.n)}</h2>
+    <label class="f"><span>Anzahl ${e.einheit||''}</span><input type="number" inputmode="numeric" id="zN" value="${g.anz}"></label>
+    <div class="small" style="font-weight:600;margin-bottom:4px">Anstrengung 1–10</div>
+    <div class="scale" id="zScale">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="${g.rpe===n?'on':''}" style="min-height:44px;font-size:14px" onclick="[...this.parentNode.children].forEach(b=>b.classList.remove('on'));this.classList.add('on')">${n}</button>`).join('')}</div>
+    <div class="spacer"></div>
+    <div class="btnrow"><button class="btn acc" onclick="zykZahlSave(${i})">Speichern</button>
+      <button class="btn ghost" onclick="zykSetsOf(${i})[0]=null;save();closeSheet();render()">Löschen</button></div>`); };
+window.zykZahlSave=i=>{ const on=document.querySelector('#zScale button.on');
+  zykSetsOf(i)[0]={anz:parseInt(document.getElementById('zN').value)||0, rpe:on?parseInt(on.textContent):0};
+  save(); closeSheet(); render(); };
+window.zykAbbruch=()=>{ openSheet(`<h2>Einheit abbrechen?</h2>
+  <div class="small muted" style="margin-bottom:14px">Die eingetragenen Sätze gehen verloren. Wenn du schon etwas gemacht hast, ist „Abschließen" ehrlicher — auch halb zählt.</div>
+  <div class="btnrow"><button class="btn" onclick="closeSheet()">Weitermachen</button>
+    <button class="btn ghost danger" onclick="zk().live=null;save();closeSheet();render()">Abbrechen</button></div>`); };
+
+/* ---------- Abschluss: eine Zahl, dann als normale Einheit speichern ---------- */
+function zykEndeSheet(){ const L=zk().live, min=L.variante==='kurz'||zykPlan(L.unit,L.woche,L).variante==='kurz'?15:60;
+  return `<h2>Einheit abschließen</h2>
+  <label class="f"><span>Dauer in Minuten</span><input type="number" inputmode="numeric" id="zMin" value="${min}"></label>
+  <div class="small" style="font-weight:600;margin-bottom:2px">Anstrengung der ganzen Einheit, 1–10</div>
+  <div class="xs muted" style="margin-bottom:4px">Wie hart war es insgesamt?</div>
+  <div class="scale" id="zEnd">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button style="min-height:44px;font-size:14px" onclick="[...this.parentNode.children].forEach(b=>b.classList.remove('on'));this.classList.add('on')">${n}</button>`).join('')}</div>
+  <div class="spacer"></div>
+  <button class="btn acc" onclick="zykFinish()">Speichern</button>`; }
+window.zykFinish=()=>{
+  const L=zk().live; if(!L) return;
+  const tag=L.day||DAY;   /* Einheit über Mitternacht beendet → gehört zum Starttag */
+  const on=document.querySelector('#zEnd button.on'); const rpe=on?parseInt(on.textContent):0;
+  if(!rpe){ toast('Anstrengung fehlt'); return; }
+  const min=parseInt(document.getElementById('zMin').value)||15;
+  const P=zykPlan(L.unit,L.woche,L), U=CYC1[L.unit];
+  const ex=[], zahl=[];
+  P.ex.forEach((e,i)=>{ const got=(L.sets[i]||[]).filter(Boolean);
+    if(!got.length) return;
+    if(e.k==='zahl') zahl.push({n:e.n, anz:got[0].anz, rpe:got[0].rpe});
+    else if(e.k!=='zeit') ex.push({n:e.n, sets:got.map(s=>({w:s.w==null?null:s.w, r:s.r, rir:s.rir}))}); });
+  const label=`Einheit ${L.unit} · Woche ${L.woche}`+(P.variante==='kurz'?' · Kurzversion':P.variante==='alt'?(L.unit==='C'?' · lockere Bewegung':' · Oberkörper'):'');
+  const s={id:uid(), date:tag, type:U.typ, label, min, rpe, note:'', ex, zahl, plan:{z:'z1',unit:L.unit,woche:L.woche,variante:P.variante,kater:L.kater,montag:L.montag}};
+  S.sessions.push(s);
+  const z=zk();
+  z.done[tag]={unit:L.unit, woche:L.woche, variante:P.variante, kater:L.kater, montag:L.montag, sid:s.id};
+  /* Kurz-Zähler: hintereinander je Einheit; eine volle Einheit setzt ihn auf null */
+  if(P.variante==='kurz') z.kurz[L.unit]=(z.kurz[L.unit]||0)+1;
+  else if(P.variante==='voll') z.kurz[L.unit]=0;
+  z.live=null; save(); closeSheet(); render(); window.scrollTo(0,0);
+  toast(P.variante==='kurz'?'Kurzversion gespeichert — zählt voll':'Einheit gespeichert');
+};
+
+/* ---------- Sprunggelenkblock ---------- */
+function zykSprCard(){
+  const h=zykHeute(DAY); if(!h||!h.spr) return '';
+  const st=[...CYC1.spr.stufen].reverse().find(s=>h.woche>=s.ab);
+  const nr=CYC1.spr.stufen.indexOf(st)+1;
+  const got=zk().spr[DAY]||[];
+  return `<div class="card">
+    <div class="row between" style="margin-bottom:4px"><h2 style="margin:0">Sprunggelenk · ${CYC1.spr.min} min</h2><span class="small muted">Stufe ${nr}</span></div>
+    ${st.u.map(([n,d],i)=>`<div class="item">
+      <button class="tick ${got[i]?'on':''}" onclick="zykSpr(${i})" aria-label="${got[i]?'erledigt':'offen'}">${got[i]?'&#10003;':''}</button>
+      <div class="g"><b>${esc(n)}</b><span>${esc(d)}</span></div></div>`).join('')}
+    ${nr>=2?'<div class="note">Bei Knieschmerzen die instabile Unterlage weglassen und beim Arzttermin ansprechen.</div>':''}
+  </div>`;
+}
+window.zykSpr=i=>{ const a=zk().spr[DAY]=zk().spr[DAY]||[]; a[i]=!a[i]; save(); render(); };
+
+/* ---------- Wochen-Check, montags ---------- */
+function zykWk(day){ return isoWeek(parseISO(day)); }
+function zykEinheitenLetzte7(day){ let n=0; for(let i=1;i<=7;i++){ if(zk().done[addDays(day,-i)]) n++; } return n; }
+function zykCheckCard(){
+  const h=zykHeute(DAY)||(DAY===addDays(CYC1.end,1)?{woche:6}:null); if(!h) return '';
+  const wk=zykWk(DAY), c=zk().check[wk];
+  const dow=parseISO(DAY).getDay();
+  if(dow!==1 && !c) return '';
+  if(c) return `<div class="card tight"><div class="row between"><span class="small"><b>Wochen-Check</b> erledigt</span>
+    <button class="btn sm ghost" onclick="openSheet(zykCheckSheet())">Ansehen</button></div></div>`;
+  return `<div class="card"><div class="row between"><div><h2 style="margin:0">Wochen-Check</h2>
+    <div class="small muted">Sechs Fragen, drei Minuten.</div></div>
+    <button class="btn sm" onclick="openSheet(zykCheckSheet())">Starten</button></div></div>`;
+}
+function zykCheckSheet(){
+  const wk=zykWk(DAY), c=zk().check[wk]||{}, z=zk();
+  const kurzHinweis=Object.entries(z.kurz).filter(([u,n])=>n>=2).map(([u])=>u);
+  const bw=S.well[DAY]&&S.well[DAY].bw;
+  return `<h2>Wochen-Check</h2>
+  ${kurzHinweis.length?`<div class="card tight" style="background:var(--surface2);margin-bottom:12px"><div class="small">Einheit ${kurzHinweis.join(' und ')}: zweimal hintereinander die Kurzversion. Ist es die Zeit, die Energie oder der Inhalt?</div></div>`:''}
+  <label class="f"><span>1 · Wie viele Einheiten in den letzten sieben Tagen? Kurzversion zählt voll.</span>
+    <div class="chips" id="zkN">${[0,1,2,3].map(n=>`<button class="pill ${(c.n!=null?c.n:zykEinheitenLetzte7(DAY))===n?'on':''}" onclick="[...this.parentNode.children].forEach(b=>b.classList.remove('on'));this.classList.add('on')">${n}</button>`).join('')}</div></label>
+  <label class="f"><span>2 · Körpergewicht heute früh (kg)</span><input type="number" step="0.1" inputmode="decimal" id="zkKg" value="${c.kg!=null?c.kg:(bw||'')}"></label>
+  <div class="small" style="font-weight:600;margin-bottom:4px">3 · Wie fühle ich mich heute, 1–10?</div>
+  <div class="scale" id="zkFeel">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="${c.feel===n?'on':''}" style="min-height:44px;font-size:14px" onclick="[...this.parentNode.children].forEach(b=>b.classList.remove('on'));this.classList.add('on')">${n}</button>`).join('')}</div>
+  <div class="spacer"></div>
+  <label class="f"><span>4 · Bin ich diese Woche umgeknickt?</span>
+    <div class="chips" id="zkUm"><button class="pill ${c.umgeknickt===false?'on':''}" data-v="nein" onclick="[...this.parentNode.children].forEach(b=>b.classList.remove('on'));this.classList.add('on')">Nein</button>
+    <button class="pill ${c.umgeknickt===true?'on':''}" data-v="ja" onclick="[...this.parentNode.children].forEach(b=>b.classList.remove('on'));this.classList.add('on')">Ja</button></div></label>
+  <div class="note" style="margin:-6px 0 12px">Wenn ja: Sprünge, Landungen und Wenden pausieren, bis du wieder normal gehst. Sprunggelenkblock eine Stufe zurück. Kraftarbeit läuft weiter, solange schmerzfrei. Danach dort weiter, wo der Plan steht.</div>
+  <label class="f"><span>5 · Schienbein</span>
+    <div class="chips" id="zkSch">${[['schlechter','Schlechter'],['gleich','Gleich'],['besser','Besser']].map(([v,l])=>`<button class="pill ${c.schien===v?'on':''}" data-v="${v}" onclick="[...this.parentNode.children].forEach(b=>b.classList.remove('on'));this.classList.add('on')">${l}</button>`).join('')}</div></label>
+  <label class="f"><span>6 · Was hat mich diese Woche eine Einheit gekostet?</span>
+    <textarea rows="3" id="zkKostet" placeholder="Zeit, Energie, Inhalt, Angst vor Mittwoch, …">${esc(c.kostet||'')}</textarea></label>
+  <button class="btn acc" onclick="zykCheckSave()">Speichern</button>`;
+}
+window.zykCheckSave=()=>{
+  const pick=id=>{ const b=document.querySelector('#'+id+' .pill.on'); return b?(b.dataset.v!=null?b.dataset.v:b.textContent.trim()):null; };
+  const feel=document.querySelector('#zkFeel button.on');
+  const c={n:pick('zkN')!=null?parseInt(pick('zkN')):null, kg:parseFloat(document.getElementById('zkKg').value)||null,
+    feel:feel?parseInt(feel.textContent):null, umgeknickt:pick('zkUm')==null?null:pick('zkUm')==='ja',
+    schien:pick('zkSch'), kostet:document.getElementById('zkKostet').value.trim(), d:DAY};
+  zk().check[zykWk(DAY)]=c;
+  if(c.kg){ S.well[DAY]=S.well[DAY]||{}; S.well[DAY].bw=c.kg; }
+  save(); closeSheet(); render(); toast('Wochen-Check gespeichert');
+};
+
+/* ---------- Messtermine ---------- */
+function zykTestSheet(t){ const c=zk().test[t]||{};
+  const f=(id,l,v)=>`<label class="f"><span>${l}</span><input type="number" step="0.01" inputmode="decimal" id="${id}" value="${v!=null?v:''}" placeholder="s"></label>`;
+  return `<h2>Messtermin ${t==='t1'?'1':'2'} · ${human(CYC1.tests[t])}</h2>
+  <div class="small muted" style="margin-bottom:12px">Bilder zählen, durch die Bildrate teilen. Zwei Versuche, die bessere Zeit zählt.</div>
+  <div class="small" style="font-weight:600;margin-bottom:4px">5-Meter-Sprint</div>
+  <div class="inline">${f('zt5a','Versuch 1',c.s5&&c.s5[0])}${f('zt5b','Versuch 2',c.s5&&c.s5[1])}</div>
+  <div class="small" style="font-weight:600;margin-bottom:4px">Wendetest, links wenden</div>
+  <div class="inline">${f('ztla','Versuch 1',c.l505&&c.l505[0])}${f('ztlb','Versuch 2',c.l505&&c.l505[1])}</div>
+  <div class="small" style="font-weight:600;margin-bottom:4px">Wendetest, rechts wenden</div>
+  <div class="inline">${f('ztra','Versuch 1',c.r505&&c.r505[0])}${f('ztrb','Versuch 2',c.r505&&c.r505[1])}</div>
+  <div class="small" style="font-weight:600;margin-bottom:4px">Knie zur Wand (cm)</div>
+  <div class="inline"><label class="f"><span>Links</span><input type="number" step="0.5" inputmode="decimal" id="ztkl" value="${c.kzw&&c.kzw.l!=null?c.kzw.l:''}"></label>
+    <label class="f"><span>Rechts</span><input type="number" step="0.5" inputmode="decimal" id="ztkr" value="${c.kzw&&c.kzw.r!=null?c.kzw.r:''}"></label></div>
+  <button class="btn acc" onclick="zykTestSave('${t}')">Speichern</button>`; }
+window.zykTestSave=t=>{ const g=id=>{ const v=document.getElementById(id).value; return v===''?null:parseFloat(v); };
+  zk().test[t]={d:DAY, s5:[g('zt5a'),g('zt5b')], l505:[g('ztla'),g('ztlb')], r505:[g('ztra'),g('ztrb')], kzw:{l:g('ztkl'),r:g('ztkr')}};
+  save(); closeSheet(); render(); toast('Messwerte gespeichert'); };
+const zykBest=a=>{ const v=(a||[]).filter(x=>x!=null&&x>0); return v.length?Math.min(...v):null; };
+function zykTestCard(){
+  const T=zk().test; if(!T.t1&&!T.t2) return '';
+  if(DAY<CYC1.start || DAY>addDays(CYC1.end,14)) return '';
+  const rows=[['5-Meter-Sprint',t=>zykBest(t.s5)],['Wende links',t=>zykBest(t.l505)],['Wende rechts',t=>zykBest(t.r505)],
+              ['Knie zur Wand links',t=>t.kzw&&t.kzw.l],['Knie zur Wand rechts',t=>t.kzw&&t.kzw.r]];
+  const fmt=(v,i)=>v==null?'—':(i<3?v.toFixed(2)+' s':v+' cm');
+  return `<div class="card">
+    <h2>Messtermine</h2>
+    <div class="row between small muted" style="margin-bottom:4px"><span></span><span style="display:flex;gap:28px"><span>${T.t1?human(T.t1.d):'Termin 1'}</span><span>${T.t2?human(T.t2.d):'Termin 2'}</span></span></div>
+    ${rows.map(([n,f],i)=>{ const a=T.t1?f(T.t1):null, b=T.t2?f(T.t2):null;
+      let diff='';
+      if(a!=null&&b!=null&&i<3){ const rel=Math.abs(b-a)/a; diff=rel>=CYC1.tests.schwelle?`${b<a?'−':'+'}${(rel*100).toFixed(1)} %`:'—'; }
+      return `<div class="item"><div class="g"><b>${n}</b>${diff?`<span>Unterschied ${diff}</span>`:''}</div>
+        <div class="v mono" style="font-weight:500">${fmt(a,i)}</div><div class="v mono" style="font-weight:500;min-width:64px">${fmt(b,i)}</div></div>`;}).join('')}
+    <div class="note">Ein Unterschied unter 4 % ist vom Messfehler nicht zu unterscheiden — dann steht hier ein Strich, keine Aussage.
+      ${!T.t2?'Die zweite Messung ist am '+human(CYC1.tests.t2)+'.':''}</div>
+  </div>`;
+}
+
 function vTrain(){
   const seg=`<div class="seg seg3">
     <button class="${trainSeg==='ses'?'on':''}" onclick="setSeg('ses')">Einheiten</button>
@@ -2014,7 +2479,9 @@ function vTrain(){
   const hist=S.sessions.filter(s=>s.date<DAY&&s.date>=addDays(DAY,-14))
     .sort((a,b)=>b.date.localeCompare(a.date));
   const vol=volumeWeek(DAY);
-  return seg+`
+  const zyk = zykHero()+zykSprCard()+zykCheckCard()+zykTestCard();
+  if(zk().live) return seg+zyk;
+  return seg+zyk+`
   <div class="card">
     <div class="row between" style="margin-bottom:8px"><h2 style="margin:0">${human(DAY)}</h2>
       ${ses.length?`<span class="small muted">Tageslast ${r0(loadOn(DAY))} ${Q('srpe')}</span>`:''}</div>

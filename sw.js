@@ -1,5 +1,5 @@
 /* Pivot Service Worker — App-Shell offline, API immer live */
-const CACHE = 'pivot-v60';
+const CACHE = 'pivot-v61';
 const SHELL = [
   './', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'
