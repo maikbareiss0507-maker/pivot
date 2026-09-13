@@ -7,7 +7,7 @@
      Open Food Facts verlassen. Selbst eingeschleuster Code kann damit
      nichts an einen fremden Server senden. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: mediastream:; connect-src 'self' https://world.openfoodfacts.org; object-src 'none'; base-uri 'none'">
-<meta name="theme-color" content="#f4f5f7">
+<meta name="theme-color" content="#f1ece2">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Pivot — Training, Last & Ernährung</title>
@@ -23,21 +23,26 @@
    Klassennamen bleiben, nur die Gestalt ändert sich.
    ===================================================================== */
 :root{
+  /* V8 „Tinte & Papier" (Maiks Wahl, 13.09.): warmes Papier statt Klinikweiß.
+     Zwei Töne mit Bedeutung — Kupfer = Handlung und Navigation, Ocker = Pflicht
+     und Fortschritt. Alle Paare ≥ 4,5:1 gegen ihren Grund, geprüft. */
   /* Flächen */
-  --bg:#f4f5f7; --surface:#ffffff; --surface2:#eef0f4; --line:#e3e6eb; --line-strong:#6f7a88;
+  --bg:#f1ece2; --surface:#fbf8f2; --surface2:#ece5d7; --line:#d9cfbc; --line-strong:#8c8271;
   /* Text */
-  --text:#17202b; --muted:#55606e; --dim:var(--muted);
-  /* Akzent — genau einer */
-  --acc:#0b7a44; --acc-soft:#dff5e8; --acc-text:#0a6b3b; --acc-dim:var(--acc-soft);
+  --text:#1c1a17; --muted:#5d564b; --dim:var(--muted);
+  /* Akzent: Kupfer */
+  --acc:#7a3a1c; --acc-soft:#f4e3da; --acc-text:#7a3a1c; --acc-dim:var(--acc-soft);
   --acc-ink:#ffffff;              /* Text auf --acc */
+  /* Zweiter Ton: Ocker — Pflicht, Fortschritt, Wochen-Check */
+  --ocker:#8a5a12; --ocker-soft:#f3e6c9; --ocker-text:#6f4708; --ocker-line:#dcc48c; --ocker-ink:#ffffff;
   /* Hinweis / Warnung — nie Rot für Bereitschaft */
-  --warn:#7a4d00; --warn-soft:#fff4dc; --warn-line:#f0d18a;
+  --warn:#8a4a12; --warn-soft:#f7e6cf; --warn-line:#e4c393;
   --warn-ink:#ffffff;             /* Text auf --warn — im dunklen Thema dunkel */
   /* Rot nur fuer echtes Loeschen. Blau und Violett sind mit V7 entfallen —
      sie waren die fuenfte und sechste Buntfarbe auf einem Bildschirm. */
   --red:#b42323; --amber:var(--warn);
   /* Ink — die eine dunkle Fläche (Hero) */
-  --ink:#1b2431; --ink-text:#ffffff; --ink-muted:#b8c2d0; --ink-acc:#5ee39a; --ink-warn:#ffd27a;
+  --ink:#2a2320; --ink-text:#fbf8f2; --ink-muted:#c9bfb2; --ink-acc:#e9b955; --ink-warn:#f2c98a;
   /* Schrift */
   /* Fuenf Stufen, drei Gewichte (400/600/700). Untergrenze 13 px.
      Zwei dokumentierte Ausnahmen: .clock (Vollbild-Timer) und .chart text
@@ -61,13 +66,15 @@
   --tap:44px;
   color-scheme:light;
 }
+/* Dunkel = Tinte auf Nachtgrund: dieselben zwei Töne, warm gehalten. */
 body[data-theme="dark"]{
-  --bg:#0f1319; --surface:#181d26; --surface2:#222937; --line:#2f3745; --line-strong:#8791a0;
-  --text:#eef2f7; --muted:#a3adbb;
-  --acc:#4ade80; --acc-soft:#173224; --acc-text:#7fe3a6; --acc-ink:#06210f;
+  --bg:#171411; --surface:#1f1b17; --surface2:#2a2521; --line:#3a332c; --line-strong:#8f8577;
+  --text:#efe9df; --muted:#b3a89a;
+  --acc:#e08a5c; --acc-soft:#3a2418; --acc-text:#e08a5c; --acc-ink:#1f1b17;
+  --ocker:#e2b25a; --ocker-soft:#2e2515; --ocker-text:#e2b25a; --ocker-line:#5a4416; --ocker-ink:#1f1b17;
   --warn:#f2c14e; --warn-soft:#2f2612; --warn-line:#5a4416; --warn-ink:#2a1f05;
   --red:#f87d7d;
-  --ink:#2a3242;
+  --ink:#2c2622; --ink-text:#fbf8f2; --ink-muted:#c9bfb2; --ink-acc:#e9b955;
   --sh-hero:0 6px 20px rgba(0,0,0,.4); --sh-sheet:0 -6px 24px rgba(0,0,0,.5);
   --sh-fab:0 4px 14px rgba(0,0,0,.5);
   color-scheme:dark;
@@ -77,6 +84,8 @@ body[data-theme="dark"]{
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 /* Keine feste Wurzelgroesse: damit schlaegt die Systemschriftgroesse durch. */
 html{font-size:100%}
+/* Ein Hauch Papierkorn auf dem Grund. Karten bleiben glatt, damit Text sauber liegt. */
+body[data-theme="light"]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .16 0 0 0 0 .1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
   font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   overscroll-behavior-y:none}
@@ -97,7 +106,10 @@ header.top{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--s
    aus dem Bild. min-width:0 erlaubt dem Textblock zu schrumpfen, der Titel bricht
    dann um statt die Seite breiter zu machen. */
 header.top>div:first-child{min-width:0;flex:1 1 auto}
-header.top h1{font-size:var(--f-page);font-weight:700;letter-spacing:-.02em;overflow-wrap:anywhere}
+/* Serife nur dort, wo ein Wort allein steht: Seitentitel, Hero, Kartentitel,
+   Abschnittsnamen. Alles Lesbare bleibt Grotesk. */
+:root{--serif:Georgia,"Times New Roman","Noto Serif",serif}
+header.top h1{font-family:var(--serif);font-size:var(--f-page);font-weight:600;letter-spacing:-.01em;overflow-wrap:anywhere}
 header.top .sub{font-size:var(--f-meta);color:var(--muted);font-weight:400;margin-top:1px}
 header.top .btn.sm{width:44px;height:44px;min-height:44px;padding:0;background:transparent;color:var(--text)}
 main{padding:var(--pad);max-width:640px;margin:0 auto;overflow-x:hidden}
@@ -133,12 +145,18 @@ nav.tabs button.on::before{content:'';position:absolute;top:0;left:22%;right:22%
    Listenzeilen, 20 px zwischen Karten, 32 px vor einer Abschnittsueberschrift.
    Karteninnenabstand und Seitenrand fest 16 px. Mehr Stufen sind nicht
    unterscheidbar, sie erzeugen nur den Eindruck, es gaebe mehr Gruppen. */
-.card{background:var(--surface);border:none;border-radius:var(--r-l);padding:16px;margin-bottom:20px}
+/* Hairline in Papierbraun plus ein Schattenstrich unten: Kontur ohne Kälte (Maik: „Linienoptik"). */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:20px;
+  box-shadow:0 1px 0 color-mix(in srgb,var(--line) 70%,transparent)}
 .card.tight{padding:12px 16px}
-.card h2{font-size:var(--f-card);font-weight:600;color:var(--text);text-transform:none;letter-spacing:-.01em;
+/* Flächen mit Bedeutung: Ocker = Pflicht und Wochen-Check, Kupfer-soft = die heutige Einheit. */
+.card.ocker{background:var(--ocker-soft);border-color:var(--ocker-line)}
+.card.acc{background:var(--acc-soft);border-color:color-mix(in srgb,var(--acc) 30%,var(--surface))}
+.card.acc .btn.sm{background:var(--acc);color:var(--acc-ink)}
+.card h2{font-family:var(--serif);font-size:var(--f-card);font-weight:600;color:var(--text);text-transform:none;letter-spacing:-.01em;
   margin-bottom:12px;line-height:1.25}
 .card h2::before{display:none}
-h2.sect{font-size:var(--f-meta);font-weight:600;color:var(--muted);margin:32px 4px 12px;text-transform:none;
+h2.sect{font-family:var(--serif);font-style:italic;font-size:var(--f-sec);font-weight:600;color:var(--muted);margin:32px 4px 12px;text-transform:none;
   letter-spacing:0}
 h2.sect::before{display:none}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -192,7 +210,7 @@ label.f>span{display:block;font-size:var(--f-meta);color:var(--muted);margin-bot
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 
 .bar{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}
-.bar>i{display:block;height:100%;border-radius:99px;background:var(--acc);transition:width .35s}
+.bar>i{display:block;height:100%;border-radius:99px;background:var(--ocker);transition:width .45s cubic-bezier(.2,.7,.2,1)}
 
 /* ---------- Listenzeile mit Haken ---------- */
 .item{display:flex;align-items:center;gap:12px;padding:12px 0;min-height:52px;border-bottom:1px solid var(--line)}
@@ -208,7 +226,11 @@ label.f>span{display:block;font-size:var(--f-meta);color:var(--muted);margin-bot
 .tick{width:28px;height:28px;flex:0 0 auto;border-radius:var(--r-s);border:2px solid var(--line-strong);
   background:transparent;color:var(--acc-ink);font-weight:700;font-size:var(--f-sec);
   display:flex;align-items:center;justify-content:center}
-.tick.on{background:var(--acc);border-color:var(--acc)}
+.tick.on{background:var(--acc);border-color:var(--acc);animation:tickIn .18s cubic-bezier(.2,.7,.2,1)}
+@keyframes tickIn{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+/* Reiterwechsel: 120 ms einfahren, nur nach Handlung. */
+#app.in{animation:viewIn .12s ease-out}
+@keyframes viewIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
 /* ---------- Segment-Tabs — das Lieblingsmuster ---------- */
 .seg{display:flex;gap:4px;background:var(--surface2);border:none;border-radius:var(--r-m);
@@ -220,7 +242,7 @@ body[data-theme="dark"] .seg button.on{box-shadow:inset 0 0 0 1px var(--line-str
 .seg.seg3 button{font-size:var(--f-sec)}
 
 /* ---------- Hero: die eine nächste Handlung ---------- */
-.now{background:var(--ink);color:var(--ink-text);border:none;border-radius:var(--r-l);
+.now{background:var(--ink);color:var(--ink-text);border:none;border-radius:14px;
   padding:20px;margin-bottom:12px;cursor:pointer;box-shadow:var(--sh-hero)}
 .now:active{transform:scale(.99)}
 /* .fix markiert einen Hero, der eine Anweisung zeigt und nicht irgendwohin
@@ -229,15 +251,15 @@ body[data-theme="dark"] .seg button.on{box-shadow:inset 0 0 0 1px var(--line-str
 .now.fix{cursor:default}
 .now.fix:active{transform:none}
 .now-k{font-size:var(--f-meta);font-weight:700;color:var(--ink-acc);margin-bottom:6px;letter-spacing:.02em}
-.now-t{font-size:var(--f-page);font-weight:700;letter-spacing:-.02em;line-height:1.2;color:var(--ink-text);overflow-wrap:anywhere}
+.now-t{font-family:var(--serif);font-size:var(--f-page);font-weight:600;letter-spacing:-.01em;line-height:1.15;color:var(--ink-text);overflow-wrap:anywhere}
 .now-s{font-size:var(--f-sec);color:var(--ink-muted);margin-top:6px;line-height:1.4}
 .now-go{font-size:var(--f-sec);color:var(--ink-acc);font-weight:600;margin-top:12px}
-.now .btn.acc{background:var(--ink-acc);color:#062012;margin-top:14px}
+.now .btn.acc{background:var(--ink-acc);color:#2a2320;margin-top:14px}
 .now .btn{margin-top:14px}
 .now .btn:not(.acc){background:rgba(255,255,255,.12);color:var(--ink-text)}
 /* Zwei gleichwertige Knöpfe im Hero (Einheit starten · Kurzversion) */
 .now .btnrow{margin-top:14px}
-.now .btnrow .btn{margin-top:0;flex:1 1 0;background:var(--ink-acc);color:#062012}
+.now .btnrow .btn{margin-top:0;flex:1 1 0;background:var(--ink-acc);color:#2a2320}
 .setrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .setrow .pill{min-width:44px;justify-content:center;font-variant-numeric:tabular-nums}
 .setrow .pill.on::before{display:none}
@@ -351,18 +373,20 @@ body[data-theme="dark"] .seg button.on{box-shadow:inset 0 0 0 1px var(--line-str
 /* ---------- Regeneration ---------- */
 /* Der Kopf stand auf gruener Flaeche und war damit die zweite Akzentmarke neben
    dem Pflicht-Schild. Gruen markiert hier nur noch, was Pflicht ist. */
-.rhead{background:var(--surface);border:none;border-radius:var(--r-l);padding:16px;margin-bottom:20px}
-.rhl{font-size:var(--f-meta);font-weight:600;color:var(--muted);letter-spacing:.02em}
-.rht{font-size:var(--f-card);font-weight:700;letter-spacing:-.02em;margin-top:4px;color:var(--text)}
+.rhead{background:var(--ocker-soft);border:1px solid var(--ocker-line);border-radius:14px;padding:16px;margin-bottom:20px}
+.rhl{font-size:var(--f-meta);font-weight:600;color:var(--ocker-text);letter-spacing:.02em}
+.rht{font-family:var(--serif);font-size:var(--f-card);font-weight:600;letter-spacing:-.01em;margin-top:4px;color:var(--text)}
 .rhs{font-size:var(--f-sec);color:var(--muted);margin-top:4px}
 .rsec{display:flex;align-items:baseline;gap:10px;margin:32px 4px 12px;flex-wrap:wrap}
 .rbadge{font-size:var(--f-meta);font-weight:700;padding:4px 10px;border-radius:var(--r-s);letter-spacing:.02em}
-.rbadge.pf{background:var(--acc);color:var(--acc-ink)}
+.rbadge.pf{background:var(--ocker);color:var(--ocker-ink)}
 .rbadge.op{background:var(--surface2);color:var(--muted);border:none}
 .rbadge.no{background:var(--warn-soft);color:var(--warn)}
 .rsub{font-size:var(--f-meta);color:var(--muted)}
 .rcard{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
-  background:var(--surface);border:none;border-radius:var(--r-l);padding:16px;margin-bottom:8px}
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:8px}
+/* Pflicht steht auf Ocker-Papier — das ist, was zählt. */
+.rcard:not(.small):not(.no){background:var(--ocker-soft);border-color:var(--ocker-line)}
 .rcard:active{background:var(--surface2)}
 .rcard.done .rn{text-decoration:line-through;color:var(--muted)}
 .rcard.done .rw{color:var(--muted)}
@@ -383,7 +407,7 @@ body[data-theme="dark"] .seg button.on{box-shadow:inset 0 0 0 1px var(--line-str
 
 /* ---------- Reflexion ---------- */
 .jhead{margin-bottom:18px}
-.jq{font-size:var(--f-page);line-height:1.25;letter-spacing:-.02em;text-transform:none;color:var(--text);font-weight:700;margin:0}
+.jq{font-family:var(--serif);font-size:var(--f-page);line-height:1.25;letter-spacing:-.01em;text-transform:none;color:var(--text);font-weight:600;margin:0}
 .jq::before{display:none}
 .jlab{font-size:var(--f-meta);font-weight:600;margin-bottom:8px;color:var(--muted)}
 .moodwrap{display:flex;flex-direction:column;align-items:center;gap:14px;margin:26px 0 22px}
@@ -500,7 +524,7 @@ body[data-theme="dark"] .seg button.on{box-shadow:inset 0 0 0 1px var(--line-str
    ========================================================================= */
 
 const KEY='pivot.v1';
-const APP_VERSION='7.1';
+const APP_VERSION='8.0';
 const DEF={
   profile:{sex:'m',age:25,height:183,weight:84,pal:1.5,protPerKg:1.8,carbPerKg:5,
            goal:'maintain',kcalOverride:null},
@@ -1133,7 +1157,6 @@ function phase(){
 }
 const PHASE={
   morning:{t:'Morgen', s:'Deine beste Phase beginnt. Routine, essen, dann das Wichtigste.'},
-  midday: {t:'Tag', s:'Konzentrationsfenster. Hier gehört die Hauptaufgabe hin.'},
   evening:{t:'Abend', s:'Training erfassen, essen, langsam runterkommen.'},
   winddown:{t:'Wind-down', s:'Abendroutine und drei Aufgaben für morgen. Mehr nicht.'},
   night:  {t:'Nacht', s:'Eigentlich Schlafzeit.'}
@@ -1216,7 +1239,11 @@ function render(){
     haus:vHaus, fokus:vFokus, inbox:vInbox, tools:vTools, load:vLoad, beschw:vBeschw,
     med:vMed, journal:vJournal, fin:vFin, week:vWeek, evidenz:vEvidenz, notfall:vNotfall,
     reset:vReset};
-  document.getElementById('app').innerHTML=(V[VIEW]||vNow)();
+  const app=document.getElementById('app');
+  app.innerHTML=(V[VIEW]||vNow)();
+  /* Kurzes Einfahren nur beim Bildschirmwechsel — nicht bei jedem Haken. */
+  if(VIEW!==render.letzter){ app.classList.remove('in'); void app.offsetWidth; app.classList.add('in'); }
+  render.letzter=VIEW;
   /* Die Leiste ist immer sichtbar; nur der Zigarettenzähler darin wechselt. */
   const gz=document.getElementById('grabZig');
   if(gz){ const n=(S.smoke[DAY]||[]).length;
@@ -1345,22 +1372,8 @@ function vNow(){
     h+=miniRoutine('morning');
     if(!heroIsWin) h+=winCard(cur?cur.k:'w1');
   }
-  else if(ph==='midday'){
-    if(cur && !heroIsWin) h+=winCard(cur.k);
-    if(open.length){
-      const t=open[0];
-      if(!(na && na.t===t.t)) h+=`<div class="card">
-        <h2>Jetzt ist deine Phase</h2>
-        <div class="item" style="padding:4px 0"><button class="tick" onclick="tickTask(${tasks.indexOf(t)})" aria-label="${esc(t.t)} erledigt"></button>
-          <div class="g"><b>${esc(t.t)}</b><span>${t.first?'Start: '+esc(t.first):''}</span></div></div>
-        <div class="spacer"></div>
-        <button class="btn" onclick="startRitual($a(${A(t.first||t.t)}))">Zwei Minuten starten</button></div>`;
-    } else if(!(na && na.t==='Tages-Check')) {
-      h+=`<div class="card"><h2>Keine Aufgabe gesetzt</h2>
-        <div class="small muted" style="margin-bottom:11px">Deine beste Phase läuft gerade ungenutzt.</div>
-        <button class="btn" onclick="openSheet(taskSheet())">Eine Aufgabe setzen</button></div>`;
-    }
-  }
+  /* Ein 'midday'-Zweig stand hier bis V7.1 — toter Code, seit phase() die
+     Phase nicht mehr liefert. Die offene Aufgabe traegt der Hero. */
   else if(ph==='evening'){
     /* Auch abends, solange die Einheit offen ist — sie faellt meistens nicht in
        die zweieinhalb Stunden nach der Einnahme, und dann waere die Zeile weg,
@@ -1391,7 +1404,7 @@ function vNow(){
         ${tomo.length?'Ändern':'Drei Aufgaben setzen'}</button></div>`;
   }
 
-  h+=zykCheckCard();
+  h+=zykCheckCard('now');
 
   /* Schnellzeile */
   h+=`<div class="btnrow" style="margin-bottom:12px">
@@ -1551,7 +1564,7 @@ function dayBar(day){
 /* ---------- Routinen-Karte ---------- */
 /* Welche Routine steht gerade an? Vor dem Nachmittag die Morgenroutine, danach die Abendroutine. */
 function routineDue(){ const ph=phase();
-  return (ph==='night'||ph==='morning'||ph==='midday')?'morning':'evening'; }
+  return (ph==='night'||ph==='morning')?'morning':'evening'; }
 /* Die andere bleibt erreichbar, aber eingeklappt — eine Zeile statt sechs. */
 function routineFolded(kind){
   const pr=routineProgress(kind,DAY);
@@ -2425,7 +2438,7 @@ function zykJetztZeile(){
   const h=zykHeute(DAY);
   if(!h || !h.unit || zk().done[DAY] || zk().live) return '';
   const U=CYC1[h.unit];
-  return `<div class="card tight" style="padding:4px 16px">
+  return `<div class="card tight acc" style="padding:4px 16px">
     <div class="item" role="button" tabindex="0" onclick="go('train','ses')">
       <div class="g"><b>Einheit ${h.unit} — ${esc(U.name)}</b>
         <span>Woche ${h.woche} von 6${h.woche===CYC1.deload?' · Deload':''} · ${esc(U.ort)}, ${esc(U.dauer)}</span></div>
@@ -2454,14 +2467,18 @@ window.zykSpr=i=>{ const a=zk().spr[DAY]=zk().spr[DAY]||[]; a[i]=!a[i]; save(); 
 /* ---------- Wochen-Check, montags ---------- */
 function zykWk(day){ return isoWeek(parseISO(day)); }
 function zykEinheitenLetzte7(day){ let n=0; for(let i=1;i<=7;i++){ if(zk().done[addDays(day,-i)]) n++; } return n; }
-function zykCheckCard(){
+/* ort==='now': Auf der Startseite verschwindet die Karte, sobald der Check
+   gespeichert ist — sonst stuende "erledigt" bis Sonntag dort. Im Trainingsreiter
+   bleibt die erledigt-Zeile, weil sie der einzige Weg zum Nachlesen ist. */
+function zykCheckCard(ort){
   const h=zykHeute(DAY)||(DAY===addDays(CYC1.end,1)?{woche:6}:null); if(!h) return '';
   const wk=zykWk(DAY), c=zk().check[wk];
   const dow=parseISO(DAY).getDay();
   if(dow!==1 && !c) return '';
+  if(c && ort==='now') return '';
   if(c) return `<div class="card tight"><div class="row between"><span class="small"><b>Wochen-Check</b> erledigt</span>
     <button class="btn sm ghost" onclick="openSheet(zykCheckSheet())">Ansehen</button></div></div>`;
-  return `<div class="card"><div class="row between"><div><h2 style="margin:0">Wochen-Check</h2>
+  return `<div class="card ocker"><div class="row between"><div><h2 style="margin:0">Wochen-Check</h2>
     <div class="small muted">Sechs Fragen, drei Minuten.</div></div>
     <button class="btn sm" onclick="openSheet(zykCheckSheet())">Starten</button></div></div>`;
 }
@@ -3041,8 +3058,10 @@ function vMore(){
 function relevant(){
   const ph=phase(), out=[];
   const M=meds();
-  if(M.some(m=>!medTaken(DAY,m.id)) && (ph==='morning'||ph==='midday')) out.push('med');
-  const n=hausNext(); if(n && (ph==='midday'||ph==='evening')) out.push('haus');
+  /* Medikamente, solange sie offen sind — 'morning' endet zweieinhalb Stunden
+     nach der Einnahme, danach hing die Kachel an einer Phase, die es nicht gibt. */
+  if(M.some(m=>!medTaken(DAY,m.id)) && (ph==='morning'||ph==='evening')) out.push('med');
+  const n=hausNext(); if(n && ph==='evening') out.push('haus');
   if(S.fin.wish.some(w=>w.status==='warten'&&Date.now()>=w.bis)) out.push('fin');
   if(S.inbox.length>=3) out.push('inbox');
   if(ph==='winddown'||ph==='night') out.push('journal');
@@ -5854,9 +5873,9 @@ function applyTheme(){
   const hell = S.seen.theme!=='dark';
   if(hell){ document.body.dataset.theme='light'; }
   else document.body.dataset.theme='dark';
-  document.documentElement.style.background = hell ? '#f4f5f7' : '#0f1319';
+  document.documentElement.style.background = hell ? '#f1ece2' : '#171411';
   const m=document.querySelector('meta[name="theme-color"]');
-  if(m) m.setAttribute('content', hell?'#f4f5f7':'#0f1319');
+  if(m) m.setAttribute('content', hell?'#f1ece2':'#171411');
 }
 window.setP=(k,v)=>{ S.profile[k]=(k==='sex'||k==='goal')?v:parseFloat(v); save();
   if(VIEW==='me') render(); };
