@@ -140,6 +140,15 @@ nav.tabs button.on::before{content:'';position:absolute;top:0;left:22%;right:22%
 .tick,.rtick,.qm{position:relative}
 .tick::after,.rtick::after,.qm::after{content:'';position:absolute;inset:-8px}
 
+/* ---------- Tagesstatus ---------- */
+.status{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:20px}
+.stz{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 2px;color:var(--text)}
+.stz-l{font-size:var(--f-meta);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.stz-v{font-size:var(--f-row);font-weight:600;font-variant-numeric:tabular-nums}
+.stz.ok{background:var(--acc-soft);border-color:color-mix(in srgb,var(--acc) 30%,var(--surface))}
+.stz.ok .stz-v{color:var(--acc-text)}
+
 /* ---------- Karten und Text ----------
    Vertikaler Rhythmus, vier Werte: 4 px innerhalb einer Zeile, 12 px zwischen
    Listenzeilen, 20 px zwischen Karten, 32 px vor einer Abschnittsueberschrift.
@@ -286,7 +295,9 @@ body[data-theme="dark"] .seg button.on{box-shadow:inset 0 0 0 1px var(--line-str
   max-height:88vh;overflow-y:auto;transform:translateY(102%);transition:transform .24s cubic-bezier(.2,.8,.3,1);
   padding:8px var(--pad) calc(24px + env(safe-area-inset-bottom))}
 .sheet.on{transform:translateY(0)}
-.sheet .handle{width:36px;height:4px;border-radius:9px;background:var(--line-strong);margin:6px auto 14px}
+.sheet-top{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:0 -4px 4px}
+.sheet-top .handle{width:36px;height:4px;border-radius:2px;background:var(--line-strong);opacity:.5;margin:0 auto}
+.sheet-top .btn.sm{min-width:44px;padding:0 10px}
 .sheet h2{font-size:var(--f-card);font-weight:600;margin-bottom:12px;text-transform:none;color:var(--text)}
 .sheet h2::before{display:none}
 
@@ -348,7 +359,7 @@ body[data-theme="dark"] .seg button.on{box-shadow:inset 0 0 0 1px var(--line-str
 .win.done .win-g b{color:var(--muted);text-decoration:line-through}
 .win.done .win-s{color:var(--acc-text)}
 .win.skip .win-g b{color:var(--muted)}
-.win.missed .win-s{color:var(--warn)}
+.win.missed .win-s{color:var(--muted)}
 
 .mealrow{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px 0}
 .meal{display:flex;flex-direction:column;align-items:flex-start;gap:1px;
@@ -513,7 +524,13 @@ body[data-theme="dark"] .seg button.on{box-shadow:inset 0 0 0 1px var(--line-str
   <button onclick="notStart()" aria-label="Drang jetzt"><b aria-hidden="true">&#9632;</b><span>Drang</span></button>
 </div>
 <div class="sheet-bg" id="sheetBg"></div>
-<div class="sheet" id="sheet"><div class="handle"></div><div id="sheetBody"></div></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true">
+  <div class="sheet-top">
+    <button class="btn sm ghost" id="sheetBack" onclick="sheetBack()" aria-label="Zurück zum vorigen Fenster" hidden>&#8249; Zurück</button>
+    <span class="handle" aria-hidden="true"></span>
+    <button class="btn sm ghost" onclick="closeSheet()" aria-label="Fenster schließen">&#10005;</button>
+  </div>
+  <div id="sheetBody"></div></div>
 <div class="toast" id="toast"></div>
 <script>
 'use strict';
@@ -524,7 +541,7 @@ body[data-theme="dark"] .seg button.on{box-shadow:inset 0 0 0 1px var(--line-str
    ========================================================================= */
 
 const KEY='pivot.v1';
-const APP_VERSION='8.0';
+const APP_VERSION='9.0';
 const DEF={
   profile:{sex:'m',age:25,height:183,weight:84,pal:1.5,protPerKg:1.8,carbPerKg:5,
            goal:'maintain',kcalOverride:null},
@@ -620,7 +637,7 @@ let DAY = todayISO();
 const DOW=['So','Mo','Di','Mi','Do','Fr','Sa'];
 const MON=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
 function human(s){ const d=parseISO(s); const t=todayISO();
-  if(s===t) return 'Heute'; if(s===addDays(t,-1)) return 'Gestern';
+  if(s===t) return 'Heute'; if(s===addDays(t,-1)) return 'Gestern'; if(s===addDays(t,1)) return 'Morgen';
   return DOW[d.getDay()]+', '+d.getDate()+'. '+MON[d.getMonth()]; }
 const r0=n=>Math.round(n), r1=n=>Math.round(n*10)/10;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -800,7 +817,12 @@ function windowsFor(day){
   const now = nowMin();
   return WIN.map(w=>{
     const from=base+w.off[0], to=base+w.off[1];
-    const set=(S.adhs.meals[day]||{})[w.k];
+    let set=(S.adhs.meals[day]||{})[w.k];
+    /* V9: Ein Tagebuch-Eintrag im Zeitraum des Fensters zaehlt als erledigt.
+       Vorher liess "Essen erfassen" das Fenster auf "verstrichen" stehen —
+       das Tagebuch sagte "gegessen", die Fensterkarte sagte "verpasst". */
+    if(!set){ const t0=parseISO(day).getTime();
+      if((S.diary[day]||[]).some(e=>{ const mi=(e.ts-t0)/60000; return mi>=from-30 && mi<=to+60; })) set='done'; }
     let status = set || 'open';
     if(!set){ if(past || now>to) status='missed'; else if(now>=from) status='now'; }
     return {...w, from, to, status,
@@ -871,9 +893,9 @@ window.tickRule=(id)=>{
 /* ---------- Tagesplan: höchstens drei Hauptaufgaben ---------- */
 const SLOTS={vor:'Vormittag',nach:'Nachmittag',abend:'Abend'};
 const tasksFor=d=>S.adhs.tasks[d]||[];
-window.tickTask=(i)=>{ const t=tasksFor(DAY); t[i].done=!t[i].done; save(); render();
+window.tickTask=(i,d)=>{ const t=tasksFor(d||DAY); t[i].done=!t[i].done; save(); render();
   if(t[i].done) toast('Erledigt.'); };
-window.delTask=(i)=>{ tasksFor(DAY).splice(i,1); save(); render(); };
+window.delTask=(i,d)=>{ tasksFor(d||DAY).splice(i,1); save(); render(); };
 
 /* ---------- Reparatur statt Streak ----------
    Kein Streak-Zähler. Gemessen wird, wie viele der letzten 14 Tage erfasst
@@ -1119,13 +1141,17 @@ const ICON={
    schieben, obwohl bessere Handballleistung das oberste Ziel ist. Haushalt sitzt
    deshalb als erste Kachel in Mehr, eine Berührung entfernt. */
 const TABS=[['now','Jetzt'],['tag','Tag'],['food','Essen'],['train','Training'],['more','Mehr']];
-const TITLE={now:'Jetzt', tag:'Dein Tag', food:'Essen', train:'Training', more:'Alle Bereiche',
-  haus:'Haushalt', fokus:'Fokus', inbox:'Eingang', tools:'Werkzeugkasten',
-  load:'Last & Erholung', beschw:'Beschwerden', med:'Medikamente', journal:'Reflexion',
-  fin:'Finanzen', week:'Wochenblick', evidenz:'Evidenz', me:'Profil', notfall:'Jetzt gerade',
+/* V9: Titel = Reitername = Zeilenname. Zehn Dinge hatten zwei bis vier Namen
+   (Reflexion / Wie geht's dir? · Drang / Drang jetzt / Jetzt gerade · Eingang /
+   Notiz / Schnell rein · Wenn es klemmt / Werkzeugkasten · Mehr / Alle Bereiche). */
+const TITLE={now:'Jetzt', tag:'Tag', food:'Essen', train:'Training', more:'Mehr',
+  haus:'Haushalt', fokus:'Fokus', inbox:'Notiz', tools:'Wenn es klemmt',
+  load:'Last & Erholung', beschw:'Beschwerden', med:'Medikamente', journal:'Stimmung',
+  fin:'Finanzen', week:'Wochenblick', evidenz:'Evidenz', me:'Profil', notfall:'Drang',
+  verlauf:'Verlauf',
   reset:'Rauchen'};
 /* Welcher Tab unten leuchtet, wenn eine Unterseite offen ist */
-const PARENT={haus:'more', fokus:'more', inbox:'more', tools:'more', load:'more',
+const PARENT={haus:'more', fokus:'more', inbox:'more', tools:'more', load:'more', verlauf:'more',
   beschw:'more', med:'more', journal:'more', fin:'more', week:'more', evidenz:'more', me:'more',
   notfall:'more', reset:'more'};
 let VIEW='now', trainSeg='ses';
@@ -1148,6 +1174,10 @@ function phase(){
   const n=nowMin(), w=hm2m(S.adhs.wake||'08:00'), m=medAnchor(todayISO());
   if(n < w-45) return 'night';
   if(n < m+150) return 'morning';
+  /* V9: Die Tagesphase war mit dem Nachmittagstief versehentlich mitgestrichen —
+     ab 10:45 hiess der ganze Tag "Abend", die Abendroutine klappte mittags auf.
+     'day' hat keine eigene Tageszeit-Behauptung, es ist schlicht der Tag. */
+  if(n < 1020)  return 'day';
   /* V7: „Nachmittagstief 15–17" ersatzlos gestrichen. Vier PubMed-Abfragen nach einer
      ADHS-spezifischen Leistungskurve über den Tag: null Treffer. Belegt ist allein der flache
      Wirkabfall des Medikaments (d = 0,8 nach 4 h → 0,6 nach 14 h) — der steckt in den
@@ -1157,6 +1187,7 @@ function phase(){
 }
 const PHASE={
   morning:{t:'Morgen', s:'Deine beste Phase beginnt. Routine, essen, dann das Wichtigste.'},
+  day:    {t:'Tag', s:'Das Wichtigste zuerst, dann der Rest.'},
   evening:{t:'Abend', s:'Training erfassen, essen, langsam runterkommen.'},
   winddown:{t:'Wind-down', s:'Abendroutine und drei Aufgaben für morgen. Mehr nicht.'},
   night:  {t:'Nacht', s:'Eigentlich Schlafzeit.'}
@@ -1195,7 +1226,7 @@ document.addEventListener('keydown',e=>{
     e.preventDefault(); e.target.click(); }
 });
 window.addEventListener('popstate',()=>{
-  if(sheetEl.classList.contains('on')){ closeSheet(); navPush(); return; }
+  if(sheetEl.classList.contains('on')){ if(SHEET_STACK.length) sheetBack(); else closeSheet(); navPush(); return; }
   if(VIEW!=='now'){ VIEW=PARENT[VIEW]||'now'; stopScan(); render(); window.scrollTo(0,0);
     if(VIEW!=='now') navPush(); }
 });
@@ -1203,10 +1234,28 @@ window.setSeg=v=>{ trainSeg=v; render(); };
 
 /* Sheet */
 const sheetEl=document.getElementById('sheet'), bgEl=document.getElementById('sheetBg');
-function openSheet(html){ document.getElementById('sheetBody').innerHTML=html;
-  if(!sheetEl.classList.contains('on')) navPush();
+/* V9: Fenster haben einen Stapel. Vorher ueberschrieb ein Fenster das vorige,
+   und Zurueck warf aus der ganzen Kette (Essensfenster → Mahlzeit → Erfassen →
+   Von Hand) auf den Bildschirm. Jetzt geht Zurueck ins vorige Fenster; das
+   Kreuz schliesst alles. Ein erneutes Oeffnen desselben Inhalts (Aktualisieren
+   nach einem Haken) legt nichts Neues auf den Stapel. */
+let SHEET_STACK=[];
+function openSheet(html){
+  const body=document.getElementById('sheetBody');
+  const offen=sheetEl.classList.contains('on');
+  const gleich=offen && SHEET_STACK.length && sheetTitel(html)===sheetTitel(SHEET_STACK[SHEET_STACK.length-1]);
+  if(offen && !gleich) SHEET_STACK.push(body.innerHTML);
+  if(!offen) SHEET_STACK=[];
+  body.innerHTML=html; sheetEl.scrollTop=0;
+  document.getElementById('sheetBack').hidden = SHEET_STACK.length===0;
+  if(!offen) navPush();
   sheetEl.classList.add('on'); bgEl.classList.add('on'); }
-function closeSheet(){ sheetEl.classList.remove('on'); bgEl.classList.remove('on'); stopScan(); }
+function sheetTitel(html){ const m=/<h2[^>]*>([^<]*)/.exec(html||''); return m?m[1]:''; }
+window.sheetBack=()=>{ if(!SHEET_STACK.length) return closeSheet();
+  const prev=SHEET_STACK.pop(); document.getElementById('sheetBody').innerHTML=prev; sheetEl.scrollTop=0;
+  document.getElementById('sheetBack').hidden = SHEET_STACK.length===0; };
+function closeSheet(){ SHEET_STACK=[]; sheetEl.classList.remove('on'); bgEl.classList.remove('on'); stopScan();
+  const b=document.getElementById('sheetBack'); if(b) b.hidden=true; }
 /* Beim Tippen neben das Fenster lief der Timer unsichtbar weiter und
    protokollierte am Ende nichts. Jetzt wird er sauber beendet. */
 bgEl.addEventListener('click',()=>{ if(TIMER) stopFocus(); else closeSheet(); });
@@ -1237,7 +1286,7 @@ function render(){
       return (DAY===todayISO()||hu===f)?f:hu+' · '+f; })();
   const V={now:vNow, tag:vTag, food:vFood, train:vTrain, me:vMe, more:vMore,
     haus:vHaus, fokus:vFokus, inbox:vInbox, tools:vTools, load:vLoad, beschw:vBeschw,
-    med:vMed, journal:vJournal, fin:vFin, week:vWeek, evidenz:vEvidenz, notfall:vNotfall,
+    med:vMed, journal:vJournal, fin:vFin, week:vWeek, evidenz:vEvidenz, notfall:vNotfall, verlauf:vVerlauf,
     reset:vReset};
   const app=document.getElementById('app');
   app.innerHTML=(V[VIEW]||vNow)();
@@ -1249,6 +1298,7 @@ function render(){
   if(gz){ const n=(S.smoke[DAY]||[]).length;
     gz.textContent = n?String(n):'+1'; gz.classList.toggle('hat', n>0); }
   if((VIEW==='train'&&trainSeg==='load')||VIEW==='load') drawCharts();
+  if(VIEW==='verlauf') drawVerlauf();
 }
 
 /* Ring-SVG */
@@ -1275,6 +1325,45 @@ function barRow(label,val,target,unit,color){
 /* =========================================================================
    VIEW: JETZT — nur was zu dieser Uhrzeit zählt
    ========================================================================= */
+/* V9 · Tagesstatus. Die fuenf taeglichen Dinge standen in fuenf Formen an fuenf
+   Stellen; Erledigtes verschwand, Offenes hatte keine Zahl. Sichtbarer,
+   aufgezeichneter Fortschritt hebt Zielerreichung (Harkin 2016, k = 138,
+   d = 0,40). Feste Reihenfolge, nie umsortiert (Findlater & McGrenere 2004). */
+function statusZeile(){
+  const M=meds(), medN=M.length, medOk=M.filter(m=>medTaken(DAY,m.id)).length;
+  const check=!!(S.well[DAY]&&S.well[DAY].bw!=null||S.well[DAY]&&S.well[DAY].fat!=null);
+  const zig=(S.smoke[DAY]||[]).length;
+  const zh=zykHeute(DAY), zdone=!!(zk().done[DAY]), ses=sessionsOn(DAY).length;
+  const rk=routineDue(), pr=routineProgress(rk,DAY);
+  const zelle=(lab,val,ok,fn,aria)=>`<button class="stz ${ok?'ok':''}" onclick="${fn}" aria-label="${aria}">
+    <span class="stz-l">${lab}</span><span class="stz-v">${val}</span></button>`;
+  const einheit = zh&&zh.unit ? (zdone?'&#10003;':zh.unit) : (ses?'&#10003;':'&#8212;');
+  const einheitOk = zh&&zh.unit ? zdone : ses>0;
+  return `<div class="status" role="group" aria-label="Heute">
+    ${zelle('Check', check?'&#10003;':'&#9675;', check, "openSheet(wellSheet())", 'Tages-Check '+(check?'erledigt':'offen'))}
+    ${zelle('Medis', medN?`${medOk}/${medN}`:'&#8212;', medN&&medOk===medN, "openSheet(medQuickSheet())", `Medikamente ${medOk} von ${medN} genommen`)}
+    ${zelle('Zigaretten', String(zig), false, "go('reset')", zig+' Zigaretten heute')}
+    ${zelle('Einheit', einheit, einheitOk, "go('train','ses')", 'Einheit '+(einheitOk?'erledigt':(zh&&zh.unit?zh.unit+' offen':'keine geplant')))}
+    ${zelle('Routine', `${pr.done}/${pr.all}`, pr.done===pr.all&&pr.all>0, "go('tag')", `${rk==='morning'?'Morgen':'Abend'}routine ${pr.done} von ${pr.all}`)}
+  </div>`;
+}
+/* Medikamente in einem Tap: die Haken direkt aus der Statuszeile. Die
+   Einnahmezeit ist der Anker fuer Essensfenster und Phasen — deshalb steht
+   sie hier gleich mit dabei. */
+function medQuickSheet(){
+  const M=meds();
+  return `<h2>Medikamente heute</h2>
+    ${M.map(it=>{const t=medTaken(DAY,it.id);
+      return `<div class="item">
+        <button class="tick ${t?'on':''}" onclick="medTick('${it.id}');openSheet(medQuickSheet())"
+          aria-label="${esc(it.n)} — ${t?'genommen':'noch nicht genommen'}">${t?'&#10003;':''}</button>
+        <div class="g"><b>${esc(it.n)}</b><span>geplant ${esc(it.zeit)}${t?' · genommen '+esc((S.med.taken[DAY]||{})[it.id]):''}</span></div></div>`;}).join('')}
+    <div class="note">Die Uhrzeit des ersten Hakens setzt die Essensfenster und den Tagesrhythmus.
+      Heute: ${medAnchorLabel(DAY)}.</div>
+    <div class="btnrow" style="margin-top:12px">
+      <button class="btn" onclick="go('med')">Bestand, Arztgespräch</button>
+      <button class="btn ghost" onclick="closeSheet()">Fertig</button></div>`;
+}
 function miniRoutine(kind){
   const st=routineSteps(kind,DAY), pr=routineProgress(kind,DAY);
   const next=st.find(x=>!stepDone(DAY,x.id));
@@ -1336,6 +1425,8 @@ function vNow(){
         <button class="btn ghost" onclick="S.seen.setup=1;save();render()">Später</button></div></div>`;
   }
 
+  h+=statusZeile();
+
   /* Hero: die eine nächste Handlung. Phase steht im Kicker, im Tief in Gelb.
      Der Phasensatz ersetzt den früheren Fließtext und die Warnkarte darunter. */
   if(na){
@@ -1374,6 +1465,11 @@ function vNow(){
   }
   /* Ein 'midday'-Zweig stand hier bis V7.1 — toter Code, seit phase() die
      Phase nicht mehr liefert. Die offene Aufgabe traegt der Hero. */
+  else if(ph==='day'){
+    h+=zykJetztZeile();
+    if(cur && !heroIsWin) h+=winCard(cur.k);
+    h+=miniRoutine('morning');
+  }
   else if(ph==='evening'){
     /* Auch abends, solange die Einheit offen ist — sie faellt meistens nicht in
        die zweieinhalb Stunden nach der Einnahme, und dann waere die Zeile weg,
@@ -1400,7 +1496,7 @@ function vNow(){
         <span>${t.first?esc(t.first):''}</span></div></div>`).join('')
         :`<div class="small muted" style="margin-bottom:11px">Noch nichts festgelegt. Drei Stück,
           jede mit einem ersten Schritt — dann startet morgen früh von selbst.</div>`}
-      <button class="btn ${tomo.length?'ghost sm':''}" onclick="setDay('${addDays(DAY,1)}');openSheet(taskSheet())">
+      <button class="btn ${tomo.length?'ghost sm':''}" onclick="openSheet(taskSheet('${addDays(DAY,1)}'))">
         ${tomo.length?'Ändern':'Drei Aufgaben setzen'}</button></div>`;
   }
 
@@ -1408,8 +1504,8 @@ function vNow(){
 
   /* Schnellzeile */
   h+=`<div class="btnrow" style="margin-bottom:12px">
-    <button class="btn" onclick="jStart()">Wie geht's dir?</button>
-    <button class="btn" onclick="notStart()">Drang jetzt</button>
+    <button class="btn" onclick="jStart()">Stimmung</button>
+    <button class="btn" onclick="notStart()">Drang</button>
   </div>`;
 
   /* Der einfache Zugriff auf den Zaehler sitzt seit V7 in der Erfassen-Leiste und
@@ -1432,10 +1528,11 @@ function vNow(){
         <button class="btn sm" onclick="go('train','reg')">Ansehen</button></div></div>`;
   }
 
-  /* Jetzt relevant — höchstens drei, nur Navigationshilfe. */
-  const rel=relevant();
-  if(rel.length) h+=`<h2 class="sect">Jetzt relevant</h2><div class="card" style="padding:4px 16px">
-    ${areaRows(rel)}</div>`;
+  /* "Jetzt relevant" ist mit V9 entfallen: die Liste sortierte sich stuendlich
+     um (07:30 Medikamente · 13:00 Medikamente, Haushalt, Wochenblick · 22:30
+     Reflexion, Wochenblick). Was nicht an derselben Stelle bleibt, muss jedes
+     Mal neu gesucht werden — Findlater & McGrenere 2004, η² = 0,34. Die
+     Statuszeile oben und die feste Landkarte unter "Mehr" ersetzen sie. */
   return h;
 }
 
@@ -1469,20 +1566,15 @@ function vTag(){
      untereinander auf einem Bildschirm. Räumliche Nähe ist der bestbelegte Hebel (g = 0,63). */
   let h=dayBar(DAY);
 
+  /* V9: Der Tages-Check wohnt auf "Jetzt" (Statuszeile und Hero). "Tag" ist die
+     Planungsseite: Aufgaben, Regeln, Routinen, Nachtragen. Die Bereitschaftszahl
+     bleibt als eine Zeile erreichbar. */
   if(rd){
-    const col = rd.score>=60?'var(--acc)':rd.score>=40?'var(--line-strong)':'var(--warn)';
     const txt = rd.score>=60?'Über deinem Normalwert':rd.score>=40?'Im normalen Bereich':'Unter deinem Normalwert';
-    h+=`<div class="card"><div class="ready">
-      ${ring(rd.score,col,rd.score,'Bereit')}
-      <div style="flex:1">
-        <div style="font-weight:600;font-size:17px;margin-bottom:2px">${txt} ${Q('bereit')}</div>
-        <div class="small muted">Kein Gesundheitswert — Vergleich mit deinem eigenen Schnitt</div>
-      </div>
-      <button class="btn sm" onclick="openSheet(wellSheet())">Anpassen</button></div></div>`;
-  } else {
-    h+=`<div class="card"><h2>Tages-Check ${Q('bereit')}</h2>
-      <div class="small muted" style="margin-bottom:12px">Vier Fragen, zwanzig Sekunden.</div>
-      <button class="btn acc" onclick="openSheet(wellSheet())">Check starten</button></div>`;
+    h+=`<div class="card tight" style="padding:4px 16px">
+      <div class="item" role="button" tabindex="0" onclick="openSheet(wellSheet())">
+        <div class="g"><b>Bereit ${rd.score} — ${txt}</b><span>Kein Gesundheitswert — Vergleich mit deinem eigenen Schnitt · antippen zum Anpassen</span></div>
+        ${Q('bereit')}</div></div>`;
   }
 
   const firstOpen=tasks.find(t=>!t.done);
@@ -1558,13 +1650,14 @@ function dayBar(day){
     <div class="row between xs dim" style="margin-top:6px">
       <span>${medAnchorLabel(day)}</span>
       <span>Bett ${S.adhs.bed}</span></div>
+    <div class="xs muted" style="margin-top:4px">Balken = Essensfenster${wins.map(x=>' · '+x.n).join('')} · Strich = Einnahme</div>
   </div>`;
 }
 
 /* ---------- Routinen-Karte ---------- */
 /* Welche Routine steht gerade an? Vor dem Nachmittag die Morgenroutine, danach die Abendroutine. */
 function routineDue(){ const ph=phase();
-  return (ph==='night'||ph==='morning')?'morning':'evening'; }
+  return (ph==='night'||ph==='morning'||ph==='day')?'morning':'evening'; }
 /* Die andere bleibt erreichbar, aber eingeklappt — eine Zeile statt sechs. */
 function routineFolded(kind){
   const pr=routineProgress(kind,DAY);
@@ -1735,16 +1828,22 @@ window.ruleSeed=i=>{ const sd=RULE_SEED[i];
 window.ruleDel=i=>{ S.adhs.rules.splice(i,1); save(); openSheet(ruleSheet()); render(); };
 
 /* ---------- Sheet: Hauptaufgabe ---------- */
-function taskSheet(){
-  const t=tasksFor(DAY);
-  return `<h2>Heute wichtig</h2>
+/* V9: Das Fenster kann fuer einen anderen Tag geoeffnet werden, ohne dass die
+   App den Tag wechselt. Vorher blieb sie nach "Drei Aufgaben fuer morgen" auf
+   morgen stehen — kein Hero, alle Reiter zeigten den Folgetag, Haken landeten
+   im falschen Datum. */
+let TASK_DAY=null;
+function taskSheet(day){
+  TASK_DAY=day||DAY; const t=tasksFor(TASK_DAY);
+  const morgen=TASK_DAY===addDays(todayISO(),1);
+  return `<h2>${morgen?'Morgen wichtig':'Heute wichtig'}</h2>
   <div class="small muted" style="margin-bottom:14px">Höchstens drei. Jede bekommt einen ersten Schritt,
     der unter einer Minute dauert — das ist die Stelle, an der es sonst hängen bleibt.</div>
   ${t.map((x,i)=>`<div class="item">
-    <button class="tick ${x.done?'on':''}" onclick="tickTask(${i})"
+    <button class="tick ${x.done?'on':''}" onclick="tickTask(${i},'${TASK_DAY}');openSheet(taskSheet('${TASK_DAY}'))"
       aria-label="${esc(x.t)} — ${x.done?'erledigt':'offen'}">${x.done?'✓':''}</button>
     <div class="g"><b>${esc(x.t)}</b><span>${x.first?esc(x.first):''}</span></div>
-    <button class="x" onclick="delTask(${i});openSheet(taskSheet())">✕</button></div>`).join('')}
+    <button class="x" onclick="delTask(${i},'${TASK_DAY}');openSheet(taskSheet('${TASK_DAY}'))">✕</button></div>`).join('')}
   ${t.length>=3?'<div class="warn">Drei sind voll. Erst etwas abhaken oder streichen.</div>'
   :`<div class="hr"></div>
     <label class="f"><span>Aufgabe</span>
@@ -1758,7 +1857,8 @@ function taskSheet(){
 window.taskAdd=()=>{
   const t=document.getElementById('tT').value.trim();
   if(!t){toast('Titel fehlt');return;}
-  (S.adhs.tasks[DAY]=S.adhs.tasks[DAY]||[]).push({
+  const d=TASK_DAY||DAY;
+  (S.adhs.tasks[d]=S.adhs.tasks[d]||[]).push({
     t, first:document.getElementById('tF').value.trim(),
     slot:document.getElementById('tS').value, done:false});
   save(); closeSheet(); render(); toast('Gesetzt.');
@@ -1838,7 +1938,7 @@ function vFood(){
         <span class="xs muted">${medAnchorLabel(DAY)}</span></div>
       ${wins.map(w=>{
         const st={open:'',now:'now',done:'done',skip:'skip',missed:'missed'}[w.status];
-        const lbl={open:'',now:'jetzt',done:'erledigt',skip:'übersprungen',missed:'verstrichen'}[w.status];
+        const lbl={open:'',now:'jetzt',done:'erledigt',skip:'übersprungen',missed:'—'}[w.status];
         const meals=stdMeals(w.k);
         let x=`<button class="win ${st}" onclick="openSheet(winSheet('${w.k}'))">
           <span class="win-i" aria-hidden="true">${winIcon(w.k)}</span>
@@ -2767,6 +2867,61 @@ function drawCharts(){
   bars('cLoad', days.map(x=>x.v), days.map(x=>DOW[parseISO(x.d).getDay()]));
   const hs=[]; for(let i=13;i>=0;i--){const d=addDays(DAY,-i); hs.push(hooper(d));}
   line('cHoop', hs, 4, 28);
+  drawVerlauf();
+}
+
+/* ---------- Verlauf: vier Wochen, vier Kurven ----------
+   Maik (13.09.): "Wochen- und Verlaufsansicht" fehlt. Vier Groessen, die er
+   taeglich eintraegt, ueber 28 Tage — kein Ziel, keine Ampel, nur der Verlauf. */
+function verlaufTage(n){ const out=[]; for(let i=n-1;i>=0;i--) out.push(addDays(DAY,-i)); return out; }
+function vVerlauf(){
+  const T=verlaufTage(28);
+  const zig=T.map(d=>(S.smoke[d]||[]).length);
+  const schlaf=T.map(d=>S.well[d]&&S.well[d].sleepH!=null?S.well[d].sleepH:null);
+  const bw=T.map(d=>S.well[d]&&S.well[d].bw!=null?S.well[d].bw:null);
+  const mood=T.map(d=>{ const e=(S.journal[d]||[]); if(!e.length) return null;
+    return e.reduce((a,x)=>a+(x.mood||0),0)/e.length; });
+  const n=(a)=>a.filter(x=>x!=null&&x!==0).length;
+  const zSum7=zig.slice(-7).reduce((a,b)=>a+b,0), zSum7v=zig.slice(-14,-7).reduce((a,b)=>a+b,0);
+  const bwK=bw.filter(x=>x!=null);
+  const karte=(titel,sub,id,leer)=>`<div class="card">
+    <div class="row between" style="margin-bottom:6px"><h2 style="margin:0">${titel}</h2><span class="small muted">${sub}</span></div>
+    ${leer?`<div class="empty" style="padding:14px 0 6px">${leer}</div>`:`<svg class="chart" id="${id}" viewBox="0 0 320 112" aria-label="${titel}, letzte 28 Tage"></svg>`}
+  </div>`;
+  return `
+    <div class="note" style="margin:0 4px 14px">Die letzten 28 Tage. Nur Verlauf, kein Ziel — der letzte Balken ist heute.</div>
+    ${karte('Zigaretten', `${zSum7} diese Woche${zSum7v?' · '+zSum7v+' davor':''}`, 'vZig', zig.some(x=>x)?'':'Noch keine Einträge.')}
+    ${karte('Schlaf', n(schlaf)?`${n(schlaf)} Nächte erfasst`:'', 'vSchlaf', n(schlaf)>=2?'':'Kommt aus dem Tages-Check (Stunden).')}
+    ${karte('Gewicht', bwK.length?`${bwK[bwK.length-1]} kg zuletzt`:'', 'vBw', bwK.length>=2?'':'Kommt aus dem Tages-Check.')}
+    ${karte('Stimmung', n(mood)?`${n(mood)} Tage`:'', 'vMood', mood.some(x=>x!=null)?'':'Kommt aus „Stimmung".')}
+    <div style="height:20px"></div>`;
+}
+function drawVerlauf(){
+  if(!document.getElementById('vZig')) return;
+  const T=verlaufTage(28), lab=T.map(d=>{const x=parseISO(d); return x.getDate();});
+  const zig=T.map(d=>(S.smoke[d]||[]).length);
+  bars('vZig', zig, lab.map((l,i)=>i%7===6||i===27?String(l)+'.':''));
+  const schlaf=T.map(d=>S.well[d]&&S.well[d].sleepH!=null?S.well[d].sleepH:null);
+  lineFrei('vSchlaf', schlaf, 4, 10, [6,8], 'h');
+  const bw=T.map(d=>S.well[d]&&S.well[d].bw!=null?S.well[d].bw:null);
+  const k=bw.filter(x=>x!=null); if(k.length>=2){ const lo=Math.floor(Math.min(...k))-1, hi=Math.ceil(Math.max(...k))+1; lineFrei('vBw', bw, lo, hi, [lo+1,hi-1], 'kg'); }
+  const mood=T.map(d=>{ const e=(S.journal[d]||[]); if(!e.length) return null; return e.reduce((a,x)=>a+(x.mood||0),0)/e.length; });
+  lineFrei('vMood', mood, -2.4, 2.4, [-2,0,2], '', v=>({'-2':'Furchtbar','0':'Neutral','2':'Großartig'})[String(v)]||'');
+}
+/* Linie ohne "gut"-Marke: Verlauf ist kein Urteil. */
+function lineFrei(id,vals,lo,hi,ticks,unit,tickLabel){
+  const el=document.getElementById(id); if(!el) return;
+  const W=320,H=112,pb=14,pt=8;
+  const y=v=>pt+(1-(v-lo)/(hi-lo))*(H-pb-pt);
+  let s='';
+  for(const t of ticks){ s+=`<line class="gl" x1="0" y1="${y(t)}" x2="${W}" y2="${y(t)}"/>
+    <text x="2" y="${y(t)-3}">${tickLabel?tickLabel(t):t+(unit?' '+unit:'')}</text>`; }
+  const pts=vals.map((v,i)=>v==null?null:[i/(vals.length-1)*W, y(v)]);
+  let d='',st=false;
+  for(const p of pts){ if(!p){st=false;continue;} d+=(st?' L':' M')+p[0].toFixed(1)+' '+p[1].toFixed(1); st=true; }
+  if(d) s+=`<path d="${d}" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  pts.forEach(p=>{ if(p) s+=`<circle cx="${p[0]}" cy="${p[1]}" r="2.6" fill="var(--acc)"/>`; });
+  el.innerHTML=s;
 }
 function bars(id,vals,labels){
   const el=document.getElementById(id); if(!el) return;
@@ -2958,13 +3113,13 @@ function nieAlleinSheet(){
 /* Jeder Bereich sagt in einer Zeile, wofür er da ist. Maiks Frage
    "was macht der werkzeug kasten?" war berechtigt — ein Symbol erklärt nichts. */
 const AREAS=[
-  {k:'inbox',  n:'Eingang',
+  {k:'inbox',  n:'Notiz',
    z:'Gedanken festhalten, bevor sie weg sind'},
   {k:'fokus',  n:'Fokus',
    z:'Timer und Ablenkungsparkplatz zum Anfangen'},
   {k:'tools',  n:'Wenn es klemmt',
-   z:'Sechs Situationen, je drei Handgriffe'},
-  {k:'notfall',n:'Drang jetzt',
+   z:'Elf Situationen, je drei Handgriffe'},
+  {k:'notfall',n:'Drang',
    z:'Eine Idee, sofort. Nichts wird gespeichert'},
   {k:'reset',  n:'Rauchen',
    z:'Slots, Auslöser, Rückfallplan'},
@@ -2974,8 +3129,8 @@ const AREAS=[
    z:'Bestand, Einnahme, Rückblick fürs Arztgespräch'},
   {k:'week',   n:'Wochenblick',
    z:'Sieben Tage auf einen Blick, Bericht für Claude'},
-  {k:'journal',n:'Reflexion',
-   z:'Drei Fragen abends, dann Schluss'},
+  {k:'journal',n:'Stimmung',
+   z:'Fünf kurze Schritte, so oft du willst'},
   {k:'haus',   n:'Haushalt',
    z:'Zimmerplan — immer genau ein nächster Schritt'},
   {k:'beschw', n:'Beschwerden',
@@ -2984,8 +3139,10 @@ const AREAS=[
    z:'Kurz prüfen vor dem Kauf, 24 Stunden warten'},
   {k:'evidenz',n:'Evidenz',
    z:'Woher jede Zahl kommt und wie sicher sie ist'},
-  {k:'me',     n:'Profil & Daten',
-   z:'Zielwerte, Export, Darstellung'}
+  {k:'me',     n:'Profil',
+   z:'Zielwerte, Export, Darstellung'},
+  {k:'verlauf',n:'Verlauf',
+   z:'Zigaretten, Schlaf, Gewicht, Stimmung — vier Wochen'}
 ];
 /* Ein Bereich gilt als benutzt, sobald Daten drin sind. Dadurch sortiert sich die
    Übersicht von selbst: was Maik anfasst, wandert nach oben — ohne dass er
@@ -3034,15 +3191,18 @@ function areaRows(list){
   return list.map(a=>{const b=areaBadge(a.k);
     return `<button class="arow" onclick="go('${a.k}')">
       <span class="ag"><b>${a.n}</b><span>${a.z}</span></span>
-      ${b?`<span class="tb static" aria-label="etwas offen"></span>`:''}
+      ${b?`<span class="tag" role="status">${b} offen</span>`:''}
       <span class="ac" aria-hidden="true">›</span></button>`;}).join('');
 }
 /* Die Liste sortiert sich nicht mehr unter ihm um. Feste Gruppen, feste Reihenfolge:
    was nicht an derselben Stelle bleibt, muss jedes Mal neu gesucht werden. */
+/* V9: Gruppen nach tatsaechlicher Nutzung, hoechstens fuenf je Gruppe.
+   "Last & Erholung" war eine Dublette des Trainings-Segments "Last" und ist
+   nur noch dort. "Drang" fehlte hier ganz. */
 const AREA_GRUPPEN=[
-  ['Täglich',     ['haus','reset','fokus','inbox']],
-  ['Körper',      ['med','load','beschw']],
-  ['Nachschlagen',['tools','week','journal','fin','evidenz','me']]
+  ['Jeden Tag',   ['med','reset','inbox']],
+  ['Bei Bedarf',  ['haus','fokus','notfall','journal','beschw','fin']],
+  ['Nachschlagen',['verlauf','week','tools','evidenz','me']]
 ];
 function vMore(){
   return AREA_GRUPPEN.map(([titel,keys])=>{
@@ -3053,22 +3213,7 @@ function vMore(){
   }).join('') + '<div style="height:20px"></div>';
 }
 
-/* Kontextbezogene Bereiche für die Jetzt-Seite: höchstens drei.
-   Das ist eine Navigationshilfe, keine Behauptung, was du tun müsstest. */
-function relevant(){
-  const ph=phase(), out=[];
-  const M=meds();
-  /* Medikamente, solange sie offen sind — 'morning' endet zweieinhalb Stunden
-     nach der Einnahme, danach hing die Kachel an einer Phase, die es nicht gibt. */
-  if(M.some(m=>!medTaken(DAY,m.id)) && (ph==='morning'||ph==='evening')) out.push('med');
-  const n=hausNext(); if(n && ph==='evening') out.push('haus');
-  if(S.fin.wish.some(w=>w.status==='warten'&&Date.now()>=w.bis)) out.push('fin');
-  if(S.inbox.length>=3) out.push('inbox');
-  if(ph==='winddown'||ph==='night') out.push('journal');
-  const d=new Date().getDay(); if(d===0&&(ph==='evening'||ph==='winddown')) out.push('week');
-  if(S.beschw.some(b=>b.offen)) out.push('beschw');
-  return [...new Set(out)].slice(0,3).map(k=>AREAS.find(a=>a.k===k));
-}
+/* relevant() ist mit V9 entfallen (siehe vNow). */
 
 /* =========================================================================
    HAUSHALT — ein sichtbarer nächster Schritt, nie eine Rückstandswand
@@ -3085,7 +3230,7 @@ function rotateStyle(){ S.haus.style=(S.haus.style+1)%3; }
 
 /* --- Zonenabläufe. id muss stabil bleiben, sonst gehen Haken verloren. --- */
 const ZONE={
-  zimmer:{n:'Zimmer', steps:[
+  zimmer:{n:'Raum', steps:[
     {id:'z1', t:'Müll einsammeln und hinausbringen', min:4, tip:'muell',
      v:['Nur den Müll. Jetzt.','Sammle zuerst allen offensichtlichen Müll ein.','Müll-Sammelrunde — Beutel auf, einmal durchs Zimmer.']},
     {id:'z2', t:'Flaschen und Pfand an den festen Platz', min:3, tip:'pfand',
@@ -3202,8 +3347,8 @@ function hausNext(){
   const z=S.haus.zone||'zimmer', Z=ZONE[z];
   const budget=S.haus.size==='min'?3:S.haus.size==='catch'?30:10;
   const s=Z.steps.find(x=>!hausDone(DAY,x.id) && !(x.opt && S.haus.size==='min') && x.min<=budget+6);
-  if(!s){ const any=Z.steps.find(x=>!hausDone(DAY,x.id)); if(any) return {s:any, quelle:Z.n, key:any.id}; return null; }
-  return {s, quelle:Z.n, key:s.id};
+  if(!s){ const any=Z.steps.find(x=>!hausDone(DAY,x.id)); if(any) return {s:any, quelle:'Täglich · '+Z.n, key:any.id}; return null; }
+  return {s, quelle:'Täglich · '+Z.n, key:s.id};
 }
 
 window.setHaus=(k,v)=>{ S.haus[k]=v; save(); render(); };
@@ -3623,12 +3768,12 @@ function zpHausNext(){
   const z=zpS(); if(!z.aktiv) return null;
   const md=zpModus();
   if(md==='abend' && !z.tag[DAY])
-    return {s:ZP_ABEND, quelle:'Zimmer · Abendrunde', key:ZP_ABEND.id, zp:'tag'};
+    return {s:ZP_ABEND, quelle:'Zimmerplan · Abendrunde', key:ZP_ABEND.id, zp:'tag'};
   const s=zpNext(); if(!s) return null;
   const kurz = z.kurz;
   const ber=ZP_BER.find(b=>b.id===s.b);
   return {s:{id:s.id, t:(kurz&&s.not)?s.not:s.t, min:(kurz&&s.not)?3:s.min},
-          quelle:'Zimmer · '+ber.n, key:s.id, zp:'schritt', step:s, kurz};
+          quelle:'Zimmerplan · Bereich '+ber.id+' · '+ber.n, key:s.id, zp:'schritt', step:s, kurz};
 }
 
 window.zpStart=()=>{ const z=zpS(); z.aktiv=true; z.start=z.start||todayISO(); save(); render();
@@ -3727,7 +3872,8 @@ function zpPlanCards(){
     <div class="row between" style="margin-bottom:6px"><h2 style="margin:0">Zimmerplan</h2>
       <span class="small muted">${n} von 35</span></div>
     <div class="bar" style="margin-bottom:12px"><i style="width:${Math.round(n/35*100)}%"></i></div>
-    ${!z.aktiv?`<div class="small muted" style="margin-bottom:10px">${n?'Pausiert':'Läuft noch nicht'} — starten unter „Jetzt".</div>`:''}
+    ${!z.aktiv?`<div class="row between" style="margin-bottom:10px"><span class="small muted">${n?'Pausiert':'Läuft noch nicht'}</span>
+      <button class="btn sm" onclick="zpStart()">${n?'Weiter':'Zimmerplan starten'}</button></div>`:''}
     ${!zpNext()?`<div class="small" style="margin-bottom:10px"><b>Alle 35 Schritte sind einmal durch.</b> Abendrunde und Wochenrunde laufen weiter.</div>`:''}
     ${ZP_BER.map(b=>{ const all=ZP.filter(s=>s.b===b.id), d=all.filter(s=>zpDone(s.id)).length;
       return `<div class="item">
@@ -3817,7 +3963,8 @@ function vHaus(){
   /* „Wissen" war eine Bibliothek in einem Reiter. Feste Orte gehören ans Ende von Plan
      (das ist Einrichtung), „Gut genug" ans „?" des Zimmerplans (es beantwortet „wann höre ich
      auf"), die 23 Tipp-Chips hinter eine Zeile statt als Wolke freier Entscheidungen. */
-  let h=segBar('haus',[['jetzt','Jetzt'],['plan','Plan']]);
+  /* "Jetzt" als Segment unter dem Reiter "Jetzt" war ein Doppelname. */
+  let h=segBar('haus',[['jetzt','Schritt'],['plan','Einrichten']]);
 
   if(SEG.haus==='plan'){
     h+=zpPlanCards();
@@ -3923,7 +4070,7 @@ window.hausResetDay=()=>{ const z=S.haus.zone||'zimmer';
 /* =========================================================================
    EINGANG — universelle Erfassung, von jeder Seite in unter zehn Sekunden
    ========================================================================= */
-window.quick=()=>{ openSheet(`<h2>Schnell rein</h2>
+window.quick=()=>{ openSheet(`<h2>Notiz</h2>
   <div class="small muted" style="margin-bottom:11px">Nur festhalten. Sortiert wird später —
     sonst geht der Gedanke beim Sortieren verloren.</div>
   <label class="f"><input type="text" id="qIn" placeholder="Was ist dir eingefallen?" autofocus></label>
@@ -4844,7 +4991,7 @@ function vNotfall(){
     <div style="height:20px"></div>`;
   }
   return `<div class="now fix">
-    <div class="now-k">Mach das jetzt</div>
+    <div class="now-k">Drang · mach das jetzt</div>
     <div class="now-t">${esc(notCur.t)}</div>
     ${notCur.s?`<div class="now-s" style="font-size:15px;margin-top:9px">${esc(notCur.s)}</div>`:''}
   </div>
@@ -4982,11 +5129,14 @@ function vReset(){
       <h2 style="margin:0">Heute</h2>
       <span class="mono" style="font-size:var(--f-page);font-weight:700">${ges}<span class="small muted"
         style="font-weight:400"> ${ges===1?'Zigarette':'Zigaretten'}</span></span></div>
-    <div class="row" style="gap:4px;align-items:flex-end;height:34px;margin-bottom:12px" aria-hidden="true">
+    <div class="row" style="gap:4px;align-items:flex-end;height:34px;margin-bottom:2px" role="img"
+      aria-label="Zigaretten der letzten sieben Tage: ${w.join(', ')}">
       ${w.map((v,i)=>`<div style="flex:1;height:${Math.max(3,v/mx*34)}px;border-radius:2px;
-        background:${i===6?'var(--acc)':'var(--surface2)'}"></div>`).join('')}</div>
+        background:${i===6?'var(--acc)':'var(--surface2)'}" title="${v}"></div>`).join('')}</div>
+    <div class="row" style="gap:4px;margin-bottom:12px" aria-hidden="true">
+      ${w.map((v,i)=>`<span class="xs muted" style="flex:1;text-align:center">${i===6?'heute':DOW[parseISO(addDays(DAY,i-6)).getDay()]}</span>`).join('')}</div>
     <div class="chips" style="margin-bottom:12px">
-      ${RSLOT.map(s=>`<button class="pill ${u[s.k]?'on':''}" onclick="slotInfo('${s.k}')">
+      ${RSLOT.map(s=>`<button class="pill ${u[s.k]?'on':''}" onclick="smokeInSlot('${s.k}')" aria-label="${esc(s.n)} eintragen">
         ${esc(s.n.split(' · ')[1]||s.k)}${u[s.k]?' '+u[s.k]:''}</button>`).join('')}
     </div>
     <button class="btn acc" onclick="smokeQuick()">Zigarette eintragen</button>
@@ -5057,7 +5207,7 @@ window.smokeToggle=t=>{ const i=smokePick.indexOf(t);
   smokeBtn(); };
 /* Ein Knopf, zwei Angaben — vorher überschrieb die zweite die erste. */
 function smokeBtn(){ const b=document.getElementById('smokeGo'); if(!b) return;
-  const wo = smokePickSlot ? 'Slot '+smokePickSlot : 'Impuls';
+  const wo = smokePickSlot ? 'Slot '+smokePickSlot : 'ohne Anlass';
   b.textContent = smokePick.length ? `${wo} · ${smokePick.length} eintragen` : `Als ${wo} eintragen`;
 }
 function smokeChips(){
@@ -5151,10 +5301,9 @@ window.saveBeschwLog=id=>{ const b=S.beschw.find(x=>x.id===id); if(!b) return;
 function vBeschw(){
   const offen=S.beschw.filter(b=>b.offen), zu=S.beschw.filter(b=>!b.offen);
   return `<div class="card">
-    <button class="btn acc" onclick="beschwAdd()">Beschwerde anlegen</button>
-    <div class="note">Die häufigsten Handballverletzungen liegen in der unteren Extremität
-      (Oberschenkel, Knie, Sprunggelenk) und in der Schulter. Häufigkeit ist keine Vorhersage
-      für dich — sie sagt nur, worauf sich Prävention lohnt zu richten. ${Q('verletzung')}</div></div>
+    <div class="small muted" style="margin-bottom:12px">Wenn etwas wehtut oder zwickt: hier eintragen,
+      bevor es das Training kostet. Danach fragt die App alle paar Tage kurz nach. ${Q('verletzung')}</div>
+    <button class="btn acc" onclick="beschwAdd()">Beschwerde anlegen</button></div>
   ${offen.length?offen.map(b=>{ const l=b.verlauf[b.verlauf.length-1];
     return `<div class="card">
       <div class="row between" style="margin-bottom:6px">
